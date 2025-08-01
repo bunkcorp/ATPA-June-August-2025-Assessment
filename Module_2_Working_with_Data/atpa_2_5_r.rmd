@@ -1,0 +1,105 @@
+---
+title: "ATPA 1.5 - Data Validation"
+
+---
+
+CHUNK 1: Load directory data
+```{r}
+library(tidyverse)
+directory <- read_csv("directory.csv")
+directory
+```
+
+CHUNK 2: Exclude exact duplicate records
+```{r}
+# Exclude exact duplicate records
+unique(directory)
+```
+
+CHUNK 3: Exclude duplicate of a specific variable
+```{r}
+# Exclude duplicate of a specific variable
+directory %>% filter(!duplicated(Name))
+```
+
+CHUNK 4: Exclude duplicates, keeping the closest to end
+```{r}
+# Exclude duplicates, keeping the closest to end
+directory %>% filter(!duplicated(Name, fromLast = TRUE))
+```
+
+CHUNK 5:Exclude duplicate columns
+```{r}
+# Exclude duplicate columns
+var_data <- tibble("Var1" = 1:3, "Var2" = 4:6, "Var3" = 1:3)
+unique.matrix(var_data, MARGIN = 2)
+```
+
+CHUNK 6: Exercise 2.5.1
+```{r}
+library(nycflights13)
+summary(flights$sched_dep_time)
+```
+
+CHUNK 7: Exercise 2.5.2
+```{r}
+youth_risk <- read_csv("youth_risk.csv")
+
+# 1. Check for duplicate columns that repeat the same values or the same information.
+
+# 2. Check for duplicate rows.
+
+# 3. The percentage values are recorded as the variable Data_Value. Check that all those values are in the proper domain.
+
+# 4. Check that the Data_Value falls within the interval of Low_Confidence_Interval to High_Confidence_Interval
+
+# 5. The Data_Value for individual strata should be correlated with the Data_Value for the total sample within each state. Find the correlation between the Total Data_Value and the 11th Grade Strata by state. To do this, filter by Stratification1 being equal to “Total” and then “11th”. Group by state and find the mean. Plot the relationship by state. Does it seem to be internally consistent?
+```
+
+CHUNK 9: Exercise 2.5.2: Solution
+```{r}
+youth_risk <- read_csv("youth_risk.csv")
+
+# 1. Check for duplicate columns that repeat the same values or the same information.
+
+ncol(youth_risk)
+ncol(unique.matrix(youth_risk, MARGIN = 2))
+# Two columns were duplicated
+
+# 2. Check for duplicate rows.
+nrow(youth_risk)
+nrow(unique(youth_risk))
+# No exact duplicate rows
+
+# 3. The percentage values are recorded as the variable Data_Value. Check that all those values are in the proper domain.
+max(youth_risk$Data_Value, na.rm = TRUE) <= 100
+min(youth_risk$Data_Value, na.rm = TRUE) >= 0
+# All values are in the appropriate range
+
+# 4. Check that the Data_Value falls within the interval of Low_Confidence_Interval to High_Confidence_Interval
+
+all(youth_risk$Data_Value >= youth_risk$Low_Confidence_Limit, na.rm = TRUE)
+all(youth_risk$Data_Value <= youth_risk$High_Confidence_Limit, na.rm = TRUE)
+# All values make sense
+
+# 5. The Data_Value for individual strata should be correlated with the Data_Value for the total sample within each state. Find the correlation between the Total Data_Value and the 11th Grade Strata by state. To do this, filter by Stratification1 being equal to “Total” and then “11th”. Group by state and find the mean. Plot the relationship by state. Does it seem to be internally consistent?
+
+total <- youth_risk %>%
+  filter(Stratification1 == "Total") %>%
+  group_by(LocationAbbr) %>%
+  summarize("Total_vals" = mean(Data_Value, na.rm = TRUE))
+Grade11 <- youth_risk %>%
+  filter(Grade == "11th") %>%
+  group_by(LocationAbbr) %>%
+  summarize("Grade11_vals" = mean(Data_Value, na.rm = TRUE))
+# Correlation between strata and total
+cor(total$Total_vals, Grade11$Grade11_vals)
+
+Grade11 %>%
+  left_join(total, by = c("LocationAbbr")) %>%
+  ggplot(dat, mapping = aes(y = Grade11_vals, x = Total_vals)) +
+  geom_point() +
+  labs(x = "Total", y = "11th Grade", title = "Health Measure Consistency Check")
+
+# The correlation is very close to 1 and the plot shows a very strong relationship. This suggests that the variables are consistent with respect to each other.
+```

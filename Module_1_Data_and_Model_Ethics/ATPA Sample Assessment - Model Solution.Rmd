@@ -1,0 +1,1688 @@
+---
+title: "ATPA Sample Assessment - Model Solution"
+output: html_document
+---
+
+> This Rmd document corresponds to the model solution. In the actual assessment, only the Word document will be submitted. This is provided as an example of the technical work in R, but any analytics software may be used to carry out this work.
+
+## Data prepation by assistant
+
+Read the six data files into a single data frame and summarize.
+
+> Changes to assistant's work:
+>   Include BOI as origin or destination and do not remove either pair of fields
+>   Change aircraft type, configuration, distance group, and class to factors
+
+It also would have been helpful to exclude unused factor levels after the massive filtering, but I'll do this later after other data cleaning.
+
+```{r}
+library(dplyr)
+
+# Use function to do initial editing on each file as it is read in to save memory
+read_boise <- function(file) {
+  df.all_cities <- read.csv(file, stringsAsFactors = TRUE)
+  df.boise <- df.all_cities %>%
+              filter(ORIGIN == "BOI" | DEST == "BOI") %>% # BOI is Boise per data dictionary
+              mutate(YEAR = as.factor(YEAR),
+                     QUARTER = as.factor(QUARTER),
+                     MONTH = as.factor(MONTH),
+                     AIRCRAFT_TYPE = as.factor(AIRCRAFT_TYPE),
+                     AIRCRAFT_CONFIG = as.factor(AIRCRAFT_CONFIG),
+                     DISTANCE_GROUP = as.factor(DISTANCE_GROUP),
+                     CLASS = as.factor(CLASS))
+  print(paste(nrow(df.boise), "rows from", file), quote = FALSE)
+  return(df.boise)
+}
+
+# Create dataframe with all rows
+df.all <- bind_rows(read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2016.csv"), 
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2017.csv"), 
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2018.csv"), 
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2019.csv"), 
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2020.csv"), 
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2021.csv"))
+
+# Summarize data
+summary(df.all)
+```
+
+Unitize to average values per departure and add GROUND_TIME as difference between ramp-to-ramp time and air time, then summarize.
+
+> To correct:
+>   Should not divide DISTANCE by number of departures
+>   Should keep DEPARTURES_PERFORMED to measure how busy airport was each month
+>   Can remove RAMP_TO_RAMP as information will be preserved
+
+```{r}
+# Divide measures by number of departures
+df.unit <- df.all %>%
+           filter(DEPARTURES_PERFORMED > 0) %>% # To avoid division by zero
+           mutate(PASSENGERS   = PASSENGERS   / DEPARTURES_PERFORMED,
+                  FREIGHT      = FREIGHT      / DEPARTURES_PERFORMED,
+                  MAIL         = MAIL         / DEPARTURES_PERFORMED,
+                  RAMP_TO_RAMP = RAMP_TO_RAMP / DEPARTURES_PERFORMED,
+                  AIR_TIME     = AIR_TIME     / DEPARTURES_PERFORMED,
+                  ) %>% # Divide by departures performed
+           mutate(GROUND_TIME = RAMP_TO_RAMP - AIR_TIME) %>% # Create ground time
+           select(-RAMP_TO_RAMP)
+  
+# Summarize new data frame
+summary(df.unit)
+
+```
+
+## Task 1 -- Lots of data work
+
+Model solution work continues from here
+
+Convert CLASS, a combination of passenger/freight and scheduled/non-scheduled, to simply SCHEDULED, as AIRCRAFT_CONFIG aligns with passenger/freight already. Relabeling the latter.
+
+```{r}
+# Look at combinations of CLASS and AIRCRAFT_CONFIG
+table(df.unit$CLASS, df.unit$AIRCRAFT_CONFIG)
+
+# CLASS completely describes AIRCRAFT_CONFIG. Doing the following
+#   1. Creating new variable SCHEDULED with levels SCHEDULED (F/G) and NOT SCHEDULED (L/P)
+#   2. Removing CLASS
+#   3. Renaming levels of AIRCRAFT_CONFIG to be more helpful
+library(tidyverse)
+df.clean <- df.unit %>%
+  mutate(SCHEDULED = factor(ifelse(CLASS %in% c("F", "G"), "SCHEDULED", "NOT SCHEDULED"))) %>%
+  select(-CLASS) %>%
+  mutate(AIRCRAFT_CONFIG = fct_recode(AIRCRAFT_CONFIG, "PASSENGER" = "1", "FREIGHT" = "2"))
+
+# Inspect summary
+summary(df.clean)
+
+```
+
+It would be good to validate the passenger and freight entries against configuration.
+
+```{r}
+# Check passenger and freight, also toss in mail
+df.clean %>% group_by(AIRCRAFT_CONFIG) %>% 
+  summarize(MIN_PASSENGERS = min(PASSENGERS), MAX_PASSENGERS = max(PASSENGERS),
+            MIN_FREIGHT = min(FREIGHT), MAX_FREIGHT = max(FREIGHT),
+            MIN_MAIL = min(MAIL), MAX_MAIL = max(MAIL))
+
+# Some passenger flights do not have passengers but do have freight, but freight flights never have passengers. This seems reasonable, though some of each have none of their respective load type
+
+# Look at passenger flights without passengers...
+summary(df.clean %>% filter(AIRCRAFT_CONFIG == "PASSENGER", PASSENGERS == 0))
+
+# 430 of the 548 flights are carrier OO, SkyWest airlines. This is plausible...they could be repositioning aircraft or dealing with mechanical issues. Will retain records.
+
+# Look at freight flights without freight or mail
+df.clean %>% filter(AIRCRAFT_CONFIG == "FREIGHT", FREIGHT == 0 & MAIL == 0)
+
+# Just two flights by Northern Air Cargo to San Bernadino. Clearly a freight carrier by title, could be repositioning, and ground time still affects costs. Will keep.
+
+# Check on distribution of different types of loads
+df.clean %>% mutate(HAS_PASSENGERS = ifelse(PASSENGERS > 0, "YES", "NO"),
+                    HAS_FREIGHT = ifelse(FREIGHT > 0, "YES", "NO"),
+                    HAS_MAIL = ifelse(MAIL > 0, "YES", "NO")) %>%
+             group_by(HAS_PASSENGERS, HAS_FREIGHT, HAS_MAIL) %>%
+             summarize(COUNT = n())
+
+# All combinations exist. Establish indicators for passengers, freight, and mail in case these are more helpful
+df.clean <- df.clean %>%
+  mutate(HAS_PASSENGERS = factor(ifelse(PASSENGERS > 0, "YES", "NO")),
+         HAS_FREIGHT = factor(ifelse(FREIGHT > 0, "YES", "NO")),
+         HAS_MAIL = factor(ifelse(MAIL > 0, "YES", "NO")))
+
+# Check on data again
+summary(df.clean)
+
+```
+
+
+Validating distance group, and determining it does not add information nor is likely to be a helpful grouping.
+
+```{r}
+# Check distance group
+df.clean %>% group_by(DISTANCE_GROUP) %>% 
+  summarize(MIN_DIST = min(DISTANCE), MAX_DIST = max(DISTANCE))
+
+# Since distance group is accurate, it does not add information and can be removed in place
+df.clean <- df.clean %>% select(-DISTANCE_GROUP)
+
+# Repeat summary
+summary(df.clean)
+
+```
+
+Validate quarter, removing once validated...more helpful groupings can be built later.
+
+```{r}
+# Check quarter
+table(df.clean$MONTH, df.clean$QUARTER)
+
+# Remove quarter
+df.clean <- df.clean %>% select(-QUARTER)
+
+# Summarize data again
+summary(df.clean)
+
+```
+
+At this point, not expecting to remove records, but many factor variables have excess levels to clean up.
+
+```{r}
+# Note number of levels of ORIGIN - 1783
+length(levels(df.clean$ORIGIN))
+
+# Drop unused levels from factor variables (handy base function)
+df.clean <- droplevels(df.clean)
+
+# Check number of levels of ORIGIN - 154
+length(levels(df.clean$ORIGIN))
+```
+}
+
+It would be helpful to note departures vs. arrivals to Boise, as this could be significant.
+
+```{r}
+# Create new field for departures and arrivals
+df.clean <- df.clean %>%
+  mutate(DIRECTION = factor(ifelse(ORIGIN == "BOI", "DEPARTURE", "ARRIVAL")))
+
+# Check new variable
+table(df.clean$ORIGIN, df.clean$DIRECTION)[c("BOI", "SEA"),]
+
+# Repeat summary
+summary(df.clean)
+
+```
+
+Need to develop measure of how busy the airport is each month. Sum total departures for each year/month, then join this to each record.
+
+```{r}
+# Get sum of departures by year/month
+num_departures <- df.clean %>%
+  group_by(YEAR, MONTH) %>%
+  summarize(TOT_DEPARTURES = sum(DEPARTURES_PERFORMED))
+
+# Look at sums before joining
+num_departures %>% pivot_wider(names_from = MONTH, values_from = TOT_DEPARTURES)
+
+# Impact of pandemic is evident starting in April 2020. Busiest month July 2021.
+
+# Join this back to clean data
+df.clean = inner_join(df.clean, num_departures, by = c("YEAR", "MONTH"))
+
+# Look at data again
+summary(df.clean)
+
+```
+
+Will want actual name of unique carrier instead of two-letter code. Make sure replacement is factor variable.
+
+```{r}
+# Get data
+library(readxl)
+unique_carrier <- read_excel("DataDictionary.xlsx", 2)
+
+# Join data for unique carrier
+df.clean <- inner_join(df.clean, unique_carrier, by = c("UNIQUE_CARRIER" = "Code"))
+
+# Replace original variable, making sure it is a factor variable
+df.clean <- df.clean %>%
+  mutate(UNIQUE_CARRIER = factor(Description)) %>%
+  select(-Description)
+
+# Remove reference table
+unique_carrier <- NULL
+
+# Check work
+summary(df.clean)
+
+```
+
+Will want actual aircraft type. Make sure replacement is factor variable.
+
+```{r}
+# Get data, changing number to factor for join
+aircraft_type <- read_excel("DataDictionary.xlsx", 4)
+aircraft_type$Code = as.factor(aircraft_type$Code)
+
+# Join data for aircraft type
+df.clean <- inner_join(df.clean, aircraft_type, by = c("AIRCRAFT_TYPE" = "Code"))
+
+# Replace original variable, making sure it is a factor variable
+df.clean <- df.clean %>%
+  mutate(AIRCRAFT_TYPE = factor(Description)) %>%
+  select(-Description)
+
+# Remove reference table
+aircraft_type <- NULL
+
+# Check work
+summary(df.clean)
+
+```
+
+Now to work on airport, but it's not helpful to have separate fields for origin and departure. We know one of these is BOI. Create new variable called AIRPORT to refer to other airport besides Boise, same for state.
+
+```{r}
+# Combine ORIGIN and DEST into AIRPORT and ORIGIN_STATE_NM and DEST_STATE_NM into AIRPORT_STATE_NM based on DIRECTION, taking out of factor and creating new factor for each.
+df.clean <- df.clean %>%
+  mutate(AIRPORT = ifelse(DIRECTION == "ARRIVAL",
+                          as.character(ORIGIN),
+                          as.character(DEST)),
+         AIRPORT_STATE_NM = ifelse(DIRECTION == "ARRIVAL",
+                                   as.character(ORIGIN_STATE_NM),
+                                   as.character(DEST_STATE_NM))) %>%
+  mutate(AIRPORT = factor(AIRPORT),
+         AIRPORT_STATE_NM = factor(AIRPORT_STATE_NM)) %>%
+  select(-c(ORIGIN, DEST, ORIGIN_STATE_NM, DEST_STATE_NM))
+
+```
+
+The airport names in the data dictionary are cleaner than those in the airports.csv file (see MSP), so going to use those.
+
+```{r}
+# Get data
+airport <- read_excel("DataDictionary.xlsx", 3)
+
+# Join data for airport
+df.clean <- inner_join(df.clean, airport, by = c("AIRPORT" = "Code"))
+
+# Create new variable, making sure it is a factor variable (also restore original)
+df.clean <- df.clean %>%
+  mutate(AIRPORT_DESC = factor(Description),
+         AIRPORT = factor(AIRPORT)) %>%
+  select(-Description)
+
+# Remove reference table
+airport <- NULL
+
+# Check work
+summary(df.clean)
+
+```
+
+Want to supplement data with fields from airports.csv but would like to inspect data on relevant airports before joining.
+
+```{r}
+# Get unique airports
+airport_list <- df.clean %>% distinct(AIRPORT)
+
+# Pull in .csv file
+airports_raw <- read.csv("airports.csv", stringsAsFactors = TRUE)
+
+# Join to airport by IATA code to reduce list for inspection
+airports <- left_join(airport_list, airports_raw, by = c("AIRPORT" = "iata_code"), keep = TRUE)
+
+```
+
+Two airports are not found...F70 and CHD...though data dictionary does include these (French Valley, CA and Chandler, AZ). See what is going on here.
+
+```{r}
+# Find airports where no match was found
+airports %>% filter(is.na(iata_code)) %>% select(AIRPORT)
+
+# F70 and CHD do not appear as IATA code but do appear as local code...maybe this?
+
+# Join to airport by IATA code to reduce list for inspection
+airports2 <- left_join(airport_list, airports_raw, by = c("AIRPORT" = "local_code"), keep = TRUE)
+
+# Argh, there are duplicates by country. Try US only...
+airports2 <- airports2 %>% filter(iso_country == "US")
+
+# Only 193? Looking at IATA vs local code: Scottsdale (second on list) is different...how many records are we talking about?
+df.clean %>% filter(AIRPORT %in% c("F70", "CHD"))
+
+# Just 4, all from "Scott Aviation, LLC  d/b/a  Silver Air". How many other records are for them?
+df.clean %>% filter(UNIQUE_CARRIER == "Scott Aviation, LLC  d/b/a  Silver Air")
+
+# Seems OK to drop these, though odd that ground time is always a multiple of 6 for these single unscheduled flights. Going to drop all 21 of this carrier later on.
+df.clean <- df.clean %>% filter(UNIQUE_CARRIER != "Scott Aviation, LLC  d/b/a  Silver Air")
+```
+
+Only type from airports.csv seems useful from a modeling standpoint. Joining this in and cleaning up files.
+
+```{r}
+# Select only columns wanted from airports
+airports <- airports %>% select(c(AIRPORT, type))
+
+# Join to main data
+df.clean <- inner_join(df.clean, airports, by = c("AIRPORT"))
+
+# Rename type to AIRPORT_TYPE
+df.clean <- df.clean %>% rename(AIRPORT_TYPE = type)
+
+# Clean up unneeded files
+rm(airport_list, airports_raw, airports, airports2)
+
+# Inspect data summary
+summary(df.clean)
+
+```
+
+In airport type, need to clean up levels, and there is also one record at a closed airport that can be removed without material harm.
+
+```{r}
+# Look at record at now closed airport
+df.clean[df.clean$AIRPORT_TYPE == "closed",]
+
+# It was an empty transfer flight anyhow, and just one record. Letting it go to have just three categories in airport type, clearing out old factors.
+df.clean <- df.clean %>%
+  filter(AIRPORT_TYPE != "closed") %>%
+  mutate(AIRPORT_TYPE = factor(AIRPORT_TYPE, exclude = NULL))
+
+# Check summary again
+summary(df.clean)
+
+```
+
+Data looks clean and several fields have been validated.
+
+Work now on number of unique carriers to retain.
+
+```{r}
+# Get departure counts by airline
+departures <- df.clean %>%
+  group_by(UNIQUE_CARRIER) %>%
+  summarize(TOT_DEPARTURES_PERFORMED = sum(DEPARTURES_PERFORMED)) %>%
+  arrange(desc(TOT_DEPARTURES_PERFORMED))
+departures
+
+# There are natural breakpoints at 1000 and at 50. See how many departures are in each.
+sum(departures[departures$TOT_DEPARTURES_PERFORMED < 1000, "TOT_DEPARTURES_PERFORMED"])
+sum(departures[departures$TOT_DEPARTURES_PERFORMED < 50, "TOT_DEPARTURES_PERFORMED"])
+sum(departures$TOT_DEPARTURES_PERFORMED)
+
+```
+Dropping airlines with less than 1000 flights over the six years loses only 0.4% but raises the possible usefulness of the categorical factors. Will create separate data frame for reduced set, using threshold based on number of departures.
+
+```{r}
+# Get carrier list
+carrier_list = as.character(departures$UNIQUE_CARRIER[departures$TOT_DEPARTURES_PERFORMED > 1000])
+
+# Created reduced dataset
+df.reduce <- df.clean %>% filter(UNIQUE_CARRIER %in% carrier_list)
+
+# This removed 532 records, though we can also count 21 records (21 departures) removed earlier for Scott Aviation as being for this reason as well in write-up.
+
+# Clean up factor variables - note number of levels of UNIQUE_CARRIER - 41
+length(levels(df.reduce$UNIQUE_CARRIER))
+
+# Drop unused levels in factor variables
+df.reduce <- droplevels(df.reduce)
+
+# Check number of levels of UNIQUE_CARRIER - 14
+length(levels(df.reduce$UNIQUE_CARRIER))
+
+# Look at summary of reduced data
+summary(df.reduce)
+
+```
+
+The 6 records for small airport is too little, so this needs to be combined with medium airport
+
+```{r}
+# Replace AIRPORT_TYPE with two-level LARGE_AIRPORT
+df.reduce <- df.reduce %>%
+  mutate(LARGE_AIRPORT = factor(ifelse(AIRPORT_TYPE == "large_airport", "YES", "NO"))) %>%
+  select(-AIRPORT_TYPE)
+
+# Review summary--this one is final
+summary(df.reduce)
+
+```
+
+While thinking about carriers, are there airlines that stopped or started service among those remaining?
+
+```{r}
+# Look at records by carrier by year
+table(df.reduce$UNIQUE_CARRIER, df.reduce$YEAR)
+
+# Envoy has 0 in 2016, Compass 0 in 2021, but nothing significant enough to warrant further action.
+
+```
+OK, time to look at ground time. Will weight by the departures scheduled.
+
+```{r}
+library(ggplot2)
+# library(quantreg) # Some users find they need this to see certain boxplots...if you get a blank boxplot, uncomment this and try again.
+
+# Created weighted histogram
+p <- ggplot(df.reduce, aes(GROUND_TIME, weight = DEPARTURES_PERFORMED)) +
+  geom_density()
+p
+p + scale_x_log10()
+
+# Look at outliers over an hour
+summary(df.reduce %>% filter(GROUND_TIME > 60))
+```
+
+(Average) ground time appears to be well behaved. The log version looks more normal and would normally be a better target, but need to think about fact that it itself is an arithmetic, not a geometric, average of individual data not available. Maybe not use log(GROUND_TIME) as transformed target, but OK to use log link function in GLM, it seems. Only 61 records over an hour and they don't look clumped around any certain aspect of data (appears to be random) except for small numbers of departures performed, as expected given the averaged data, and far fewer in 2020, when there were less departures.
+
+Now, taking a look at ground time by various potential predictors...
+
+```{r}
+# Unique carrier -- FedEx and UPS have had relatively good performance, not as good as Gem Air
+p <- ggplot(df.reduce, aes(x = UNIQUE_CARRIER, y = GROUND_TIME, weight = DEPARTURES_PERFORMED)) +
+       geom_boxplot()
+p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + ylim(0, 60)
+
+# Month -- fairly smooth, slightly higher in winter months (December - February)
+p <- ggplot(df.reduce, aes(x = MONTH, y = GROUND_TIME, weight = DEPARTURES_PERFORMED)) +
+       geom_boxplot()
+p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + ylim(0, 60)
+
+# Year -- median had been rising using 2020 and pandemic
+p <- ggplot(df.reduce, aes(x = YEAR, y = GROUND_TIME, weight = DEPARTURES_PERFORMED)) +
+       geom_boxplot()
+p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + ylim(0, 60)
+
+# Aircraft configuration (really a reduction of unique carrier) -- Freight a bit lower
+p <- ggplot(df.reduce, aes(x = AIRCRAFT_CONFIG, y = GROUND_TIME, weight = DEPARTURES_PERFORMED)) +
+       geom_boxplot()
+p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + ylim(0, 60)
+
+# Aircraft configuration by year -- Freight a bit lower
+p <- ggplot(df.reduce, aes(x = YEAR, y = GROUND_TIME, weight = DEPARTURES_PERFORMED,
+                           color = AIRCRAFT_CONFIG)) +
+       geom_boxplot()
+p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + ylim(0, 60)
+
+
+# Scheduled -- Small amount of non-scheduled did better
+p <- ggplot(df.reduce, aes(x = SCHEDULED, y = GROUND_TIME, weight = DEPARTURES_PERFORMED)) +
+       geom_boxplot()
+p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + ylim(0, 60)
+
+# Direction -- Doesn't really matter
+p <- ggplot(df.reduce, aes(x = DIRECTION, y = GROUND_TIME, weight = DEPARTURES_PERFORMED)) +
+       geom_boxplot()
+p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + ylim(0, 60)
+
+# Airport type -- Much longer at larger airports, so other airport may make difference
+p <- ggplot(df.reduce, aes(x = LARGE_AIRPORT, y = GROUND_TIME, weight = DEPARTURES_PERFORMED)) +
+       geom_boxplot()
+p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + ylim(0, 60)
+
+# Get top 15 airports
+top_15_airports <- df.reduce %>%
+  group_by(AIRPORT, AIRPORT_DESC) %>%
+  summarize(DEPARTURES = sum(DEPARTURES_PERFORMED)) %>%
+  arrange(desc(DEPARTURES))
+top_15_airports = top_15_airports[1:15,]
+
+# Airport - huge variation...very large airports fare worst, smaller airports better...wish the airport type did more to distinguish these, but ground time seems to have a lot to do with what is not happening in Boise, rather than what is. Will need to isolate airport vs. carrier effects.
+p <- ggplot(df.reduce %>% filter(AIRPORT %in% top_15_airports$AIRPORT),
+            aes(x = AIRPORT, y = GROUND_TIME, weight = DEPARTURES_PERFORMED,
+                color = LARGE_AIRPORT)) +
+       geom_boxplot()
+p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + ylim(0, 60)
+
+# Air time -- longer flights have slightly higher ground time, may have to do with size of airport
+p <- ggplot(df.reduce, aes(x = AIR_TIME, y = GROUND_TIME, size = DEPARTURES_PERFORMED)) +
+       geom_point(alpha = 0.1) + 
+       geom_smooth(method = "gam")
+p + ylim(0, 60)
+
+# Distance -- longer flights have slightly higher ground time, may have to do with size of airport
+p <- ggplot(df.reduce, aes(x = DISTANCE, y = GROUND_TIME, size = DEPARTURES_PERFORMED)) +
+       geom_point(alpha = 0.1) + 
+       geom_smooth(method = "gam")
+p + ylim(0, 60)
+
+# Total departures -- better in much less busy months, otherwise about even
+p <- ggplot(df.reduce, aes(x = TOT_DEPARTURES, y = GROUND_TIME, size = DEPARTURES_PERFORMED)) +
+       geom_point(alpha = 0.1) + 
+       geom_smooth(method = "gam")
+p + ylim(0, 60)
+
+# Passengers -- not that conclusive
+p <- ggplot(df.reduce, aes(x = PASSENGERS, y = GROUND_TIME, size = DEPARTURES_PERFORMED)) +
+       geom_point(alpha = 0.1) + 
+       geom_smooth(method = "gam")
+p + ylim(0, 60)
+
+# Get top aircraft
+top_15_aircraft <- df.reduce %>%
+  group_by(AIRCRAFT_TYPE) %>%
+  summarize(DEPARTURES = sum(DEPARTURES_PERFORMED)) %>%
+  arrange(desc(DEPARTURES))
+top_15_aircraft = top_15_aircraft[1:15,]
+
+# Aircraft type - some variation, but mixed up with air time, airport, carrier...
+p <- ggplot(df.reduce %>% filter(AIRCRAFT_TYPE %in% top_15_aircraft$AIRCRAFT_TYPE),
+            aes(x = AIRCRAFT_TYPE, y = GROUND_TIME, weight = DEPARTURES_PERFORMED)) +
+       geom_boxplot()
+p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + ylim(0, 60)
+
+
+
+```
+Done with data preparation section. Transfer work to report.
+
+## Task 3
+
+Going to fit a GLM and GLMM, but first need to establish train and test data based on year.
+
+```{r}
+# Train data is years 2016-2020, test data is 2021
+df.train <- df.reduce %>% filter(YEAR %in% c(2016, 2017, 2018, 2019, 2020))
+df.test <- df.reduce %>% filter(YEAR == 2021)
+
+```
+
+Given shape of target variable and for simplicity, going to use RMSE throughout as test metric. Setting up two versions of function here always using df.test, one taking predictions as input, the other taking in model as input. The result is weighted by the number of flights.
+
+```{r}
+# Run intercept-only models for testing and to establish a baseline result with and without weights
+m_mean_w <- lm(formula = "GROUND_TIME ~ 1", data = df.train,
+               weights = df.train$DEPARTURES_PERFORMED)
+m_mean_uw <- lm(formula = "GROUND_TIME ~ 1", data = df.train)
+
+# Look at models
+summary(m_mean_w)
+summary(m_mean_uw)
+
+# Set up weighted and unweighted functions based on predictions already being calculated
+rmse_p_w <- function(df.data, predictions) {
+  return((sum(df.data$DEPARTURES_PERFORMED*(predictions - df.data$GROUND_TIME)^2) /
+          sum(df.data$DEPARTURES_PERFORMED))^(1/2))
+}
+rmse_p_uw <- function(df.data, predictions) {
+  return(mean((predictions - df.data$GROUND_TIME)^2)^(1/2))
+}
+
+# Compare weighted and unweighted results with respective functions
+rmse_p_w(df.test, predict(m_mean_w, df.test))
+rmse_p_uw(df.test, predict(m_mean_uw, df.test))
+
+# Clearly different and this is as expected, as more common flights will tend toward the mean
+
+# Set up functions that that model as input, using functions already created
+rmse_m_w <- function(df.data, model) {
+  if (class(model)[1] == "glm")
+    return(rmse_p_w(df.data, predict(model, df.data, type = "response")))
+  else if (class(model)[1] == "lmerMod")
+    return(rmse_p_w(df.data, predict(model, df.data, allow.new.levels = TRUE)))
+  else
+    return(rmse_p_w(df.data, predict(model, df.data)))
+}
+rmse_m_uw <- function(df.data, model) {
+  if (class(model)[1] == "glm")
+    return(rmse_p_uw(df.data, predict(model, df.data, type = "response")))
+  else if (class(model)[1] == "lmerMod")
+    return(rmse_p_uw(df.data, predict(model, df.data, allow.new.levels = TRUE)))
+  else
+    return(rmse_p_uw(df.data, predict(model, df.data)))
+}
+
+# Check these results
+rmse_m_w(df.test, m_mean_w)
+rmse_m_uw(df.test, m_mean_uw)
+
+```
+
+Will use the weighted versions where possible but will relax to unweighted version where the type of model requires it.
+
+Time to work on fitting a GLM. Will work manually given complexity and interaction of features, starting with unique carrier (all 14 levels) as it is required, and carry on from there. Will just work with weighted version as glmer (in lme4 package) does take weights.
+
+```{r}
+# GLM 1: Unique carrier only, normal distribution
+glm1 <- glm(formula = 'GROUND_TIME ~ UNIQUE_CARRIER', data = df.train,
+            family = gaussian(link = "identity"),
+            weights = df.train$DEPARTURES_PERFORMED)
+
+# GLM 2: Unique carrier only, lognormal distribution
+glm2 <- glm(formula = 'GROUND_TIME ~ UNIQUE_CARRIER', data = df.train,
+            family = gaussian(link = "log"),
+            weights = df.train$DEPARTURES_PERFORMED)
+
+# Compare results
+rmse_m_w(df.test, glm1)
+rmse_m_w(df.test, glm2)
+
+# Oh. Didn't make a difference with only factor variables. OK, that makes sense.
+
+```
+Well, unique carriers improved things. RMSE from 5.07 to 4.30. Going to add distance now to choose between GLM distribution functions.
+
+```{r}
+# GLM 3: Unique carrier and distance, normal distribution
+glm3 <- glm(formula = 'GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE', data = df.train,
+            family = gaussian(link = "identity"),
+            weights = df.train$DEPARTURES_PERFORMED)
+
+# GLM 4: Unique carrier and distance, lognormal distribution
+glm4 <- glm(formula = 'GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE', data = df.train,
+            family = gaussian(link = "log"),
+            weights = df.train$DEPARTURES_PERFORMED)
+
+# Compare results
+rmse_m_w(df.test, glm3)
+rmse_m_w(df.test, glm4)
+
+```
+Distance is significant...RMSE from 4.30 to 4.16 using normal, better than 4.18 with lognormal and easier to explain. Going to stick with normal from here on for GLM.
+
+Will try out all binary factors to see what helps after making helper function to reduce typing work.
+
+```{r}
+glm_w <- function(train_data, test_data, input_formula) {
+  m <- glm(formula = input_formula, data = train_data,
+            family = gaussian(link = "identity"),
+            weights = DEPARTURES_PERFORMED)
+  print(rmse_m_w(test_data, m))
+  return(m)
+}
+
+# GLM 5: Carrier, distance, large airport:
+glm5 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT")
+
+# 4.161 -> 4.127: accept LARGE_AIRPORT
+
+# GLM 6: Carrier, distance, large airport, direction:
+glm6 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT + DIRECTION")
+
+# 4.127 -> 4.024: accept DIRECTION
+
+# Aircraft config doesn't work because carriers are strictly passenger or freight
+table(df.train$UNIQUE_CARRIER, df.train$AIRCRAFT_CONFIG)
+
+# GLM 7: Carrier, distance, large airport, direction, has passengers:
+glm7 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                  DIRECTION + HAS_PASSENGERS")
+
+# 4.0240 -> 4.0234: minimal benefit...maybe with # of passengers?
+
+# GLM 8: Carrier, distance, large airport, direction, has passengers, passengers:
+glm8 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                  DIRECTION + HAS_PASSENGERS + PASSENGERS")
+
+# 4.0234 -> 4.0022: better...does has passengers still help?
+
+# GLM 9: Carrier, distance, large airport, direction, has passengers, passengers:
+glm9 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                  DIRECTION + PASSENGERS")
+
+# 4.0022 -> 4.0057: it's worth more now. Will keep, continuing from glm 8
+
+# GLM 10: Carrier, distance, large airport, direction, has passengers, passengers,
+#         has freight, freight:
+glm10 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + HAS_FREIGHT + FREIGHT")
+
+# 4.0022 -> 4.0043: freight not helpful. How about mail?
+
+# GLM 11: Carrier, distance, large airport, direction, has passengers, passengers,
+#         has mail, mail:
+glm11 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + HAS_MAIL + MAIL")
+
+# 4.0022 -> 4.0062: mail even worse. Last binary is SCHEDULED...
+
+# GLM 12: Carrier, distance, large airport, direction, has passengers, passengers,
+#         scheduled:
+glm12 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + SCHEDULED")
+
+# 4.0022 -> 4.0022: there's so little scheduled...
+table(df.train$UNIQUE_CARRIER, df.train$SCHEDULED)
+
+# And scheduled is not intuitive...better to leave alone than have distracting story
+
+# Look back at glm 8 and assess next steps
+summary(glm8)
+
+```
+
+So far, have baseline of 21.8 minutes for Alaska air, 0 miles (not realistic), not large airport, arrival, no passengers. Various airlines range from adding 1.1 minutes for Compass to subtracting 9.0 minutes for Horizon, with the next quickest two being UPS (-8.8 minutes) and FedEx (-8.4 minutes). Having passengers subtracts 1.9 minutes initially but each 100 passengers adds 3.2 minutes, so breaks even at 58 passengers.
+Large airport adds 1.6 minutes, and departure subtracts 0.8 minutes...not sure what to make of last one.
+
+Want to deal with how busy airport is next, also frequency of flight plan and year and month.
+
+```{r}
+# GLM 13: Carrier, distance, large airport, direction, has passengers, passengers,
+#         flights in month:
+glm13 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + TOT_DEPARTURES")
+
+# 4.0022 -> 4.1342: very NOT helpful...test is 2021, so perhaps pattern did not hold compared to earlier years.
+
+# GLM 14: Carrier, distance, large airport, direction, has passengers, passengers,
+#         frequency of flight:
+glm14 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + DEPARTURES_PERFORMED")
+
+# 4.0022 -> 4.0231: would have been weird to use weight as predictor anyhow.
+
+# GLM 15: Carrier, distance, large airport, direction, has passengers, passengers,
+#         month:
+glm15 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + MONTH")
+
+# 4.0022 -> 3.8819: wow, strong effect. Taking a look...
+summary(glm15)
+
+# Would do well to isolate winter months
+df.train <- df.train %>% mutate(WINTER = factor(ifelse(MONTH %in% c(1, 2, 12), 'YES', 'NO')))
+df.test <- df.test %>% mutate(WINTER = factor(ifelse(MONTH %in% c(1, 2, 12), 'YES', 'NO')))
+
+# Because functions accept data fresh, don't need to reset functions.
+
+# GLM 16: Carrier, distance, large airport, direction, has passengers, passengers,
+#         winter:
+glm16 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER")
+
+# 3.8819 -> 3.9046: acceptable for dropping 10 degrees of freedom. Could do summer but would rather keep simple. Was better to keep November out of WINTER.
+
+# See if year, as number, is helpful since overall congestion was not
+df.train <- df.train %>% mutate(YEAR_FROM_2016 = as.numeric(as.character(YEAR)) - 2016)
+df.test <- df.test %>% mutate(YEAR_FROM_2016 = as.numeric(as.character(YEAR)) - 2016)
+
+# GLM 17: Carrier, distance, large airport, direction, has passengers, passengers,
+#         winter, years since 2016:
+glm17 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                   YEAR_FROM_2016")
+summary(glm17)
+
+# 3.9046 -> 3.8987: trend is estimated as 0.06 minutes per year...not worth speaking to despite minor improvement. Might be good random effect.
+df.train <- df.train %>% select(-YEAR_FROM_2016)
+df.test <- df.test %>% select(-YEAR_FROM_2016)
+
+```
+
+Have gained just winter. Have decided to skip air time due to leakage issue (but will peek just to see). Just factors with lots of levels left. Will need to reduce levels to make them workable in GLM.
+
+```{r}
+# GLM X: Carrier, distance, large airport, direction, has passengers, passengers,
+#         winter, air time (DON'T USE):
+glmX <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                  DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                  AIR_TIME")
+
+# 3.9046 -> 3.9202: oh, air time didn't help anyhow. Was poor replacement for distance.
+
+# OK, for high-dimensional factors, going to get top 15 values and group rest as other.
+
+# Get top airports and inspect
+top_airports <- df.reduce %>%
+  group_by(AIRPORT) %>%
+  summarize(DEPARTURES = sum(DEPARTURES_PERFORMED)) %>%
+  arrange(desc(DEPARTURES))
+
+# There are natural breaks with top 1, top 4, top 8, and top 16. Try all of these, starting with 1
+airport_list = as.character(top_airports$AIRPORT[1:1])
+df.train <- df.train %>%
+  mutate(AIRPORT_1 = factor(ifelse(AIRPORT %in% airport_list, as.character(AIRPORT), "OTHER")))
+df.test <- df.test %>%
+  mutate(AIRPORT_1 = factor(ifelse(AIRPORT %in% airport_list, as.character(AIRPORT), "OTHER")))
+
+# It helps to reorder these, particularly given the desire to keep LARGE_AIRPORT. This is a fancy, quick method. OTHER is put first, then descending order. Test given its own order, keeping OTHER first. It does not have new levels compared to train, an issue without reduction.
+df.train$AIRPORT_1 <-
+  reorder(df.train$AIRPORT_1, df.train$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.train$AIRPORT_1 <- relevel(df.train$AIRPORT_1, "OTHER")
+df.test$AIRPORT_1 <-
+  reorder(df.test$AIRPORT_1, df.test$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.test$AIRPORT_1 <- relevel(df.test$AIRPORT_1, "OTHER")
+
+# Top 4
+airport_list = as.character(top_airports$AIRPORT[1:4])
+df.train <- df.train %>%
+  mutate(AIRPORT_4 = factor(ifelse(AIRPORT %in% airport_list, as.character(AIRPORT), "OTHER")))
+df.test <- df.test %>%
+  mutate(AIRPORT_4 = factor(ifelse(AIRPORT %in% airport_list, as.character(AIRPORT), "OTHER")))
+df.train$AIRPORT_4 <-
+  reorder(df.train$AIRPORT_4, df.train$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.train$AIRPORT_4 <- relevel(df.train$AIRPORT_4, "OTHER")
+df.test$AIRPORT_4 <-
+  reorder(df.test$AIRPORT_4, df.test$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.test$AIRPORT_4 <- relevel(df.test$AIRPORT_4, "OTHER")
+
+# Top 8
+airport_list = as.character(top_airports$AIRPORT[1:8])
+df.train <- df.train %>%
+  mutate(AIRPORT_8 = factor(ifelse(AIRPORT %in% airport_list, as.character(AIRPORT), "OTHER")))
+df.test <- df.test %>%
+  mutate(AIRPORT_8 = factor(ifelse(AIRPORT %in% airport_list, as.character(AIRPORT), "OTHER")))
+df.train$AIRPORT_8 <-
+  reorder(df.train$AIRPORT_8, df.train$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.train$AIRPORT_8 <- relevel(df.train$AIRPORT_8, "OTHER")
+df.test$AIRPORT_8 <-
+  reorder(df.test$AIRPORT_8, df.test$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.test$AIRPORT_8 <- relevel(df.test$AIRPORT_8, "OTHER")
+
+# Top 16
+airport_list = as.character(top_airports$AIRPORT[1:16])
+df.train <- df.train %>%
+  mutate(AIRPORT_16 = factor(ifelse(AIRPORT %in% airport_list, as.character(AIRPORT), "OTHER")))
+df.test <- df.test %>%
+  mutate(AIRPORT_16 = factor(ifelse(AIRPORT %in% airport_list, as.character(AIRPORT), "OTHER")))
+df.train$AIRPORT_16 <-
+  reorder(df.train$AIRPORT_16, df.train$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.train$AIRPORT_16 <- relevel(df.train$AIRPORT_16, "OTHER")
+df.test$AIRPORT_16 <-
+  reorder(df.test$AIRPORT_16, df.test$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.test$AIRPORT_16 <- relevel(df.test$AIRPORT_16, "OTHER")
+
+# OK, try each of these out
+
+# GLM 18: Carrier, distance, direction, has passengers, passengers,
+#         winter, airport (1, 4, 8, or 16):
+glm18_1 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                   AIRPORT_1")
+glm18_4 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                   AIRPORT_4")
+glm18_8 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                   AIRPORT_8")
+glm18_16 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                   AIRPORT_16")
+
+# 3.9046 -> 3.8600 (1) -> 3.7972 (4) -> 3.8184 (8) -> 3.6675 (16)
+# Big jump down still from 8 to 16, perhaps because of ORD (#9). Looking at carriers and airports...
+table(df.train$UNIQUE_CARRIER, df.train$AIRPORT_16)
+
+# Additional airports feel like they are adding depth. Debate between 4 and 16...are 12 degrees of freedom worth reduction of 0.1297? Feels like yes, particularly as many airlines have several airports.
+glm18 <- glm18_16
+rm(glm18_1, glm18_4, glm18_8, glm18_16)
+summary(glm18)
+```
+
+Other items for airport just follow along...won't mess with those further
+
+```{r}
+# Upkeep on other airport fields
+df.train <- df.train %>%
+  mutate(AIRPORT_DESC_16 = factor(ifelse(AIRPORT_16 == "OTHER", "OTHER",
+                                         as.character(AIRPORT_DESC))),
+         AIRPORT_STATE_NM_16 = factor(ifelse(AIRPORT_16 == "OTHER", "OTHER",
+                                             as.character(AIRPORT_STATE_NM))))
+df.test <- df.test %>%
+  mutate(AIRPORT_DESC_16 = factor(ifelse(AIRPORT_16 == "OTHER", "OTHER",
+                                         as.character(AIRPORT_DESC))),
+         AIRPORT_STATE_NM_16 = factor(ifelse(AIRPORT_16 == "OTHER", "OTHER",
+                                             as.character(AIRPORT_STATE_NM))))
+
+```
+
+Last variable to try is aircraft type, using same approach.
+
+```{r}
+# Get top types and inspect
+top_aircraft_type <- df.reduce %>%
+  group_by(AIRCRAFT_TYPE) %>%
+  summarize(DEPARTURES = sum(DEPARTURES_PERFORMED)) %>%
+  arrange(desc(DEPARTURES))
+
+# There are natural breaks with top 3, top 8, top 12, and top 16. Try all of these, starting with 3
+aircraft_type_list = as.character(top_aircraft_type$AIRCRAFT_TYPE[1:3])
+df.train <- df.train %>%
+  mutate(AIRCRAFT_TYPE_3 = factor(ifelse(AIRCRAFT_TYPE %in% aircraft_type_list,
+                                         as.character(AIRCRAFT_TYPE), "OTHER")))
+df.test <- df.test %>%
+  mutate(AIRCRAFT_TYPE_3 = factor(ifelse(AIRCRAFT_TYPE %in% aircraft_type_list,
+                                         as.character(AIRCRAFT_TYPE), "OTHER")))
+df.train$AIRCRAFT_TYPE_3 <-
+  reorder(df.train$AIRCRAFT_TYPE_3, df.train$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.train$AIRCRAFT_TYPE_3 <- relevel(df.train$AIRCRAFT_TYPE_3, "OTHER")
+df.test$AIRCRAFT_TYPE_3 <-
+  reorder(df.test$AIRCRAFT_TYPE_3, df.test$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.test$AIRCRAFT_TYPE_3 <- relevel(df.test$AIRCRAFT_TYPE_3, "OTHER")
+
+# Top 8
+aircraft_type_list = as.character(top_aircraft_type$AIRCRAFT_TYPE[1:8])
+df.train <- df.train %>%
+  mutate(AIRCRAFT_TYPE_8 = factor(ifelse(AIRCRAFT_TYPE %in% aircraft_type_list,
+                                         as.character(AIRCRAFT_TYPE), "OTHER")))
+df.test <- df.test %>%
+  mutate(AIRCRAFT_TYPE_8 = factor(ifelse(AIRCRAFT_TYPE %in% aircraft_type_list,
+                                         as.character(AIRCRAFT_TYPE), "OTHER")))
+df.train$AIRCRAFT_TYPE_8 <-
+  reorder(df.train$AIRCRAFT_TYPE_8, df.train$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.train$AIRCRAFT_TYPE_8 <- relevel(df.train$AIRCRAFT_TYPE_8, "OTHER")
+df.test$AIRCRAFT_TYPE_8 <-
+  reorder(df.test$AIRCRAFT_TYPE_8, df.test$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.test$AIRCRAFT_TYPE_8 <- relevel(df.test$AIRCRAFT_TYPE_8, "OTHER")
+
+# Top 12
+aircraft_type_list = as.character(top_aircraft_type$AIRCRAFT_TYPE[1:12])
+df.train <- df.train %>%
+  mutate(AIRCRAFT_TYPE_12 = factor(ifelse(AIRCRAFT_TYPE %in% aircraft_type_list,
+                                         as.character(AIRCRAFT_TYPE), "OTHER")))
+df.test <- df.test %>%
+  mutate(AIRCRAFT_TYPE_12 = factor(ifelse(AIRCRAFT_TYPE %in% aircraft_type_list,
+                                         as.character(AIRCRAFT_TYPE), "OTHER")))
+df.train$AIRCRAFT_TYPE_12 <-
+  reorder(df.train$AIRCRAFT_TYPE_12, df.train$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.train$AIRCRAFT_TYPE_12 <- relevel(df.train$AIRCRAFT_TYPE_12, "OTHER")
+df.test$AIRCRAFT_TYPE_12 <-
+  reorder(df.test$AIRCRAFT_TYPE_12, df.test$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.test$AIRCRAFT_TYPE_12 <- relevel(df.test$AIRCRAFT_TYPE_12, "OTHER")
+
+# Top 16
+aircraft_type_list = as.character(top_aircraft_type$AIRCRAFT_TYPE[1:16])
+df.train <- df.train %>%
+  mutate(AIRCRAFT_TYPE_16 = factor(ifelse(AIRCRAFT_TYPE %in% aircraft_type_list,
+                                         as.character(AIRCRAFT_TYPE), "OTHER")))
+df.test <- df.test %>%
+  mutate(AIRCRAFT_TYPE_16 = factor(ifelse(AIRCRAFT_TYPE %in% aircraft_type_list,
+                                         as.character(AIRCRAFT_TYPE), "OTHER")))
+df.train$AIRCRAFT_TYPE_16 <-
+  reorder(df.train$AIRCRAFT_TYPE_16, df.train$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.train$AIRCRAFT_TYPE_16 <- relevel(df.train$AIRCRAFT_TYPE_16, "OTHER")
+df.test$AIRCRAFT_TYPE_16 <-
+  reorder(df.test$AIRCRAFT_TYPE_16, df.test$DEPARTURES_PERFORMED, function(x){-sum(x)})
+df.test$AIRCRAFT_TYPE_16 <- relevel(df.test$AIRCRAFT_TYPE_16, "OTHER")
+
+# OK, try each of these out
+
+# GLM 19: Carrier, distance, direction, has passengers, passengers,
+#         winter, airport (16), aircraft type (3, 8, 12, or 16):
+glm19_3 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                     DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                     AIRPORT_16 + AIRCRAFT_TYPE_3")
+glm19_8 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                     DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                     AIRPORT_16 + AIRCRAFT_TYPE_8")
+glm19_12 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                      DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                      AIRPORT_16 + AIRCRAFT_TYPE_12")
+glm19_16 <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + LARGE_AIRPORT +
+                                      DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                      AIRPORT_16 + AIRCRAFT_TYPE_16")
+
+# 3.6675 -> 3.5988 (3) -> 3.6147 (8) -> 3.6181 (12) -> 3.6176 (16)
+# Only 3 is worth considering. Compare to carrier...
+table(df.train$UNIQUE_CARRIER, df.train$AIRCRAFT_TYPE_3)
+
+# The three types spiked out are major alternatives for select airlines, not including the freight carriers. But too good an improvement for 3 levels to ignore. Will keep 3.
+glm19 <- glm19_3
+rm(glm19_3, glm19_8, glm19_12, glm19_16)
+summary(glm19)
+```
+         
+To finish up GLM, doing drop 1 tests...
+
+```{r}
+# Comparing each to 3.5988
+# Drop distance -> 3.631224
+m <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + LARGE_AIRPORT +
+                               DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                               AIRPORT_16 + AIRCRAFT_TYPE_3")
+# Drop large airport -> 3.5774
+m <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + 
+                               DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                               AIRPORT_16 + AIRCRAFT_TYPE_3")
+# Large airport dropped...start again
+# Drop distance -> 3.6042
+m <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER +  
+                               DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                               AIRPORT_16 + AIRCRAFT_TYPE_3")
+
+# Drop direction -> 3.6884 (really that big?)
+m <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + 
+                               HAS_PASSENGERS + PASSENGERS + WINTER +
+                               AIRPORT_16 + AIRCRAFT_TYPE_3")
+
+# Drop has passengers -> 3.5861
+m <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + 
+                               DIRECTION + PASSENGERS + WINTER +
+                               AIRPORT_16 + AIRCRAFT_TYPE_3")
+
+# Drop passengers -> 3.6537
+m <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + 
+                               DIRECTION + HAS_PASSENGERS + WINTER +
+                               AIRPORT_16 + AIRCRAFT_TYPE_3")
+
+# Drop winter -> 3.6882
+m <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + 
+                               DIRECTION + HAS_PASSENGERS + PASSENGERS +
+                               AIRPORT_16 + AIRCRAFT_TYPE_3")
+
+# Drop airport 16 -> 3.8026
+m <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + 
+                               DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                               AIRCRAFT_TYPE_3")
+
+# Drop aircraft type 3 -> 3.6443
+m <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + 
+                               DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                               AIRPORT_16")
+
+# Checking unique carriers, though it is required -> 3.8688
+m <- glm_w(df.train, df.test, "GROUND_TIME ~ DISTANCE + 
+                               DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                               AIRPORT_16 + AIRCRAFT_TYPE_3")
+
+# All other predictors check out
+
+# Final glm, keeping on training data still for comparing to other models
+glm_final <- glm_w(df.train, df.test, "GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + 
+                                       DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                       AIRPORT_16 + AIRCRAFT_TYPE_3")
+summary(glm_final)
+
+# Also plot residuals, etc.
+plot(glm_final)
+
+# Clean up work area
+rm(glm1, glm2, glm3, glm4, glm5, glm6, glm7, glm8, glm9, glm10,
+   glm11, glm12, glm13, glm14, glm15, glm16, glm17, glm18, glm19)
+```
+
+General notes on GLM:
+
+> Most airlines lower than Alaska airlines. Freight carriers better than larger passenger airlines
+> Breakeven point on passengers now 97
+> Winter adds two minutes
+> Larger airports mostly add time, lots of variation
+> Certain aircraft seem to save time, some interlocking with carrier
+
+Now, will fit GLMM, trying various random effects. Must do unique carrier, other ones to try are airport, year, and aircraft type as new variables could appear among all of these in the future.
+
+```{r}
+library(lme4)
+
+# Create fitting function
+glmm <- function(train_data, test_data, input_formula) {
+  m <- lmer(formula = input_formula, data = train_data,
+            weights = DEPARTURES_PERFORMED)
+  print(rmse_m_w(test_data, m))
+  return(m)
+}
+
+# GLMM: random intercept for just carrier
+glmm_1 <- glmm(df.train, df.test, "GROUND_TIME ~ (1 | UNIQUE_CARRIER) + DISTANCE + 
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                   AIRPORT_16 + AIRCRAFT_TYPE_3")
+summary(glmm_1)
+ranef(glmm_1)
+
+# Very similar RMSE, 3.5776 (GLM was 3.5774), random effects are easier to decipher as they are centered at zero instead of being centered on Alaska Air
+
+# GLMM2: random intercept for carrier, airport 16
+glmm_2 <- glmm(df.train, df.test, "GROUND_TIME ~ (1 | UNIQUE_CARRIER) + DISTANCE + 
+                                 DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                 (1 | AIRPORT_16) + AIRCRAFT_TYPE_3")
+summary(glmm_2)
+
+# Slight improvement of RMSE to 3.5762, much smaller list of fixed effects
+
+# GLMM3: random intercept for carrier, airport (all)
+glmm_3 <- glmm(df.train, df.test, "GROUND_TIME ~ (1 | UNIQUE_CARRIER) + DISTANCE + 
+                                     DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                     (1 | AIRPORT) + AIRCRAFT_TYPE_3")
+summary(glmm_3)
+
+# More improvement of RMSE to 3.5559, as more airport effects are captured
+
+# Predictions are made including random effects, which makes sense here. We are working on inference, not a prediction without randomness.
+
+# GLMM4: random intercept for carrier, airport (all), aircraft type (3)
+glmm_4 <- glmm(df.train, df.test, "GROUND_TIME ~ (1 | UNIQUE_CARRIER) + DISTANCE + 
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                   (1 | AIRPORT) + (1 | AIRCRAFT_TYPE_3)")
+summary(glmm_4)
+
+# RMSE worse at 3.5587. Maybe all aircraft types?
+
+# GLMM5: random intercept for carrier, airport (all), aircraft type (all)
+glmm_5 <- glmm(df.train, df.test, "GROUND_TIME ~ (1 | UNIQUE_CARRIER) + DISTANCE + 
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                   (1 | AIRPORT) + (1 | AIRCRAFT_TYPE)")
+summary(glmm_5)
+
+# Convergence error, RMSE worse at 3.5788. Leave aircraft type as fixed effect.
+
+# GLMM6: random intercept for carrier, airport (all), year
+glmm_6 <- glmm(df.train, df.test, "GROUND_TIME ~ (1 | UNIQUE_CARRIER) + DISTANCE + 
+                                   DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                                   (1 | AIRPORT) + AIRCRAFT_TYPE_3 + (1 | YEAR)")
+summary(glmm_6)
+
+# RMSE worse at 3.5780. Does capture pandemic year effect (2020 two minutes faster than 2019) but 2021 prediction because increasing trend is not captured.
+
+# Final GLMM has random effects for unique carrier and airport (all), otherwise same as fixed effects model
+glmm_final <- glmm_3
+ranef(glmm_final)
+summary(glmm_final)
+
+# Clean up, except for glmm_2
+rm(glmm_1, glmm_3, glmm_4, glmm_5, glmm_6)
+```
+
+Grab comparative effects for airline
+
+```{r}
+# Get effects and check order
+airline_effects <- ranef(glmm_final)$UNIQUE_CARRIER %>%
+  rownames_to_column("carrier") %>%
+  rename(glmm = "(Intercept)") %>%
+  mutate(carrier2 = names(coef(glm_final))[1:14],
+         glm = coef(glm_final)[1:14])
+airline_effects
+
+# Order is aligned--remove carrier
+airline_effects$carrier2 <- NULL
+
+# Need to replace intercept (Alaska Air) with 0 for glm
+airline_effects$glm[1] <- 0
+
+# Now to make comparable, add Alaska Air effect from glmm to entire glm
+airline_effects$glm <- airline_effects$glm + airline_effects$glmm[1]
+
+# Would be nice to organize by number of flights
+num_flights_by_carrier <- df.reduce %>%
+  group_by(UNIQUE_CARRIER) %>%
+  summarize(NUM_FLIGHTS = sum(DEPARTURES_PERFORMED))
+
+# These are in order, but will join anyhow for repeatability and then sort
+airline_effects <- inner_join(airline_effects, num_flights_by_carrier,
+                              by = c("carrier" = "UNIQUE_CARRIER")) %>%
+  arrange(desc(NUM_FLIGHTS))
+
+# View rounded effects
+airline_effects %>% mutate(glm = round(glm, 2), glmm = round(glmm, 2))
+
+# Write to .csv file for easier transfer
+write.csv(airline_effects, "airline_effects.csv")
+
+# UPS is significantly different in two models. Effect from adding all levels of airport? See about glmm_2 as comparison...
+airline_effects_alt <- ranef(glmm_2)$UNIQUE_CARRIER %>%
+  rownames_to_column("carrier") %>%
+  rename(glmm = "(Intercept)") %>%
+  mutate(carrier2 = names(coef(glm_final))[1:14],
+         glm = coef(glm_final)[1:14])
+airline_effects_alt$carrier2 <- NULL
+airline_effects_alt$glm[1] <- 0
+airline_effects_alt$glm <- airline_effects_alt$glm + airline_effects_alt$glmm[1]
+airline_effects_alt %>% mutate(glm = round(glm, 2), glmm = round(glmm, 2))
+
+# Yep, getting more levels of airport helped to clarify carrier
+rm(glmm_2)
+```
+Would be good to isolate why UPS is strongly affected by the addition of other airports.
+
+```{r}
+# Get summary of just UPS
+summary(df.train[df.train$UNIQUE_CARRIER == "United Parcel Service",])
+
+# Lots of flights to Louisville, KY. Did others have flights there to help set random effect?
+summary(df.train[df.train$AIRPORT == "SDF",])
+
+# One Southwest airlines flight there...
+summary(df.train[df.train$AIRPORT == "SDF" &
+                 df.train$UNIQUE_CARRIER != "United Parcel Service", "GROUND_TIME"])
+
+# UPS to SDF
+summary(df.train[df.train$AIRPORT == "SDF" &
+                 df.train$UNIQUE_CARRIER == "United Parcel Service", "GROUND_TIME"])
+
+# UPS not to SDF
+summary(df.train[df.train$AIRPORT != "SDF" &
+                 df.train$UNIQUE_CARRIER == "United Parcel Service", "GROUND_TIME"])
+
+# See what happens when dropping single record of Southwest to SDF and retraining GLMM
+glmm_3alt <- glmm(df.train %>% filter(AIRPORT != "SDF" | UNIQUE_CARRIER != "Southwest Airlines Co."),
+                  df.test, "GROUND_TIME ~ (1 | UNIQUE_CARRIER) + DISTANCE + 
+                            DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                            (1 | AIRPORT) + AIRCRAFT_TYPE_3")
+summary(glmm_3alt)
+ranef(glmm_3alt)
+
+# OK, that's not it. Billings?
+# Lots of flights to Louisville, KY. Did others have flights there to help set random effect?
+summary(df.train[df.train$AIRPORT == "BIL",])
+
+# Look at FedEx
+summary(df.train[df.train$UNIQUE_CARRIER == "Federal Express Corporation",])
+
+# The route to Salt Lake City looks like a good comparison among airlines.
+p <- ggplot(df.reduce[df.reduce$AIRPORT == "SLC",],
+            aes(x = UNIQUE_CARRIER, y = GROUND_TIME, weight = DEPARTURES_PERFORMED)) +
+       geom_boxplot()
+p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + ylim(0, 60)
+
+# Hmmm, hard to see complete story here...too many other factors.
+rm(glmm_3alt)
+
+```
+## Task 4
+
+Time to try Bayesian on GLM
+
+```{r}
+# Bayesian setup
+library(brms)
+library(rstan)
+options(mc.cores = parallel::detectCores())
+rstan_options(auto_write = TRUE)
+
+# Fit the Bayesian model based on the GLM. It is too expensive to include weights, so run without weights.
+brm_final <- brm("GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+               PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3", df.train, seed = 153)
+
+# Need to fit unweighted GLM for comparison
+glm_uw <- lm("GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+               PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3", df.train)
+
+# Look at summaries
+summary(glm_uw)
+summary(brm_final)
+
+```
+
+The unweighted Bayesian and GLM have similar point estimates but Bayesian gives uncertainty and can produce predictions capturing this uncertainty, which is done now.
+
+```{r}
+# Get all predictions
+brm_predictions = predict(brm_final, newdata = df.test, summary = FALSE)
+
+# Each column has 4000 predictions for a single value of df.test. Gather just the mean and the variance, which can be later combined.
+brm_mean = apply(brm_predictions, 2, mean)
+brm_var = apply(brm_predictions, 2, var)
+
+# Remove expensive predictions in memory
+rm(brm_predictions)
+
+# Summarize total mean and variance of predictions on weighted basis
+brm_pred <- df.test %>%
+  mutate(PRED_MEAN = brm_mean,
+         PRED_VAR = brm_var,
+         PRED_MEAN_W = PRED_MEAN * DEPARTURES_PERFORMED,
+         PRED_VAR_W = PRED_VAR * DEPARTURES_PERFORMED) %>%
+  group_by(UNIQUE_CARRIER) %>%
+  summarize(NUM_FLIGHTS = sum(DEPARTURES_PERFORMED),
+            TOTAL_MEAN = sum(PRED_MEAN_W),
+            TOTAL_VAR = sum(PRED_VAR_W)) %>%
+  mutate(MEAN_W = TOTAL_MEAN / NUM_FLIGHTS,
+         VAR_W = TOTAL_VAR / NUM_FLIGHTS,
+         SD_W = VAR_W^(1/2))
+
+
+# # Look at plots for Bayesian
+# plot(brm_final, ask = FALSE)
+
+```
+
+
+## Task 5
+
+Time to fit a random forest independently. Even though an unweighted fitting is used, the test metric may be weighted.
+
+```{r}
+library(randomForest)
+
+# rf1: start with final GLM, unweighted random forest
+set.seed(153)
+rf1 <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train)
+
+# Look at test metric
+rmse_m_w(df.test, rf1)
+
+# GLM is 3.5774 and random forest 3.8456, not as good a start
+
+# Note mtry
+rf1$mtry
+
+# Test different values of mtry, starting with 3
+set.seed(153)
+rf2a <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train,
+                     mtry = 3)
+rmse_m_w(df.test, rf2a)
+
+# Hmmm, 4.0189 is worse. What about 1?
+set.seed(153)
+rf2b <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train,
+                     mtry = 1)
+rmse_m_w(df.test, rf2b)
+
+# And that's 3.8803. mtry = 2 is a good choice!
+
+# How about ntree?
+set.seed(153)
+rf2c <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train,
+                     mtry = 2, ntree = 250)
+rmse_m_w(df.test, rf2c)
+
+set.seed(153)
+rf2d <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train,
+                     mtry = 2, ntree = 1000)
+rmse_m_w(df.test, rf2d)
+
+set.seed(153)
+rf2e <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train,
+                     mtry = 2, ntree = 100)
+rmse_m_w(df.test, rf2e)
+# 100/250/500/1000 trees are 3.8397/3.8574/3.8456/3.8366
+# A bit lucky with 100 trees...trying different seed
+set.seed(370)
+rf2f <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train,
+                     mtry = 2, ntree = 100)
+rmse_m_w(df.test, rf2f)
+
+set.seed(370)
+rf2g <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train,
+                     mtry = 2, ntree = 500)
+rmse_m_w(df.test, rf2g)
+
+# OK, 100 trees on new seed was 3.9817, too different, while 500 was 3.8523, stable enough. How about not replacing?
+set.seed(370)
+rf2h <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train,
+                     mtry = 2, ntree = 500, replace = FALSE)
+rmse_m_w(df.test, rf2h)
+
+# Not as good...OK, fine, the default settings were good, going to move on.
+rm(rf2a, rf2b, rf2c, rf2d, rf2e, rf2f, rf2g, rf2h)
+
+```
+
+Can start to refine model with new seed (don't want to abuse single seed too much) by doing drop 1 tests manually, based on importance
+
+```{r}
+# Fit baseline with new seed
+set.seed(371)
+rf3 <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                    PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train,
+                    importance = TRUE)
+rmse_m_w(df.test, rf3)
+
+# Look at importance to prioritize drop 1 process
+varImpPlot(rf3)
+
+# Set on left more related to our test metric, so will proceed from there. Baseline RMSE is 3.8393.
+
+# Drop aircraft type -> 4.0942...OK, keeping that!
+set.seed(371)
+rf4a <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16, data = df.train)
+rmse_m_w(df.test, rf4a)
+
+# Drop winter instead -> 4.0398
+set.seed(371)
+rf4b <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train)
+rmse_m_w(df.test, rf4b)
+
+# Drop direction -> 4.0376
+set.seed(371)
+rf4c <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train)
+rmse_m_w(df.test, rf4c)
+
+# Drop has passengers -> 3.9042
+set.seed(371)
+rf4d <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train)
+rmse_m_w(df.test, rf4d)
+
+# Drop distance -> 4.0600
+set.seed(371)
+rf4e <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train)
+rmse_m_w(df.test, rf4e)
+
+# Drop passengers -> 3.9562
+set.seed(371)
+rf4f <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train)
+rmse_m_w(df.test, rf4f)
+
+# Drop airport 16 -> 3.5304
+set.seed(371)
+rf4g <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRCRAFT_TYPE_3, data = df.train)
+rmse_m_w(df.test, rf4g)
+
+# Oh, that's interesting. Will come back to that. Checking carrier -> 4.1675
+set.seed(371)
+rf4h <- randomForest(GROUND_TIME ~ DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3, data = df.train)
+rmse_m_w(df.test, rf4h)
+
+# Note winner at this point
+rf4 <- rf4g
+rm(rf4a, rf4b, rf4c, rf4d, rf4e, rf4f, rf4g, rf4h)
+
+```
+
+So, too many airports, it seems, but there are options for fewer airports...and more aircraft types. Will try those next, shifting to new seed.
+
+```{r}
+# Measure no aircraft on new seed
+set.seed(407)
+rf5a <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRCRAFT_TYPE_3, data = df.train)
+rmse_m_w(df.test, rf5a)
+
+# Baseline is similar 3.5366
+
+# Now try with fewer airports than 16
+
+# 1 airport -> 3.5026...an improvement
+set.seed(407)
+rf5b <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRCRAFT_TYPE_3 + AIRPORT_1, data = df.train)
+rmse_m_w(df.test, rf5b)
+
+# 4 airports -> 3.5075...not as good
+set.seed(407)
+rf5c <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRCRAFT_TYPE_3 + AIRPORT_4, data = df.train)
+rmse_m_w(df.test, rf5c)
+
+# 8 airports -> 3.6315
+set.seed(407)
+rf5d <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRCRAFT_TYPE_3 + AIRPORT_8, data = df.train)
+rmse_m_w(df.test, rf5d)
+
+# OK, 1 airport it is. Any improvement from aircraft type?
+set.seed(407)
+rf5e <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRCRAFT_TYPE_8 + AIRPORT_1, data = df.train)
+rmse_m_w(df.test, rf5e)
+
+# Nope. 3.5790 > 3.5026 for 3 aircraft type. Stay here.
+rf5 <- rf5b
+rm(rf5a, rf5b, rf5c, rf5d, rf5e)
+
+```
+
+Curious whether random forest can do anything with variables GLM couldn't handle
+
+```{r}
+# Try total flights in month -> 3.7542...nope
+set.seed(407)
+rf6a <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRCRAFT_TYPE_3 + AIRPORT_1 + TOT_DEPARTURES,
+                     data = df.train)
+rmse_m_w(df.test, rf6a)
+
+# How about number of flights, since not used as weight? 3.3843, a distinct improvement.
+set.seed(407)
+rf6b <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRCRAFT_TYPE_3 + AIRPORT_1 + DEPARTURES_PERFORMED,
+                     data = df.train)
+rmse_m_w(df.test, rf6b)
+
+# Large airport may help once again. Or not...3.5415
+set.seed(407)
+rf6c <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                       PASSENGERS + WINTER + AIRCRAFT_TYPE_3 + AIRPORT_1 + DEPARTURES_PERFORMED +
+                       LARGE_AIRPORT,
+                     data = df.train)
+rmse_m_w(df.test, rf6c)
+
+# OK, going to call rf5 the final model
+rf_final <- rf6b
+rm(rf1, rf3, rf4, rf5, rf6a, rf6b, rf6c)
+
+```
+
+Time to build the stacked model...will use weighted LM even though RF is unweighted.
+
+```{r}
+# Need to newly train stage-0 models separately on subsets of training data, including space for predictions
+set.seed(343)
+stack.train <- df.train %>%
+  mutate(SET = sample(1:5, nrow(df.train), replace = TRUE),
+         GLM_PRED = 0, RF_PRED = 0)
+
+# Cycle through sets, fit both models, and fill predictions
+for (holdout in 1:5) {
+  
+  # Fit GLM (linear model) on all but holdout and predict holdout
+  lm_temp <- lm(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                  PASSENGERS + WINTER + AIRPORT_16 + AIRCRAFT_TYPE_3,
+                data = stack.train,
+                weights = DEPARTURES_PERFORMED,
+                subset = SET != holdout)
+  stack.train$GLM_PRED[stack.train$SET == holdout] <-
+    predict(lm_temp, stack.train %>% filter(SET == holdout))
+  
+  # Now do same for random forest
+  set.seed(153)
+  rf_temp <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                          PASSENGERS + WINTER + AIRCRAFT_TYPE_3 + AIRPORT_4,
+                          data = stack.train,
+                          subset = SET != holdout)
+  stack.train$RF_PRED[stack.train$SET == holdout] <-
+    predict(rf_temp, stack.train %>% filter(SET == holdout))
+}
+rm(lm_temp, rf_temp)
+
+
+# Fit stacked model with weights
+stack_model <- lm(formula = "GROUND_TIME ~ GLM_PRED + RF_PRED",
+                  data = stack.train,
+                  weights = DEPARTURES_PERFORMED)
+summary(stack_model)
+
+# For testing, the models glm_final and rf_final are already trained as stage-0 models on the full training data, so do not need to refit these.
+
+# Gather data for testing stacked model
+stack.test <- df.test %>%
+  mutate(GLM_PRED = predict(glm_final, df.test),
+         RF_PRED = predict(rf_final, df.test))
+
+# See how each stage-0 model does compared to stage-1 model, all on weighted basis
+rmse_m_w(df.test, glm_final)
+rmse_m_w(df.test, rf_final)
+rmse_m_w(stack.test, stack_model)
+
+# Fit another stacked model with weights and common predictors
+stack_model_2 <- lm(formula = "GROUND_TIME ~ GLM_PRED + RF_PRED + UNIQUE_CARRIER + DISTANCE +
+                               DIRECTION + HAS_PASSENGERS + PASSENGERS + WINTER +
+                               AIRCRAFT_TYPE_3 + AIRPORT_1",
+                    data = stack.train,
+                    weights = DEPARTURES_PERFORMED)
+summary(stack_model_2)
+rmse_m_w(stack.test, stack_model_2)
+
+# Try model with predictions only, no intercept
+stack_model_3 <- lm(formula = "GROUND_TIME ~ GLM_PRED + RF_PRED - 1",
+                  data = stack.train,
+                  weights = DEPARTURES_PERFORMED)
+summary(stack_model_3)
+rmse_m_w(stack.test, stack_model_3)
+
+# Last and simplest of these is best!
+
+
+```
+
+## Task 6
+
+Applying pdp partial on random forest, with caution that some combinations of values averaged in will not be true values.
+
+```{r}
+library(pdp)
+
+# Reminder of final GLM
+summary(glm_final)
+
+# Variable importance on final GLM
+rf_imp <- randomForest(GROUND_TIME ~ UNIQUE_CARRIER + DISTANCE + DIRECTION + HAS_PASSENGERS +
+                     PASSENGERS + WINTER + AIRCRAFT_TYPE_3 + AIRPORT_1 + DEPARTURES_PERFORMED,
+                     data = df.train, importance = TRUE)
+importance(rf_imp, type = 1)
+
+# Start with distance. Prefer to use actual values since there are not too many and all are discrete. Using the test data!
+pred_grid <- df.test %>% group_by(DISTANCE) %>% summarize()
+partial(rf_final, train = df.test, pred.var = "DISTANCE", pred.grid = pred_grid,
+        plot = TRUE, rug = TRUE)
+
+# Do passengers next, also including closely related passenger indicator
+partial(rf_final, train = df.test, pred.var = c("PASSENGERS", "HAS_PASSENGERS"),
+        plot = TRUE, rug = TRUE)
+
+# Looking at unique carrier now
+uq <- partial(rf_final, train = df.test, pred.var = "UNIQUE_CARRIER")
+
+# Align to GLMM scaling (nicely centered) by setting Alaska Airlines to 3.0
+data.frame(UNIQUE_CARRIER = uq$UNIQUE_CARRIER, yhat_adj = uq$yhat - uq$yhat[1] + 3)
+
+# Check out United Air
+summary(df.test[df.test$UNIQUE_CARRIER == "United Air Lines Inc.",])
+
+# Check out DEN
+summary(df.test[df.test$AIRPORT == "DEN",])
+
+
+```
+## Task 7
+
+Get chart of GLMM effects for airport in order
+
+```{r}
+glmm_airports <- inner_join(
+  data.frame(AIRPORT = levels(df.train$AIRPORT_16)) %>%  filter(AIRPORT != "OTHER"),
+  data.frame(IMPACT = round(ranef(glmm_final)$AIRPORT[,1], 0),
+             AIRPORT = row.names(ranef(glmm_final)$AIRPORT)),
+  by = c("AIRPORT"))
+
+# Also, check on GLMM predictions vs. actual in 2021 by airline
+airline_2021 <- df.test %>%
+  select(UNIQUE_CARRIER, GROUND_TIME, DEPARTURES_PERFORMED) %>%
+  mutate(GLMM = predict(glmm_final, df.test, allow.new.levels = TRUE)) %>%
+  group_by(UNIQUE_CARRIER) %>%
+  summarize(PREDICTED = sum(GLMM*DEPARTURES_PERFORMED)/sum(DEPARTURES_PERFORMED),
+            ACTUAL = sum(GROUND_TIME*DEPARTURES_PERFORMED)/sum(DEPARTURES_PERFORMED)) %>%
+  mutate(RESIDUAL = ACTUAL - PREDICTED)
+
+# And note total passengers in BOI
+df.reduce %>%
+  group_by(YEAR) %>%
+  summarize(TOT_PASSENGERS = sum(PASSENGERS*DEPARTURES_PERFORMED))
+
+# Total performance of model in 2021
+df.test %>%
+  select(UNIQUE_CARRIER, GROUND_TIME, DEPARTURES_PERFORMED) %>%
+  mutate(GLMM = predict(glmm_final, df.test, allow.new.levels = TRUE)) %>%
+  group_by() %>%
+  summarize(PREDICTED = sum(GLMM*DEPARTURES_PERFORMED)/sum(DEPARTURES_PERFORMED),
+            ACTUAL = sum(GROUND_TIME*DEPARTURES_PERFORMED)/sum(DEPARTURES_PERFORMED)) %>%
+  mutate(RESIDUAL = ACTUAL - PREDICTED)
+
+# And note total flights
+num_departures %>%
+  group_by(YEAR) %>%
+  summarize(TOT_DEPARTURES = sum(TOT_DEPARTURES))
+
+
+```
+

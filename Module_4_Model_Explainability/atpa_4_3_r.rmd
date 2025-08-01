@@ -1,0 +1,378 @@
+---
+title: "ATPA 4.3"
+---
+
+CHUNK 0. There are many different packages used in this section. Install the ones you need.
+```{r}
+# install.packages("caret")
+# install.packages("randomForest")
+# install.packages("pdp")
+# install.packages("ranger")
+# install.packages("shapr")
+# install.packages("SHAPforxgboost")
+# install.packages("xgboost")
+# install.packages("Matrix")
+# install.packages("ROCR")
+```
+
+CHUNK 1: Load and view the data.
+```{r}
+rm(list = ls()) # Start with a clean environment.
+library(tidyverse)
+library(caret)
+set.seed(55416)
+
+# Load the data
+dental <- read.csv("dental.csv", stringsAsFactors = TRUE)
+dental$occupation_group <- relevel(dental$occupation_group, ref = "UNKNOWN") # Set UNKNOWN as the base level as it has the most observations
+summary(dental)
+
+train_index <- createDataPartition(dental$Target, times = 1, p = 0.75, list = FALSE)
+dental_train <- dental[train_index, ]
+dental_test <- dental[-train_index, ]
+```
+
+CHUNK 2: Fit an ordinary linear model, a GLM, and a random forest to the observations. We are not interested in which is best, only how to explain them.
+```{r}
+# Fit an OLS model using the caret package function "train" so that the varImp function is available
+
+ols <- train(Target ~ .,
+  method = "glm", data = dental_train,
+  family = gaussian
+)
+summary(ols)
+
+# Fit a GLM with a log link
+glm <- train(Target ~ .,
+  method = "glm", data = dental_train,
+  family = gaussian(link = "log")
+)
+summary(glm)
+
+# Fit a random forest.
+set.seed(60373)
+
+# set up values for the tuning parameter of the number of variables sampled at each split
+rfGrid <- expand.grid(mtry = c(1:3))
+
+# set the validation method as 5-fold cross-validation
+ctrl <- trainControl(
+  method = "cv",
+  number = 5
+)
+rf <- train(Target ~ .,
+  data = dental_train,
+  method = "rf",
+  trControl = ctrl,
+  tuneGrid = rfGrid,
+  ntree = 250, # The default is 500, setting to 250 will save some computation time
+  importance = TRUE
+)
+plot(rf)
+```
+
+CHUNK 3: Variable importance plots
+```{r}
+# varImp is part of the caret package. Run ?varImp to see the models available for this function
+plot(varImp(ols), main = "OLS Variable Importance Plot")
+plot(varImp(glm), main = "GLM Variable Importance Plot")
+plot(varImp(rf, type = 1), main = "Random Forest Variable Importance Plot") # Type = 1 uses the method described in the course
+```
+
+CHUNK 4: PDP plots for age, bmi, income, and occupation using the OLS model.
+```{r}
+library(pdp)
+partial(ols, train = dental_train, pred.var = "age", plot = TRUE, rug = TRUE)
+# plot = TRUE has the function generate a plot. If FALSE the function returns the values.
+# smooth = TRUE adds a smoothed version of the curve.
+# rug = TRUE produces the eleven tick marks above the horizontal axis. These are the min, max, and deciles of the age variable. This is a way to see where exposures are low.
+partial(ols, train = dental_train, pred.var = "bmi", plot = TRUE, rug = TRUE)
+partial(ols, train = dental_train, pred.var = "familyIncome", plot = TRUE, rug = TRUE)
+partial(ols, train = dental_train, pred.var = "occupation_group", plot = TRUE, rug = TRUE)
+```
+
+The age coefficient is 6.4 and from the graph the slope is roughly (1000 - 500)/(85 - 5) = 6.25.
+The bmi coefficient is -10.05 and from the graph the slope is roughly (300 - 900)/(65 - 5) = -10.
+The coefficient for MANAGEMENT is -153.8 and the difference from the base is roughly 625 - 775 = -150.
+
+CHUNK 5: PDP for the GLM
+```{r}
+partial(glm, train = dental_train, pred.var = "age", plot = TRUE, rug = TRUE)
+partial(glm, train = dental_train, pred.var = "bmi", plot = TRUE, rug = TRUE)
+partial(glm, train = dental_train, pred.var = "familyIncome", plot = TRUE, rug = TRUE)
+partial(glm, train = dental_train, pred.var = "occupation_group", plot = TRUE, rug = TRUE)
+```
+
+Checking out the "slope" of age curve, using exponential growth, the growth rate is about (1050/550)^(1/80) - 1 = 0.0081, very close to the estimated coefficient of 0.0082.
+
+CHUNK 6: PDP for the random forest.
+```{r}
+partial(rf, train = dental_train, pred.var = "age", plot = TRUE, rug = TRUE)
+partial(rf, train = dental_train, pred.var = "bmi", plot = TRUE, rug = TRUE)
+partial(rf, train = dental_train, pred.var = "familyIncome", plot = TRUE, rug = TRUE)
+partial(rf, train = dental_train, pred.var = "occupation_group", plot = TRUE, rug = TRUE)
+```
+
+CHUNK 7: A PDP for two variables.
+```{r}
+partial(rf, train = dental_train, pred.var = c("age", "familyIncome"), plot = TRUE, rug = TRUE)
+```
+
+CHUNK 8: Fit a GLM to the predictions of the random forest model.
+```{r}
+
+# Obtain the random forest predictions
+prediction <- predict(rf)
+
+# Create a dataframe for fitting the GLM
+dental_train_surrogate <- dental_train
+dental_train_surrogate$Target <- prediction # Change the actual target to be the random forest predictions
+
+# Fit the surrogate GLM
+glm_surrogate <- train(Target ~ .,
+  method = "glm", data = dental_train_surrogate,
+  family = gaussian(link = "log")
+)
+summary(glm_surrogate)
+```
+
+CHUNK 9: ICE plot for age using the OLS model.
+```{r}
+partial(ols, train = dental_train, pred.var = "age", ice = TRUE, plot = TRUE, rug = TRUE)
+# ice = TRUE has it make an ICE plot rather than a PDP plot
+
+set.seed(11111)
+train_index2 <- createDataPartition(dental_train$age, times = 1, p = 0.05, list = FALSE)
+dental_train_sample <- dental_train[train_index2, ] # Sample 5% stratifying on age
+partial(ols, train = dental_train_sample, pred.var = "age", ice = TRUE, plot = TRUE, rug = TRUE)
+```
+
+CHUNK 10: ICE plot for age using the random forest with only the sampled data. Also set alpha = 0.1 to make the lines more transparent.
+```{r}
+partial(rf, train = dental_train_sample, pred.var = "age", ice = TRUE, plot = TRUE, alpha = 0.1, rug = TRUE)
+```
+
+CHUNK 11: Use SHAP to explain the ordinary regression model.
+```{r}
+library(shapr)
+
+# Need to binarize the data and rename the levels of occupation with no spaces
+names(dental)[names(dental) == "occupation_group"] <- "og"
+levels(dental$og) <- c("UNKNOWN", "MANAGEMENT", "PROFESSIONAL", "SERVICE", "SALES", "ADMIN", "PRODUCTION", "OTHER")
+dummies <- dummyVars(Target ~ ., data = dental, fullRank = TRUE)
+dental.b <- as.data.frame(predict(dummies, newdata = dental))
+dental.b$Target <- dental$Target
+dental.train.b <- dental.b[train_index, ]
+dental.test.b <- dental.b[-train_index, ]
+obs2 <- dental.test.b[c(1, 13), ] # These are the two observations from the test set to which SHAP will be applied
+
+# Refit the OLS model
+ols2 <- glm(Target ~ ., data = dental.train.b)
+
+summary(ols2)
+predict(ols2, obs2)
+
+set.seed(54321)
+x_explain <- obs2 %>% select(-Target)
+x_train <- dental.train.b %>% select(-Target)
+mean <- mean(dental.train.b$Target)
+explanation <- explain(ols2, x_explain = x_explain, x_train = x_train, phi0 = mean, approach = "empirical", iterative = FALSE) # Setting to FALSE uses an exact method, which can take a lot of time when there are many variables
+plot(explanation, index_x_explain = 1:2)
+shapvals <-as.data.frame(explanation$shapley_values_est) # Obtain the values that were plotted
+shapvals
+rowSums(shapvals[,c(-1)]) # Sum the values and note they are identical to the original predictions
+
+```
+
+CHUNK 12: Use SHAP to explain a random forest model.
+```{r}
+library(ranger) # This random forest package produces output compatible with shapr.
+# Refit the rf model using the binarized data
+rf2 <- ranger(Target ~ ., data = dental.train.b, write.forest = TRUE, importance = "impurity")
+rf2$variable.importance / sum(rf2$variable.importance) # Obtain the relative importance of the variables using ranger output
+
+pred <- predict(rf2, data = obs2, type = "response")
+pred$predictions
+
+set.seed(54321)
+x_explain <- obs2 %>% select(-Target)
+x_train <- dental.train.b %>% select(-Target)
+mean <- mean(dental.train.b$Target)
+explanation <- explain(rf2, x_explain = x_explain, x_train = x_train, phi0 = mean, approach = "empirical", iterative = FALSE) # Setting to FALSE uses an exact method, which can take a lot of time when there are many variables
+plot(explanation, index_x_explain = 1:2)
+shapvals <-as.data.frame(explanation$shapley_values_est) # Obtain the values that were plotted
+shapvals
+rowSums(shapvals[,c(-1)]) # Sum the values and note they are identical to the original predictions
+```
+
+CHUNK 13: Clear the environment, load needed packages, and reload and prepare the data.
+```{r}
+rm(list = ls()) # Start with a clean environment.
+
+library(Matrix)
+library(xgboost)
+library(SHAPforxgboost)
+
+set.seed(55416)
+
+# Load the data
+dental <- read.csv("dental.csv", stringsAsFactors = TRUE)
+
+dental$occupation_group <- relevel(dental$occupation_group, ref = "UNKNOWN") # Ensure unknown is the base level
+summary(dental)
+
+train_index <- createDataPartition(dental$Target, times = 1, p = 0.75, list = FALSE)
+dental.train <- dental[train_index, ]
+dental.test <- dental[-train_index, ]
+```
+
+CHUNK 14: Fit the model and produce SHAP output and graphs.
+```{r}
+
+x_matrix <- as.matrix(sparse.model.matrix(Target ~ ., data = dental)[, -1])
+
+x_matrix_train <- x_matrix[train_index, ]
+output_vector_train <- dental.train$Target
+x_matrix_test <- x_matrix[-train_index, ]
+output_vector_test <- dental.test$Target
+
+dtrain <- xgb.DMatrix(x_matrix_train, label = output_vector_train)
+dtest <- xgb.DMatrix(x_matrix_test, label = output_vector_test)
+
+set.seed(32323)
+model <- xgb.train(data = dtrain, watchlist = list(train = dtrain, test = dtest), max_depth = 4, eta = 0.01, nrounds = 750, objective = "reg:squarederror", print_every_n = 100)
+
+predict(model, x_matrix_test[c(1, 13), ])
+
+xgb.importance(model = model)
+
+## SHAPforxgboost
+
+shap_values <- shap.values(xgb_model = model, X_train = x_matrix_train)
+shap_scores <- shap_values$shap_score
+importance <- colSums(abs(shap_scores)) / sum(colSums(abs(shap_scores)))
+importance <- as.data.frame(sort(importance, decreasing = TRUE))
+importance
+
+shap_values.pred <- shap.values(xgb_model = model, X_train = x_matrix_test)
+shap_scores.pred <- shap_values.pred$shap_score
+bias <- as.numeric(shap_values$BIAS0)
+pred <- rowSums(shap_scores.pred[c(1, 13), ]) + bias
+pred
+
+# Prepare data for plotting
+# Use intervals for age and bmi
+age_cut <- cut(dental.train$age, breaks = seq(from = 5.5, to = 85.5, by = 5))
+bmi_cut <- cut(dental.train$bmi, breaks = c(9, quantile(dental.train$bmi, c(.2, .4, .6, .8)), 65))
+
+# Put the relevant values in a dataframe
+plot_data <- data.frame(Age = age_cut, Bmi = bmi_cut, SHAP = shap_scores$age)
+
+# Plot mean SHAP scores by age interval
+library(dplyr)
+ageplot <- plot_data %>%
+  group_by(Age) %>%
+  summarize(AvgSHAP = mean(SHAP))
+
+p1 <- ggplot(data = ageplot, aes(x = Age, y = AvgSHAP)) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  geom_bar(stat = "identity")
+p1
+
+# Plot the mean SHAP scores by age interval but split by bmi interval
+age_bmiplot <- plot_data %>%
+  group_by(Age, Bmi) %>%
+  summarize(AvgSHAP = mean(SHAP))
+
+mycols <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+p2 <- ggplot(data = age_bmiplot, aes(fill = Bmi, x = Age, y = AvgSHAP)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_fill_manual(values = mycols)
+p2
+
+```
+
+CHUNK 15: Clear the environment and set up a new data set with a binary outcome for the target
+```{r}
+library(caret)
+library(pdp)
+rm(list = ls())
+
+dental2 <- read.csv(file = "dental.csv", stringsAsFactors = TRUE)
+dental2$Target <- factor(dental2$Target > 300)
+dental2$occupation_group <- relevel(dental2$occupation_group, ref = "UNKNOWN") # Set UNKNOWN as the base level as it has the most observations
+summary(dental2)
+
+set.seed(909)
+train_index <- createDataPartition(dental2$Target, times = 1, p = 0.75, list = FALSE)
+dental2_train <- dental2[train_index, ]
+dental2_test <- dental2[-train_index, ]
+
+glm2 <- train(Target ~ .,
+  method = "glm", data = dental2_train,
+  family = binomial(link = "logit")
+)
+summary(glm2)
+
+# Model agnostic methods work on classification problems
+plot(varImp(glm2), main = "GLM Variable Importance Plot")
+partial(glm2, train = dental2_train, pred.var = "age", type = "classification", which.class = 2, prob = TRUE, plot = TRUE, rug = TRUE) # The which.class argument says to use the second predicted item, relating to being TRUE. prob = TRUE puts the plot on the probability scale, not the raw liner prediction.
+```
+
+CHUNK 16: Calculate predictions for the glm model and plot a lift chart
+```{r}
+
+library(ROCR)
+
+# Extract the predicted probability of a positive response
+pred2 <- predict(glm2, newdata = dental2_test, type = "prob")["TRUE"]
+
+# True positive responses
+truth <- ifelse(dental2_test$Target == TRUE, 1, 0)
+
+# Generate an object that compares prediction against truth
+compare_pred <- prediction(pred2, truth)
+
+# Plot lift chart
+lift <- performance(compare_pred, measure = "lift", x.measure = "rpp")
+plot(lift, main = "Lift Chart")
+abline(h = 1, col = "red")
+```
+
+CHUNK 17: Construct a gain chart for the GLM model
+```{r}
+# Construct a gain chart
+gain <- performance(compare_pred, "tpr", "rpp")
+plot(gain, main = "Gain Chart")
+abline(a = 0, b = 1, col = "red")
+```
+
+CHUNK 18: Fit a neural network
+```{r}
+library(ANN2)
+
+X <- model.matrix(lm(Target ~ . - 1, dental2_train))
+nn_mod <- neuralnetwork(
+  X = X, y = dental2_train[, 1],
+  hidden.layers = 10, regression = FALSE,
+  standardize = TRUE, loss.type = "log",
+  activ.functions = "relu", n.epochs = 200,
+  learn.rates = 1e-03, val.prop = 0.1 / 0.9,
+  random.seed = 1
+)
+
+test_X <- model.matrix(lm(Target ~ . - 1, dental2_test))
+nnpreds <- predict(nn_mod, test_X)$probabilities[, 2]
+```
+
+CHUNK 19: Construct a gain chart to compare the fit between the GLM model and the neural network
+```{r}
+compare_pred_nn <- prediction(nnpreds, truth)
+
+gain_nn <- performance(compare_pred_nn, "tpr", "rpp")
+plot(gain, main = "Gain Chart", col = "green")
+plot(gain_nn, main = "Gain Chart", col = "blue", add = TRUE)
+abline(a = 0, b = 1, col = "red")
+```

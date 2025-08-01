@@ -1,0 +1,274 @@
+---
+  title: "ATPA: Case Study"
+---
+
+CHUNK 1: Read in the data, perform exploratory data analysis
+```{r}
+library(tidyverse)
+library(nnet) # For class.ind()
+
+bf_all <- read_csv("bodyfat.csv")
+
+bf_all %>%
+  select(-ID, -State, -Set) %>%
+  pivot_longer(-BodyFat, names_to = "var", values_to = "value") %>%
+  ggplot(aes(x = value, y = BodyFat)) +
+  geom_point() +
+  facet_wrap(~var, scales = "free")
+
+mycols <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7") # To optimize for colorblind viewers
+
+bf_all %>%
+  select(BodyFat, State) %>%
+  ggplot(aes(x = State, y = BodyFat, fill = State)) +
+  geom_boxplot() +
+  scale_fill_manual(values = mycols)
+
+bf_all_OH <- bf_all %>%
+  cbind(class.ind(bf_all$State)) # One hot encode the factor variable
+
+bf_all %>%
+  ggplot() +
+  geom_histogram(aes(x = BodyFat))
+
+bf_train <- bf_all_OH %>% filter(Set == "Train")
+bf_test <- bf_all_OH %>% filter(Set == "Test")
+```
+
+CHUNK 2: Pre-ATPA Models (null, linear model, and regression tree)
+```{r}
+# Fit a null model for comparison
+bf_test$nullPred <- mean(bf_train$BodyFat)
+
+lmfit1 <- lm(BodyFat ~ Weight + Abdomen + Forearm + Wrist + State, data = bf_train)
+summary(lmfit1)
+plot(lmfit1)
+bf_test$LMPred <- predict(lmfit1, newdata = bf_test)
+
+library(rpart)
+library(rpart.plot)
+set.seed(555)
+treefit2 <- rpart(BodyFat ~ Weight + Abdomen + Forearm + Wrist + State,
+  data = bf_train, method = "anova",
+  control = rpart.control(minbucket = 5, cp = 0, maxdepth = 20)
+) # Build a tree with considerable depth
+treefit2$cptable # This table shows the error via cross validation. It shows the smallest error is at 9 splits
+treefit2.prune <- prune(treefit2, cp = treefit2$cptable[which.min(treefit2$cptable[, "xerror"]), "CP"]) # This code finds that tree
+rpart.plot(treefit2.prune) # This plots the final tree
+
+bf_test$RTPred <- predict(treefit2.prune, newdata = bf_test)
+```
+
+CHUNK 3: Additive model
+```{r}
+library(mgcv)
+
+set.seed(100)
+GAMfit1 <- gam(BodyFat ~ s(Weight) + s(Abdomen) + s(Forearm) + s(Wrist) + State, data = bf_train)
+summary(GAMfit1)
+
+GAMfit2 <- gam(BodyFat ~ s(Weight) + s(Abdomen) + Forearm + s(Wrist) + State, data = bf_train)
+summary(GAMfit2)
+bf_test$GAMPred <- predict(GAMfit2, newdata = bf_test)
+```
+
+CHUNK 4: Linear mixed model
+```{r}
+library(lme4)
+
+set.seed(100)
+MMfit <- lmer(BodyFat ~ Weight + Abdomen + Forearm + Wrist + (1 | State), data = bf_train)
+summary(MMfit)
+bf_test$MMPred <- predict(MMfit, newdata = bf_test)
+```
+
+CHUNK 5: Neural network
+```{r}
+library(ANN2)
+
+set.seed(1234)
+
+x <- bf_all_OH %>%
+  select(-State, -Set, -ID, -BodyFat)
+y <- bf_all_OH$BodyFat
+
+testind <- bf_all_OH$Set == "Test"
+
+# 5-fold CV
+
+k <- 5
+set.seed(1)
+fold <- sample.int(k, sum(!testind), replace = TRUE) # fold is vector that indicates which fold an observation is assigned to
+
+# This function calculates the squared loss; it is needed because we want to calculate the loss when predictions are made on the fold that is held out
+squaredloss <- function(y, yhat) (y - yhat)^2
+
+# Try a single layer of hidden neurons, from 5 to 15 neurons in size. This is roughly 2/3 to double the number of input variables, per guidance in Module 3.
+# Create a data frame to hold the final results
+one_layer <- data.frame(neurons = seq(from = 5, to = 15), cv = rep(0, 11))
+
+# Create an array to hold the interim results
+cvloss <- array(dim = c(5, 11))
+
+for (j in 1:11) {
+  for (i in 1:k) {
+    cvi <- neuralnetwork(
+      X = x[-testind, ][fold != i, ], y = y[-testind][fold != i],
+      hidden.layers = j + 4, regression = TRUE,
+      standardize = TRUE, loss.type = "squared",
+      activ.functions = "relu", n.epochs = 500,
+      learn.rates = 1e-03, val.prop = 0,
+      random.seed = 1
+    )
+
+    ypreds <- predict(cvi, x[fold == i, ])$predictions
+    cvloss[i, j] <- mean(mapply(squaredloss, y[fold == i], ypreds))
+  }
+}
+
+one_layer$cv <- apply(cvloss, 2, mean)
+one_layer # There is no pattern to the cv values. Try two layers with 8 neurons in the first layer 5 to 15 in the second layer
+
+# Create a data frame to hold the final results
+two_layers <- data.frame(neurons = seq(from = 5, to = 15), cv = rep(0, 11))
+
+# Create an array to hold the interim results
+cvloss <- array(dim = c(5, 11))
+
+for (j in 1:11) {
+  for (i in 1:k) {
+    cvi <- neuralnetwork(
+      X = x[-testind, ][fold != i, ], y = y[-testind][fold != i],
+      hidden.layers = c(10, j + 4), regression = TRUE,
+      standardize = TRUE, loss.type = "squared",
+      activ.functions = "relu", n.epochs = 500,
+      learn.rates = 1e-03, val.prop = 0,
+      random.seed = 1
+    )
+
+    ypreds <- predict(cvi, x[fold == i, ])$predictions
+    cvloss[i, j] <- mean(mapply(squaredloss, y[fold == i], ypreds))
+  }
+}
+
+two_layers$cv <- apply(cvloss, 2, mean)
+two_layers # 10 and 9 neurons has the smallest cv error
+
+# Train final model
+
+bodyfatnet <- neuralnetwork(
+  X = x[-testind, ], y = y[-testind],
+  hidden.layers = c(10,9), regression = TRUE,
+  standardize = TRUE, loss.type = "squared",
+  activ.functions = "relu", n.epochs = 100,
+  learn.rates = 1e-03, val.prop = 0.1 / 0.9,
+  random.seed = 1
+)
+
+plot(bodyfatnet) # Check for under/overfitting
+
+# Do predictions
+
+nnpreds <- predict(bodyfatnet, x[testind, ])$predictions
+plot(y[testind], nnpreds)
+lines(c(0, 40), c(0, 40), col = 4)
+
+bf_test$NNPred <- as.numeric(nnpreds)
+```
+
+CHUNK 6: Bayesian regression
+```{r}
+
+library(brms)
+library(rstan)
+
+options(mc.cores = parallel::detectCores())
+rstan_options(auto_write = TRUE)
+
+set.seed(100)
+
+bayesfit <- brm(BodyFat ~ Weight + Abdomen + Forearm + Wrist + State, data = bf_train, seed = 100)
+
+summary(bayesfit)
+
+bf_test$BayesPred <- predict(bayesfit, newdata = bf_test)[, 1]
+```
+
+CHUNK 7: Stacked model
+```{r}
+
+set.seed(100)
+
+stacking_train <- bf_train
+
+for (holdout in 1:5) {
+
+  # Model 1 - Linear Regression
+  LMFit <- lm(BodyFat ~ Weight + Abdomen + Forearm + Wrist + State, data = bf_train, subset = fold != holdout)
+  stacking_train$LMPred[fold == holdout] <- predict(LMFit, newdata = bf_train %>% filter(fold == holdout))
+
+  # Model 2 - Regression Tree
+  RTFit <- rpart(BodyFat ~ Weight + Abdomen + Forearm + Wrist + State,
+    data = bf_train, method = "anova",
+    control = rpart.control(minbucket = 5, cp = 0, maxdepth = 20)
+  )
+  treefit2.prune <- prune(RTFit, cp = RTFit$cptable[which(RTFit$cptable[, "nsplit"] == 9), "CP"]) # Using 9 splits as determined earlier
+
+  stacking_train$RTPred[fold == holdout] <- predict(RTFit, newdata = bf_train %>% filter(fold == holdout))
+
+  # Model 3 - Neural Net
+  NNFit <- bodyfatnet <- neuralnetwork(
+    X = x[-testind, ][fold != holdout, ], y = y[-testind][fold != holdout],
+    hidden.layers = 16, regression = TRUE, # Using 16 neurons as determined earlier
+    standardize = TRUE, loss.type = "squared",
+    activ.functions = "relu", n.epochs = 50,
+    learn.rates = 1e-03, val.prop = 0.1 / 0.9,
+    random.seed = 1
+  )
+  stacking_train$NNPred[fold == holdout] <-
+    predict(NNFit,
+      newdata = bf_train %>%
+        filter(fold == holdout) %>%
+        select(-ID, -BodyFat, -State, -Set)
+    )$predictions
+}
+
+meta <- lm(BodyFat ~ LMPred + RTPred + NNPred, data = stacking_train)
+summary(meta)
+
+# The summary indicates that the neural network does not make a significant contribution to the meta model. That model is now refit without the neural network.
+
+meta <-lm(BodyFat ~ LMPred + RTPred, data = stacking_train)
+summary(meta)
+
+# Normally with a stacked model the stage-0 models need to be refit to the training data before making predictions on the test data. However, these three models were fit earlier and the predictions added to the test data. So we can proceed directly to making predictions with the meta model.
+
+bf_test$metaPred <- predict(meta, newdata = bf_test)
+```
+
+CHUNK 8: Model Comparison
+```{r}
+
+# Obtain the errors and then the mean square errors
+bf_test %>%
+  mutate(
+    errorNull = nullPred - BodyFat,
+    errorLM = LMPred - BodyFat,
+    errorRT = RTPred - BodyFat,
+    errorGAM = GAMPred - BodyFat,
+    errorNN = NNPred - BodyFat,
+    errorBayes = BayesPred - BodyFat,
+    errorMM = MMPred - BodyFat,
+    errorStack = metaPred - BodyFat
+  ) %>%
+  summarize(
+    RMSENull = sqrt(mean(errorNull^2)),
+    RMSELM = sqrt(mean(errorLM^2)),
+    RMSERT = sqrt(mean(errorRT^2)),
+    RMSEGAM = sqrt(mean(errorGAM^2)),
+    RMSENN = sqrt(mean(errorNN^2)),
+    RMSEBayes = sqrt(mean(errorBayes^2)),
+    RMSEMM = sqrt(mean(errorMM^2)),
+    RMSEStack = sqrt(mean(errorStack^2))
+  )
+```

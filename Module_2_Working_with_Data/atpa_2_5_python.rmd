@@ -1,0 +1,102 @@
+---
+title: "ATPA 1.5 - Data Validation"
+
+---
+```{r}
+library(reticulate)
+```
+
+CHUNK 1: Load directory data
+```{python}
+import pandas as pd
+directory = pd.read_csv("directory.csv")
+directory
+```
+
+CHUNK 2: Exclude exact duplicate records
+```{python}
+# Exclude exact duplicate records
+directory.drop_duplicates()
+```
+
+CHUNK 3: Exclude duplicate of a specific variable
+```{python}
+# Exclude duplicate of a specific variable
+directory.drop_duplicates("Name")
+```
+
+CHUNK 4: Exclude duplicates, keeping the closest to end
+```{python}
+# Exclude duplicates, keeping the closest to end
+directory.drop_duplicates("Name",keep="last")
+```
+
+CHUNK 5:Exclude duplicate columns
+```{python}
+# Exclude duplicate columns
+var_data = pd.DataFrame({"Var1":[1,2,3],"Var2":[4,5,6],"Var3":[1,2,3]})
+var_data.T.drop_duplicates().T
+```
+
+CHUNK 6: Exercise 2.5.1
+```{python}
+flights = pd.read_csv("flights.csv")
+flights.sched_dep_time.describe()
+```
+
+CHUNK 7: Exercise 2.5.2
+```{python}
+youth_risk <- read_csv("youth_risk.csv")
+
+# 1. Check for duplicate columns that repeat the same values or the same information.
+
+# 2. Check for duplicate rows.
+
+# 3. The percentage values are recorded as the variable Data_Value. Check that all those values are in the proper domain.
+
+# 4. Check that the Data_Value falls within the interval of Low_Confidence_Interval to High_Confidence_Interval
+
+# 5. The Data_Value for individual strata should be correlated with the Data_Value for the total sample within each state. Find the correlation between the Total Data_Value and the 11th Grade Strata by state. To do this, filter by Stratification1 being equal to “Total” and then “11th”. Group by state and find the mean. Plot the relationship by state. Does it seem to be internally consistent
+```
+
+CHUNK 8: Exercise 2.5.2: Solution
+```{python}
+youth_risk = pd.read_csv("youth_risk.csv")
+
+# 1. Check for duplicate columns that repeat the same values or the same information.
+youth_risk.shape[1]
+youth_risk.T.drop_duplicates().T.shape[1]
+# Two columns were duplicated
+
+# 2. Check for duplicate rows.
+youth_risk.shape[0]
+youth_risk.drop_duplicates().shape[0]
+# No exact duplicate rows
+
+# 3. The percentage values are recorded as the variable Data_Value. Check that all those values are in the proper domain.
+youth_risk.Data_Value.max() <= 100
+youth_risk.Data_Value.min() >= 0
+# All values are in the appropriate range
+
+# 4. Check that the Data_Value falls within the interval of Low_Confidence_Interval to High_Confidence_Interval
+
+youth_vals = youth_risk[["Data_Value","Low_Confidence_Limit","High_Confidence_Limit "]].dropna()
+all(youth_vals.Data_Value >= youth_vals.Low_Confidence_Limit)
+all(youth_vals.Data_Value <= youth_vals["High_Confidence_Limit "])
+# All values make sense
+
+# 5. The Data_Value for individual strata should be correlated with the Data_Value for the total sample within each state. Find the correlation
+# between the Total Data_Value and the 11th Grade Strata by state. To do this, filter by Stratification1 being equal to “Total” and then “11th”.
+# Group by state and find the mean. Plot the relationship by state. Does it seem to be internally consistent
+
+import matplotlib.pyplot as plt
+total = youth_risk.query("Stratification1 == 'Total'").groupby("LocationAbbr").agg({"Data_Value":"mean"})
+Grade11 = youth_risk.query("Stratification1 == '11th'").groupby("LocationAbbr").agg({"Data_Value":"mean"})
+plotdat = Grade11.merge(total,on="LocationAbbr",how="left")
+plotdat.columns = ["Grade11","Total"]
+plt.plot(plotdat["Grade11"],plotdat["Total"],"o",color="black")
+plt.xlabel("11th Grade Health Scores")
+plt.ylabel("Total Health Scores")
+plt.show()
+# The correlation is very close to 1 and the plot shows a very strong relationship. This suggests that the variables are consistent with respect to each other.
+```

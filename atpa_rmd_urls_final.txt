@@ -1,0 +1,3 @@
+https://cdn-files.soa.org/e-learning/atpa/atpa_4_3_python.rmd
+https://cdn-files.soa.org/e-learning/atpa/atpa_4_3_r.rmd
+https://cdn-files.soa.org/e-learning/atpa/atpa_4_5_r.rmd

@@ -1,0 +1,299 @@
+---
+title: "ATPA 4.3 Python"
+---
+
+CHUNK 0. Python in RStudio Setup
+```{r setup, include=FALSE}
+library(reticulate)
+
+```
+
+CHUNK 1: Load and view the data.
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.model_selection import train_test_split
+
+# Load the data
+dental = pd.read_csv("dental.csv")
+
+# View data summaries
+dental.describe
+
+# Split into test and train sets
+dental_train, dental_test = train_test_split(dental, test_size=0.25)
+```
+
+CHUNK 2: Fit an ordinary linear model, a GLM, and a random forest to the observations. We are not interested in which is best, only how to explain them.
+```{python}
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+import patsy
+
+
+formula = "Target ~ 1 + age + bmi + familyIncome + sex + occupation_group"
+
+# Fit linear regression model
+mod_ols = smf.ols(formula,data=dental_train)
+ols = mod_ols.fit()
+ols.summary()
+
+# Fit glm, Gaussian with log link
+mod_glm = smf.glm(formula,data=dental_train,family = sm.families.Gaussian(sm.families.links.log()))
+glm = mod_glm.fit()
+glm.summary()
+
+
+from sklearn.ensemble import RandomForestRegressor
+
+# Create design matrix
+dental_train_Y, dental_train_X = patsy.dmatrices(formula, dental_train, return_type='dataframe')
+
+# Fit random forest model
+mod_rf = RandomForestRegressor(n_estimators = 250,max_features=2)
+rf = mod_rf.fit(dental_train_X,dental_train["Target"])
+
+```
+
+CHUNK 3: Variable importance plots
+```{python}
+
+# Compute variable importances for OLS and GLM using the T-values as the importances
+pd.DataFrame(np.abs(ols.tvalues.drop("Intercept"))).rename(columns={0:'tvalues'}).sort_values('tvalues',ascending=False)[['tvalues']].plot(kind="barh")
+plt.title("OLS Variable Importance")
+plt.show()
+plt.close()
+
+pd.DataFrame(np.abs(glm.tvalues.drop("Intercept"))).rename(columns={0:'tvalues'}).sort_values('tvalues',ascending=False)[['tvalues']].plot(kind="barh")
+plt.title("GLM Variable Importance")
+plt.show()
+plt.close()
+
+# Random Forest importance plot
+importances = rf.feature_importances_
+indices = np.argsort(importances)
+feature_names = dental_train_X.columns
+forest_importances = pd.Series(importances,index = feature_names)[indices].drop("Intercept")
+
+forest_importances.plot(kind="barh")
+plt.title("RF Variable Importance")
+plt.show()
+plt.close()
+plt.cla()
+```
+
+CHUNK 4: PDP plots for age, bmi, income using the OLS model.
+```{python}
+
+from sklearn.inspection import partial_dependence, plot_partial_dependence, PartialDependenceDisplay
+
+# While statsmodels gives better summaries for their regression functions, most of this file uses sklearn because it interfaces with the plots we will be using
+
+from sklearn.linear_model import LinearRegression
+mod_ols_v2 = LinearRegression()
+ols_v2 = mod_ols_v2.fit(dental_train_X,dental_train["Target"])
+
+# Construct partial dependence plot
+PartialDependenceDisplay.from_estimator(mod_ols_v2, X=dental_train_X,  features = ['age','bmi','familyIncome'], grid_resolution=30,kind='average')
+plt.show()
+plt.close()
+# Using kind = "average" produces PDP
+
+# Built-in functions do not work on categorical variables as they do in R, so we will not be viewing occupation
+
+```
+
+CHUNK 5: PDP for the GLM
+```{python}
+
+# Statsmodels package has flexible glm options, even a simple one such as a log link Gaussian GLM but not for PDPs. sklearn has the code for partial dependence plots but not a wide variety of GLMs, so at this point making this plot is not possible, besides computing the PDP values directly. 
+
+
+```
+
+CHUNK 6: PDP for the random forest.
+```{python}
+
+PartialDependenceDisplay.from_estimator(mod_rf, X=dental_train_X,  features = ['age','bmi','familyIncome'], grid_resolution=30,kind='average')
+plt.show()
+plt.close()
+
+```
+
+CHUNK 7: A PDP for two variables.
+```{python}
+
+PartialDependenceDisplay.from_estimator(mod_rf, X=dental_train_X,  features = [('age','familyIncome')], grid_resolution=30,kind='average')
+plt.show()
+plt.close()
+```
+
+CHUNK 8: Fit a GLM to the predictions of the random forest model.
+```{python}
+
+# Obtain random forest predictions
+prediction = rf.predict(dental_train_X)
+
+# Create data sets for surrogate model prediction
+dental_train_surrogate = dental_train.copy()
+dental_train_surrogate.Target = prediction
+
+# Fit surrogate model
+mod_glm_surrogate = smf.glm(formula,data=dental_train_surrogate,family = sm.families.Gaussian(sm.families.links.log()))
+glm_surrogate = mod_glm.fit()
+glm_surrogate.summary()
+
+```
+
+CHUNK 9: ICE plot for age using the OLS model.
+```{python}
+from sklearn.inspection import PartialDependenceDisplay
+# Requires skklearn version 1.0.0 or higher
+
+PartialDependenceDisplay.from_estimator(mod_ols_v2, X=dental_train_X,  features = ['age'], grid_resolution=30,kind='both',subsample=50,random_state=0,ice_lines_kw={"color": "tab:blue", "alpha": 0.3, "linewidth": 0.5}, pd_line_kw={"color": "tab:orange", "linestyle": "--"})
+plt.ylim([0,2000])
+plt.show()
+plt.close()
+# Using kind = "individual" gives ICE only, using kind = "both" gives PDP in the center of the ICE plots 
+
+PartialDependenceDisplay.from_estimator(mod_ols_v2, X=dental_train_X,  features = ['bmi'], grid_resolution=30,kind='both',subsample=50,random_state=0,ice_lines_kw={"color": "tab:blue", "alpha": 0.3, "linewidth": 0.5}, pd_line_kw={"color": "tab:orange", "linestyle": "--"})
+plt.ylim([0,2000])
+plt.show()
+plt.close()
+
+PartialDependenceDisplay.from_estimator(mod_ols_v2, X=dental_train_X,  features = ['familyIncome'], grid_resolution=30,kind='both',subsample=50,random_state=0,ice_lines_kw={"color": "tab:blue", "alpha": 0.3, "linewidth": 0.5}, pd_line_kw={"color": "tab:orange", "linestyle": "--"})
+plt.ylim([0,2000])
+plt.show()
+plt.close()
+```
+
+CHUNK 10: ICE plot for age using the random forest with only the sampled data. Also set alpha = 0.1 to make the lines more transparent.
+```{python}
+PartialDependenceDisplay.from_estimator(mod_rf, X=dental_train_X,  features = ['age'], grid_resolution=30,kind='both',subsample=50,random_state=0,ice_lines_kw={"color": "tab:blue", "alpha": 0.1, "linewidth": 0.5}, pd_line_kw={"color": "tab:orange", "linestyle": "--"})
+plt.ylim([0,2000])
+plt.show()
+plt.close()
+```
+
+CHUNK 11: Use SHAP to explain the ordinary regression model.
+```{python}
+import shap
+mod_ols_v2 = LinearRegression()
+ols_v2 = mod_ols_v2.fit(dental_train_X.values,dental_train["Target"].values)
+shap.initjs() # initializes plotting environment
+dental_train_X_km = shap.kmeans(dental_train_X, 10)
+explainer = shap.KernelExplainer(mod_ols_v2.predict,dental_train_X_km)
+# KernelExplainer works best for non tree models
+shap_values = explainer.shap_values(dental_train_X.head(50))
+shap.summary_plot(shap_values, dental_train_X.head(50))
+plt.close()
+
+# The plot produced show Shapley values for the first 50 observations. The target is color coded. 
+```
+
+CHUNK 12: Use SHAP to explain a random forest model.
+```{python}
+# Explains the first and 13th variable
+shap.initjs()
+explainer = shap.TreeExplainer(mod_rf,data=dental_train_X)
+shap_values = explainer.shap_values(X = dental_train_X.iloc[[0,12],:])
+shap.summary_plot(shap_values = shap_values,features = dental_train_X.iloc[[0,12],:])
+plt.close()
+```
+
+CHUNK 13: Reload and prepare the data.
+```{python}
+dental = pd.read_csv("dental.csv")
+dental_train, dental_test = train_test_split(dental, test_size=0.25)
+```
+
+CHUNK 14: Fit the model and produce SHAP output and graphs.
+```{python}
+
+# Shapley values are shown for XGBoost
+from sklearn.ensemble import GradientBoostingRegressor
+
+mod_xgb = GradientBoostingRegressor(n_estimators=750, learning_rate=0.01,max_depth=4, random_state=0)
+xgb = mod_xgb.fit(dental_train_X,dental_train["Target"])
+
+explainer = shap.TreeExplainer(mod_xgb,data=dental_train_X)
+shap_values = explainer.shap_values(X = dental_train_X.head(100),check_additivity=False)
+
+# Shapley values are shown for XGBoost
+shap.summary_plot(shap_values, dental_train_X.head(100))
+plt.close()
+
+# PDP for XGBoost
+shap.dependence_plot("age", shap_values, dental_train_X.head(100),interaction_index="bmi")
+plt.close()
+
+# These plots are very easy to produce for any model that can be fit in the sklearn library. Sometimes specific packages have their own versions but they are usually specific to certain cases
+```
+
+CHUNK 15: Set up a new data set with a binary outcome for the target
+```{python}
+from sklearn.linear_model import LogisticRegression
+
+dental2 = dental.copy()
+dental2.Target = pd.Categorical(dental.Target > 300).astype(int)
+dental2_train, dental2_test = train_test_split(dental2, test_size=0.25)
+
+dental2_train_Y, dental2_train_X = patsy.dmatrices(formula, dental2_train, return_type='dataframe')
+
+lr_mod1 = smf.glm(formula,data=dental2_train,family = sm.families.Binomial())
+lr1 = lr_mod1.fit()
+lr1.summary()
+
+pd.DataFrame(np.abs(lr1.tvalues.drop("Intercept"))).rename(columns={0:'tvalues'}).sort_values('tvalues',ascending=False)[['tvalues']].plot(kind="barh")
+plt.title("Logistic Regression Variable Importance")
+plt.show()
+plt.close()
+
+lr_mod2 = LogisticRegression()
+lr2 = lr_mod2.fit(dental2_train_X,dental2_train["Target"])
+
+PartialDependenceDisplay.from_estimator(lr_mod2, X=dental_train_X,  features = ['age'], grid_resolution=30,kind='average')
+plt.show()
+plt.close()
+
+```
+
+CHUNK 16: Calculate predictions for the glm model and plot a lift chart
+```{python}
+import scikitplot as skplt
+
+dental2_test_Y, dental2_test_X = patsy.dmatrices(formula, dental2_test, return_type='dataframe')
+pred2 = lr_mod2.predict_proba(dental2_test_X)
+skplt.metrics.plot_lift_curve(dental2_test_Y,pred2)
+plt.show()
+plt.close()
+
+
+```
+
+CHUNK 17: Construct a gain chart for the GLM model
+```{python}
+skplt.metrics.plot_cumulative_gain(dental2_test_Y,pred2)
+plt.show()
+plt.close()
+```
+
+CHUNK 18: Fit a neural network
+```{python}
+from sklearn.neural_network import MLPClassifier
+
+nn_mod = MLPClassifier(tol=1e-2,max_iter=10000,hidden_layer_sizes=(10,10),random_state=1,early_stopping=False,n_iter_no_change=1000)
+nn = nn_mod.fit(dental2_train_X,dental2_train["Target"])
+nn_preds = nn.predict_proba(dental2_test_X)
+```
+
+CHUNK 19: Construct a gain chart to compare the fit between the GLM model and the neural network
+```{python}
+# The legend is not helpful here, the red curve represents gains for the neural net and the orange represents the glm and does not seem customizable for these specific functions
+ax = skplt.metrics.plot_cumulative_gain(dental2_test_Y,pred2)
+skplt.metrics.plot_cumulative_gain(dental2_test_Y,nn_preds,ax=ax)
+plt.show()
+plt.close()
+```
+

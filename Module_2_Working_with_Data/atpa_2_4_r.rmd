@@ -1,0 +1,146 @@
+---
+title: "ATPA 2.4 - Relational Databases"
+
+---
+
+CHUNK 1: Data for joins examples
+```{r}
+library(tidyverse)
+# Stock data
+Table_1 <- tibble(
+  "Ticker" = c("TSLA", "AMZN", "WFC", "PCG"),
+  "Name" = c("Tesla, Inc.", "Amazon.com, Inc.", "Wells Fargo & Company", "PG&E Corporation")
+)
+Table_1
+
+Table_2 <- tibble(
+  "Ticker" = c("WFC", "TSLA", "F", "AMZN"),
+  "Price" = c(49, 840, 16, 3400)
+)
+Table_2
+```
+
+CHUNK 2: Left join
+```{r}
+# Left join
+left_join(Table_1, Table_2, by = "Ticker")
+```
+
+CHUNK 3: Right join
+```{r}
+# Right join
+right_join(Table_1, Table_2, by = "Ticker")
+```
+
+CHUNK 4: Inner join
+```{r}
+# Inner join
+inner_join(Table_1, Table_2, by = "Ticker")
+```
+
+CHUNK 5: Outer or Full join
+```{r}
+# Outer or Full join
+full_join(Table_1, Table_2, by = "Ticker")
+```
+
+CHUNK 6: Joins with multiple keys
+```{r}
+# Joins with multiple keys
+Revenue <- tibble(
+  "Year" = c(2019, 2019, 2020, 2020),
+  "Month" = c("March", "September", "March", "September"),
+  "Revenue" = c(8400, 9600, 9100, 10300)
+)
+Employee <- tibble(
+  "Year" = c(2019, 2019, 2020, 2020),
+  "Month" = c("March", "September", "March", "September"),
+  "Employees" = c(55, 56, 56, 60)
+)
+
+inner_join(Revenue, Employee, by = c("Year", "Month"))
+```
+
+CHUNK 7: Joins with duplicate keys
+```{r}
+
+# Joins with duplicate keys
+Patient_Diet <- tibble(
+  "Patient" = c("A", "B", "C", "D"),
+  "Diet" = c("Traditional", "Custom", "Custom", "Traditional")
+)
+Diet_Cost <- tibble(
+  "Diet" = c("Traditional", "Custom"),
+  "Cost" = c(40, 65)
+)
+inner_join(Patient_Diet, Diet_Cost, by = "Diet")
+```
+
+CHUNK 8: Combine columns
+```{r}
+# Combine columns
+Table_3 <- tibble("Week 1" = c(2, 3, 6), "Week 2" = c(2, 3, 7))
+Table_4 <- tibble("Week 3" = c(3, 3, 6), "Week 4" = c(5, 2, 5))
+bind_cols(Table_3, Table_4)
+```
+
+CHUNK 9: Combine rows
+```{r}
+# Combine rows
+Table_5 <- tibble("ID" = c("A", "B", "C"), "Week 1" = c(2, 3, 6), "Week 2" = c(2, 3, 7))
+Table_6 <- tibble("ID" = c("D", "E", "F"), "Week 1" = c(3, 3, 6), "Week 2" = c(5, 2, 5))
+bind_rows(Table_5, Table_6)
+```
+
+CHUNK 10: Exercise 2.4.1: Construct the indicated joins
+```{r}
+movie_boxoffice <- read_csv("movie_boxoffice.csv")
+economy <- read_csv("economy.csv")
+movie_details <- read_csv("movie_details.csv")
+rotten_rutabagass <- read_csv("rotten_rutabagas.csv")
+movie_economy <- read_csv("movie_economy.csv")
+
+# 1 Combine US economy and movie economy
+
+# 2 Combine MPAA rating and Rotten Rutabagas score
+
+# 3 Add movie details to box office results
+
+# 4 Add all movies in box office, details and Rotten Rutabagas together into all_movies
+
+# 5 Add US economy and movie economy into all_movies
+```
+
+CHUNK 11: Exercise 2.4.1: Solution
+```{r}
+movie_boxoffice <- read_csv("movie_boxoffice.csv")
+economy <- read_csv("economy.csv")
+movie_details <- read_csv("movie_details.csv")
+rotten_rutabagas <- read_csv("rotten_rutabagas.csv")
+movie_economy <- read_csv("movie_economy.csv")
+
+# 1 Combine US economy and movie economy
+df1 <- inner_join(economy, movie_economy, by = "year")
+df1
+
+# 2 Combine MPAA rating and Rotten Tomato score
+df2 <- inner_join(movie_details, rotten_rutabagas, by = "movie")
+df2
+
+# 3 Add movie details to box office results
+df3 <- left_join(movie_boxoffice, movie_details, by = "movie")
+df3
+
+# 4 Add all movies in box office, details and Rotten Rutabagas together into all_movies
+df4 <- full_join(movie_boxoffice, movie_details, by = "movie")
+all_movies <- full_join(df4, rotten_rutabagas, by = "movie")
+all_movies
+
+# 5 Add US Economy and movie economy into all_movies
+df5 <- left_join(
+  left_join(all_movies, economy, by = "year"),
+  movie_economy,
+  by = "year"
+)
+df5
+```

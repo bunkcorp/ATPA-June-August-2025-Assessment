@@ -1,0 +1,203 @@
+{
+  "course": {
+    "title": "ATPA Course - Module 1: Data and Model Ethics",
+    "metadata": {
+      "model_label": "Course",
+      "created_by_id": 100297,
+      "course_id": 101459,
+      "auto_version": 1,
+      "page_transition": "none"
+    },
+    "modules": [
+      {
+        "module_info": {
+          "name": "Data and Model Ethics",
+          "source_id": 201279,
+          "active": true,
+          "parameters": {
+            "hero_icon_class": "fa-info-circle",
+            "content_time": "",
+            "test_time": ""
+          }
+        },
+        "learning_objectives": {
+          "page_title": "Module 1 Learning Objectives",
+          "objectives": [
+            "Apply a general ethical framework for working with data and models",
+            "Discuss and comply with relevant standards of practice", 
+            "Discuss and comply with relevant regulations that apply to working with data and models",
+            "Reinforce learning through a case study"
+          ]
+        },
+        "objects": [
+          {
+            "object_1": {
+              "description": "Ethical Framework",
+              "object_id": 602954,
+              "type": 0,
+              "order": 1,
+              "created_date": "2022-01-04 09:43:36.663",
+              "last_modified": "2022-03-09 09:46:20.99",
+              "status": "",
+              "published": false
+            }
+          },
+          {
+            "object_2": {
+              "description": "Regulations and Standards of Practice",
+              "estimated_info": "Based on structure pattern"
+            }
+          },
+          {
+            "object_3": {
+              "description": "Case Study",
+              "estimated_info": "Based on structure pattern"
+            }
+          }
+        ],
+        "page_structure": {
+          "unique_page_titles": [
+            "Module 1 Learning Objectives",
+            "Section 1.1 Learning Objective",
+            "Section 1.2 Learning Objectives", 
+            "Section 1.3 Learning Objective",
+            "Module Introduction",
+            "Introduction",
+            "Ethics",
+            "Ethics Is Not…",
+            "Ethical Principles",
+            "Ethical Principles and Framework",
+            "Interrelations Between Ethical Principles",
+            "Tensions Between Ethical Principles",
+            "Fairness",
+            "Fairness: Data",
+            "Fairness: Analytics and Model",
+            "Fairness: Implementation and Governance",
+            "Safety",
+            "Safety: Data",
+            "Safety: Analytics and Model",
+            "Transparency and Accountability",
+            "Transparency and Accountability: Data",
+            "Transparency and Accountability: Analytics and Model",
+            "Transparency and Accountability: Implementation",
+            "Business Context",
+            "Example: Amazon Recruiting Algorithm",
+            "Example: Non-Transparent or Unexplainable Outcomes",
+            "Problem Definition",
+            "Overview",
+            "Regulations",
+            "Regulations on Data",
+            "Regulations on Data Protection and Privacy",
+            "Health Insurance Portability and Accountability Act",
+            "Anti-Discrimination Laws and Regulations",
+            "Laws Defining Protected Classes",
+            "Considerations for Insurance Laws in the U.S.",
+            "Discrimination in Insurance",
+            "Risk Classification in Insurance",
+            "United States",
+            "Canada",
+            "European Union",
+            "Other Countries",
+            "Intersection of Regulations and Ethics",
+            "Actuarial Standards of Practice (ASOPs)",
+            "Guidelines and Principles for Predictive Models",
+            "Knowledge Check",
+            "Question",
+            "Module Summary",
+            "Module 1 Bibliography"
+          ]
+        },
+        "content_elements": {
+          "visual_elements": [
+            {
+              "type": "shape",
+              "element_type": "svg_box",
+              "description": "Header background box"
+            },
+            {
+              "type": "html_text",
+              "content": "Data and Model Ethics",
+              "styling": "title-text"
+            },
+            {
+              "type": "panel",
+              "class": "panel-primary",
+              "background": "bg-gray-lighter",
+              "contains": "Learning objectives list"
+            },
+            {
+              "type": "image",
+              "asset": "soa-logo-rgb_528pxw.png",
+              "description": "SOA logo",
+              "dimensions": "528px width"
+            }
+          ]
+        },
+        "technical_structure": {
+          "page_groups": [
+            {
+              "source_id": 69368,
+              "active": true,
+              "layout_config": {
+                "background": "transparent",
+                "alignment": "none",
+                "responsive_breakpoints": ["xsmall", "small", "medium", "large"]
+              }
+            }
+          ],
+          "element_hierarchy": {
+            "page_level": "54223",
+            "group_level": "79489", 
+            "elements": [
+              "445758 - Background shape",
+              "445759 - Title text",
+              "445760 - Learning objectives panel",
+              "445761 - Module subtitle",
+              "450044 - SOA logo image"
+            ]
+          }
+        }
+      }
+    ],
+    "course_navigation": {
+      "footer_pages": {
+        "secondary_page_id": "",
+        "module_summary_page_id": ""
+      },
+      "lifecycle_label": "",
+      "pass_text": ""
+    }
+  },
+  "extracted_metadata": {
+    "extraction_date": "2025-08-01",
+    "original_file": "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/Module_1_Data_and_Model_Ethics/ATPA_course_structure.js",
+    "file_size": "1.3MB",
+    "structure_type": "JavaScript course object",
+    "key_findings": [
+      "Course focuses on Data and Model Ethics for actuarial practice",
+      "Contains 3 main objects: Ethical Framework, Regulations/Standards, Case Study",
+      "Comprehensive coverage of ethics, regulations, and practical applications",
+      "Includes interactive elements like Knowledge Checks and Questions",
+      "Structured with responsive design elements and accessibility features",
+      "Contains extensive page hierarchy with 45+ unique page titles",
+      "Incorporates visual elements including SOA branding"
+    ],
+    "content_themes": [
+      "Ethical frameworks for data and model work",
+      "Regulatory compliance (US, Canada, EU, Other)",
+      "Standards of practice (ASOPs)",
+      "Fairness in data and analytics",
+      "Safety considerations",
+      "Transparency and accountability",
+      "Real-world case studies and examples",
+      "Anti-discrimination laws",
+      "Data protection and privacy regulations"
+    ],
+    "learning_structure": {
+      "total_sections": "3 main sections (1.1, 1.2, 1.3)",
+      "progression": "Introduction → Ethics → Regulations → Case Study",
+      "assessment_types": ["Knowledge Check", "Questions"],
+      "support_materials": ["Module Summary", "Bibliography"]
+    }
+  }
+}

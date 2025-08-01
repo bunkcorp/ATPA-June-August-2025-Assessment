@@ -1,0 +1,56 @@
+{
+  "extraction_date": "2025-08-01",
+  "total_modules": 4,
+  "total_characters": 1002747,
+  "total_sections": 639,
+  "modules": [
+    {
+      "name": "Module 1: Data and Model Ethics",
+      "path": "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/Module_1_Data_and_Model_Ethics",
+      "files": {
+        "raw": "ATPA_Module_1_raw_text.txt",
+        "json": "ATPA_Module_1_sections.json",
+        "markdown": "ATPA_Module_1_content.md"
+      }
+    },
+    {
+      "name": "Module 2: Working with Data",
+      "path": "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/Module_2_Working_with_Data",
+      "files": {
+        "raw": "ATPA_Module_2_Working_with_Data_raw_text.txt",
+        "json": "ATPA_Module_2_Working_with_Data_sections.json",
+        "markdown": "ATPA_Module_2_Working_with_Data_content.md"
+      }
+    },
+    {
+      "name": "Module 3: Advanced Models",
+      "path": "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/Module_3_Advanced_Models",
+      "files": {
+        "raw": "ATPA_Module_3_Advanced_Models_raw_text.txt",
+        "json": "ATPA_Module_3_Advanced_Models_sections.json",
+        "markdown": "ATPA_Module_3_Advanced_Models_content.md"
+      }
+    },
+    {
+      "name": "Module 4: Model Explainability",
+      "path": "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/Module_4_Model_Explainability",
+      "files": {
+        "raw": "ATPA_Module_4_Model_Explainability_raw_text.txt",
+        "json": "ATPA_Module_4_Model_Explainability_sections.json",
+        "markdown": "ATPA_Module_4_Model_Explainability_content.md"
+      }
+    }
+  ],
+  "description": "Complete ATPA (Actuarial Techniques and Predictive Analytics) course content extraction",
+  "formats": [
+    "Raw Text",
+    "Structured JSON",
+    "Markdown"
+  ],
+  "notes": [
+    "All original .doc files successfully converted",
+    "Content organized by sections for easy navigation",
+    "Searchable across all modules and sections",
+    "Maintains original course structure and numbering"
+  ]
+}

@@ -1,0 +1,107 @@
+---
+title: "Module 2 Section 7 Case Study 2"
+---
+
+Read in questionnaire data
+```{r}
+library(tidyverse)
+library(XML)
+chiro <- read_csv("questionnaire.csv")
+```
+
+Read in visits data, extract variables, and create data frame
+```{r}
+# read xml structure
+visits <- xmlParse("visits.xml")
+
+# extract the variables
+ID <- xpathSApply(visits, path = "/REPORT/records/visit/ID", xmlValue)
+type <- xpathSApply(visits, path = "/REPORT/records/visit/type", xmlValue)
+reschedule <- xpathSApply(visits, path = "/REPORT/records/visit/reschedule", xmlValue)
+year <- xpathSApply(visits, path = "/REPORT/records/visit", xmlGetAttr, name = "year")
+
+# combine the variables into a data frame
+all_visits <- tibble(ID, type, reschedule, year)
+```
+
+Validate the year variable
+```{r}
+visits_year <- all_visits %>%
+  group_by(ID) %>%
+  summarize("first_visit" = min(year))
+quest_year <- chiro %>%
+  select(ID, year) %>%
+  mutate(ID = as.character(ID))
+validate <- inner_join(visits_year, quest_year)
+sum(validate$first_visit != validate$year)
+```
+
+Aggregate the visits data, count the number of visits in 2018
+```{r}
+agg_2018 <- all_visits %>%
+  filter(year == 2018) %>%
+  group_by(ID) %>%
+  summarize(counts_2018 = n())
+
+agg_2018 %>% ggplot(aes(counts_2018)) +
+  geom_histogram() +
+  labs(
+    title = "Number of Chiropractic Visits in 2018",
+    x = "Visits", y = "Count"
+  )
+```
+
+Aggregate the visits data for 2017 for predictor variables
+```{r}
+agg_2017 <- all_visits %>%
+  filter(year == 2017) %>%
+  group_by(ID) %>%
+  summarize(
+    counts_2017 = n(),
+    perc_ext = mean(type == "extended"),
+    perc_resc = mean(reschedule == "yes")
+  )
+
+agg_all <- inner_join(agg_2018, agg_2017, by = "ID")
+```
+
+Create the variables for the causes
+```{r}
+chiro2 <- chiro %>%
+  mutate(
+    pain = str_detect(why_visit, "pain"),
+    stiffness = str_detect(why_visit, "stiffness"),
+    recovery = str_detect(why_visit, "recovery"),
+    functionality = str_detect(why_visit, "functionality")
+  ) %>%
+  select(-why_visit)
+```
+
+Fix missing values in past_surgery
+```{r}
+table(chiro2$year, chiro2$past_surgery, useNA = "ifany")
+
+# Remove the variable
+chiro2$past_surgery <- NULL
+```
+
+Lump small factor levels of how_know together
+```{r}
+sort(table(chiro2$how_know))
+chiro3 <- chiro2 %>% mutate(how_know = fct_lump_min(how_know, 20))
+```
+
+Combine the visits and questionnaire data together
+Change non-ID character variable to a factor variable
+```{r}
+chiro3$ID <- as.character(chiro3$ID) # this is very important
+# Because XML data is read in as all characters but csv
+# will be readin as numeric, have to change one or the other
+chiro_final <- inner_join(chiro3, agg_all, by = "ID")
+chiro_final$sex <- as.factor(chiro_final$sex)
+chiro_final
+summary(chiro_final[, 1:4])
+summary(chiro_final[, 5:8])
+summary(chiro_final[, 9:12])
+summary(chiro_final[, 13:14])
+```

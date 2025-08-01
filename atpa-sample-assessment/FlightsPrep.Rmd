@@ -1,0 +1,59 @@
+---
+title: "ATPA Assessment - Flights Prep"
+output: html_document
+---
+
+## Data prepation by assistant
+
+Read the six data files into a single data frame and summarize.
+
+```{r}
+library(dplyr)
+
+# Use function to do initial editing on each file as it is read in to save memory
+read_boise <- function(file) {
+  df.all_cities <- read.csv(file, stringsAsFactors = TRUE)
+  df.boise <- df.all_cities %>%
+              filter(ORIGIN == "BOI") %>% # BOI is Boise per data dictionary
+              select(-c(ORIGIN, ORIGIN_STATE_NM)) %>% # Don't need origin after filter
+              mutate(YEAR = as.factor(YEAR),
+                     QUARTER = as.factor(QUARTER),
+                     MONTH = as.factor(MONTH))
+  print(paste(nrow(df.boise), "rows from", file), quote = FALSE)
+  return(df.boise)
+}
+
+# Create dataframe with all rows
+df.all <- bind_rows(read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2016.csv"), 
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2017.csv"), 
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2018.csv"), 
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2019.csv"), 
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2020.csv"), 
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2021.csv"))
+
+# Summarize data
+summary(df.all)
+```
+
+Unitize to average values per departure and add GROUND_TIME as difference between ramp-to-ramp time and air time, then summarize.
+
+```{r}
+# Divide measures by number of departures
+df.unit <- df.all %>%
+           filter(DEPARTURES_PERFORMED > 0) %>% # To avoid division by zero
+           mutate(PASSENGERS   = PASSENGERS   / DEPARTURES_PERFORMED,
+                  FREIGHT      = FREIGHT      / DEPARTURES_PERFORMED,
+                  MAIL         = MAIL         / DEPARTURES_PERFORMED,
+                  DISTANCE     = DISTANCE     / DEPARTURES_PERFORMED,
+                  RAMP_TO_RAMP = RAMP_TO_RAMP / DEPARTURES_PERFORMED,
+                  AIR_TIME     = AIR_TIME     / DEPARTURES_PERFORMED,
+                  ) %>% # Divide by departures performed
+           select(-DEPARTURES_PERFORMED) %>% # No longer need divisor
+           mutate(GROUND_TIME = RAMP_TO_RAMP - AIR_TIME) # Create ground time
+
+# Summarize new data frame
+summary(df.unit)
+
+```
+
+I think this looks OK? Next step is to add information from airport codes...but not feeling so good...

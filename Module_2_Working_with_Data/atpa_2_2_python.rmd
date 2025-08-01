@@ -1,0 +1,296 @@
+---
+title: "ATPA 2.2 - Reading and Writing Data"
+
+---
+To use Python first be sure a version of Python has been installed. Then do the following within RStudio:
+1. Go to Tools>Global Options>Python
+2. In the box select the version of Python to use. Hit select... and then look under all three tabs to locate the versions on your computer. Select the one you want to use.
+3. Save and restart R at the prompt.
+
+This call to reticulate is necessary each time you start a session.
+
+Note that when running python chunks you will see >>> in the Console rather than >. To be able to enter R commands in the Console, Enter exit after >>>. You will then see the > prompt.
+
+```{r}
+library(reticulate)
+py_discover_config() # Will verify the version of Python being used. You will see the output in the Console.
+```
+
+CHUNK 1: Creates a data frame
+```{python}
+import pandas as pd
+Var1 = [1,2,3]
+Var2 = ["a","b","c"]
+Df = pd.DataFrame({"Numbers":Var1,"Letters":Var2})
+Df
+```
+
+CHUNK 2: Adds an additional variable to a data frame
+```{python}
+Var3 = [True,False,False]
+Df["Boolean"] = Var3 # adds Var3 and names it Boolean
+Df
+```
+
+CHUNK 3: Creates a dictionary
+```{python}
+# A dictionary called food
+food = {"breakfast":["eggs","yogurt","cereal"],"lunch":["sandwich","soup"],"dinner":["pasta","steak","pizza","fish"]}
+
+# Extract the first element of the list
+food["breakfast"]
+# Dictionaries are not intended to extract by number
+# so we have to convert it to another form.
+# By changing k, you can extract the k-th element
+k = 0
+list(food.items())[k][1]
+```
+
+CHUNK 4: Reads the football_space.txt file into a data frame
+```{python}
+# Space delimited file
+football1 = pd.read_table("football_space.txt")
+football1
+```
+
+CHUNK 5: Reads the football_comma.csv file into a data frame
+```{python}
+# comma delimited file (csv)
+football2 = pd.read_csv("football_comma.csv")
+football2
+```
+
+CHUNK 6: Reads the football_semicolon.txt file into a data frame
+```{python}
+# Semicolon delimited file
+football3 = pd.read_table("football_semicolon.txt", sep = ";")
+football3
+```
+
+CHUNK 7: Reads the football_skip.csv file into a data frame, while skipping the first 4 lines
+```{python}
+# File with non-data as introduction
+football4 = pd.read_csv("football_skip.csv",skiprows = 4)
+football4
+```
+
+CHUNK 8: Reads the football_nohead.csv file and adds column names
+```{python}
+# File with no header, provide column names
+football5 = pd.read_csv("football_nohead.csv",names=["Game","Win","Keeper"])
+football5
+
+# Read in with no header and add variable names later
+football6 = pd.read_csv("Football_nohead.csv",header=None)
+football6.columns = ["Game","Win","Keeper"]
+football6
+```
+
+CHUNK 9: Exercise 2.2.1: Read in automobile.csv and assign the labels given.
+```{python}
+Auto_Names = ["symboling", "normalized_losses", "make", "fuel_type,aspiration", "num_doors", "body_style", "drive_wheels","engine_location", "wheel_base", "length", "width", "height", "curb_weight", "engine_type","num_cylinders", "engine_size", "fuel_system", "bore", "stroke", "compression_ratio", "horsepower", "peak_rpm", "city_mpg", "highway_mpg", "price"]
+
+
+```
+
+CHUNK 10: Exercise 2.2.1: solution
+```{python}
+Auto_Names = ["symboling", "normalized_losses", "make", "fuel_type,aspiration", "num_doors", "body_style", "drive_wheels","engine_location", "wheel_base", "length", "width", "height", "curb_weight", "engine_type","num_cylinders", "engine_size", "fuel_system", "bore", "stroke", "compression_ratio", "horsepower", "peak_rpm", "city_mpg", "highway_mpg", "price"]
+
+automobile = pd.read_csv("automobile.csv",names=Auto_Names)
+automobile.head(6)
+```
+
+CHUNK 11: Reading simple XML file into a data frame
+```{python}
+pd.read_xml("test_simple.xml",parser="etree")
+
+```
+
+CHUNK 12: Reading an XML file with a more complex structure
+```{python}
+#### This requires the lxml parser which means you
+#### need to install the lxml library. It does not need to be loaded.
+pd.read_xml("test_one_student.xml",parser="lxml",xpath="/Test_Results/Candidate/Scores/Question")
+```
+
+CHUNK 13: Read in xml data with multiple entries
+```{python}
+# When there are multiple nodes that have the same name
+# the xpath can distinguish, but need to be written out
+# in full. The split between Steve and Chalise
+# happens at the Candidate node, so in the xpath
+# that is given a subset. xpath subsets start at 1.
+
+steve_df = pd.read_xml("test_two_students.xml",parser="lxml",xpath="/Test_Results/Candidate[1]/Scores/Question")
+chalise_df = pd.read_xml("test_two_students.xml",parser="lxml",xpath="/Test_Results/Candidate[2]/Scores/Question")
+steve_df
+chalise_df
+```
+
+CHUNK 14: Extracting attributes and element values to create a data frame
+```{python}
+# extract the points element
+points = pd.read_xml("test_one_student.xml",parser="etree",xpath=".//Points")
+# using attrs_only=TRUE we can just get the bank attribute
+bank = pd.read_xml("test_one_student.xml",parser="etree",xpath=".//Question",attrs_only=True)
+df = pd.DataFrame()
+df["points"] = points
+df["bank"] = bank
+df
+```
+
+CHUNK 15: Extracting attributes and element values from a mortality xml file
+```{python}
+# the default is to extract both the attributes and the elements
+# we can also rename the data using names=["age","mortality"]
+mort = pd.read_xml("mort.xml",parser="etree",xpath=".//Y",names=["age","mortality"])
+
+mort
+```
+
+CHUNK 16: Exercise 2.2.2: Ceate a data frame for the disability xml file
+```{python}
+
+```
+
+CHUNK 17: Exercise 2.2.2: Solution
+```{python}
+disable = pd.read_xml("disablement.xml",parser="etree",xpath=".//Y",names=["age","disablement"])
+
+disable
+```
+
+CHUNK 18: Reading simple JSON file into a data frame
+```{python}
+pd.read_json("test_simple.json")
+```
+
+CHUNK 19: Read nested JSON file and unnest
+```{python}
+import json
+with open("test_nested.json") as f:
+	test_df = json.load(f)
+
+pd.json_normalize(test_df)
+
+```
+
+CHUNK 20: Read nested JSON file and unnest the structure
+```{python}
+import json
+with open("test2_nested.json") as f:
+	test = json.load(f)
+
+results = pd.json_normalize(test,record_path=['results'],meta=["name","id"])
+results
+```
+
+CHUNK 21: Read nested JSON file and unpack the structure
+```{python}
+with open("test3_nested.json") as f:
+	test = json.load(f)
+
+pd.json_normalize(test,record_path=['test','results'],meta=[['test','name'],['test','id']])
+
+```
+
+CHUNK 22: Exercise 2.2.3 Read in and create a data frame from colors.json file
+```{python}
+
+```
+
+CHUNK 23: Exercise 2.2.3: Solution
+
+```{python}
+with open("colors.json") as f:
+	color_df = json.load(f)
+
+pd.json_normalize(color_df,record_path=['colors'])
+```
+
+CHUNK 24: Exercise 2.2.4: Read in the menu.xls file into three dataframes, Dinner, Sides, and Desserts
+```{python}
+# requires the "openpyxl" package installed, does not need to be loaded
+
+```
+
+CHUNK 25: Exercise 2.2.5: Solution
+```{python}
+# requires the "openpyxl" package installed, does not need to be loaded
+Dinner = pd.read_excel("menu.xls",sheet_name=0)
+Sides = pd.read_excel("menu.xls",sheet_name=1)
+Deserts = pd.read_excel("menu.xls",sheet_name=2)
+Dinner
+Sides
+Deserts
+```
+
+CHUNK 26: Create a tall data frame
+```{python}
+tall_books = pd.DataFrame({"ID" : ["01","01","01","07","07","07"], "Variable" : ["language","edition","author","language","edition","author"], "Values" : ["Java","third","Herbert Schmidt","C++","second","E.Balagurusamy"]})
+tall_books
+```
+
+CHUNK 27: Convert tall data to wide
+```{python}
+wide_books = tall_books.pivot(index="ID",columns="Variable",values="Values")
+wide_books["ID"] = ["01","07"]
+wide_books
+```
+
+CHUNK 28: Convert wide data to tall
+```{python}
+
+tall_again = pd.melt(wide_books,id_vars=["ID"])
+tall_again
+```
+
+CHUNK 29: Exercise 2.2.5. Convert the tall_measure.csv data set to a wide data set. Why is there a missing data point after conversion when there wasn't one before? 
+```{python}
+import pandas as pd
+long_data = pd.read_csv("tall_measure.csv")
+
+
+```
+
+CHUNK 30: Exercise 2.2.5: Solution
+```{python}
+import pandas as pd
+long_data = pd.read_csv("tall_measure.csv")
+long_data.pivot(index="Name",columns="Month",values="Measurement")
+
+# There is one fewer observation in the tall data set for
+# Steve than there is for Tanya, so the extra observation
+# is missing for Steve
+```
+
+CHUNK 31: Create a data frame
+```{python}
+import pandas as pd
+
+my_dat = pd.DataFrame({"first_variable":[1,2,3], "second_variable":[6,7,8]})
+my_dat
+```
+
+CHUNK 32: Write data to file
+```{python}
+# Space delimited, have to specify index=False unless you want 
+# the row index to get written to file as well
+my_dat.to_csv("datafile_space.txt",sep=" ",index=False)
+
+# Comma delimited
+my_dat.to_csv("datafile_comma.csv",index=False)
+```
+
+CHUNK 33: Appending file
+```{python}
+newdat = pd.DataFrame({"first_variable":[4,5],"second_variable": [9,10]})
+
+# must specify header=False or else the extra column
+# labels get added in the middle
+with open("datafile_comma.csv", "a") as myfile:
+    newdat.to_csv(myfile,header=False,index=False)
+my_dat = pd.read_csv("datafile_comma.csv")
+my_dat
+```

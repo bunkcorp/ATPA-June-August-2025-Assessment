@@ -1,0 +1,311 @@
+---
+title: "ATPA 2.2 - Reading and Writing Data"
+---
+
+CHUNK 1: Creates a tibble (a special data frame) from existing variables
+```{r}
+library(tidyverse)
+Var1 <- c(1,2,3)
+Var2 <- c("a","b","c")
+Df <- tibble("Numbers" = Var1, "Letters" = Var2)
+Df
+```
+
+CHUNK 2: Adds an additional variable to a data frame
+```{r}
+Var3 <- c(TRUE, FALSE, FALSE)
+Df$Boolean = Var3 # adds Var3 and names it Boolean
+Df
+```
+
+CHUNK 3: Creates a list
+```{r}
+# A list called food
+food <- list("breakfast" = c("eggs","yogurt","cereal"),
+             "lunch" = c("sandwich","soup"),
+             "dinner" = c("pasta","steak","pizza","fish"))
+
+# Extract the first element of the list
+food[[1]]
+food[["breakfast"]]
+
+```
+
+
+CHUNK 4: Reads the football_space.txt file into a data frame
+```{r}
+# Space delimited file
+football1 <- read_table("football_space.txt")
+football1
+```
+
+CHUNK 5: Reads in football_comma.csv file into a data frame
+```{r}
+# comma delimited file (csv)
+football2 <- read_csv("football_comma.csv")
+football2
+```
+
+CHUNK 6: Reads in football_semicolon.txt file into a data frame
+```{r}
+# comma delimited file (csv)
+football3 <- read_delim("football_semicolon.txt",delim=";")
+football3
+```
+
+CHUNK 7: Reads in football_skip.csv file into a data frame while skipping the first 4 lines
+```{r}
+# File with non-data as introduction
+football4 <- read_csv("football_skip.csv",skip = 4)
+football4
+```
+
+CHUNK 8: Reads in football_nohead.csv and adds column names
+```{r}
+# File with no header, provide column names
+football5 <- read_csv("football_nohead.csv",col_names = c("Game","Win","Keeper"))
+football5
+
+# Read in with no header and add variable names after
+football5 <- read_csv("Football_nohead.csv",col_names = FALSE)
+names(football5) = c("Game","Win","QB")
+```
+
+CHUNK 9: Exercise 2.2.1: Read in automobile.csv and assign the labels given
+```{r}
+Auto_Names <- c("symboling", "normalized_losses", "make", "fuel_type,aspiration", "num_doors", "body_style", "drive_wheels","engine_location", "wheel_base", "length", "width", "height", "curb_weight", "engine_type","num_cylinders", "engine_size", "fuel_system", "bore", "stroke", "compression_ratio", "horsepower", "peak_rpm", "city_mpg", "highway_mpg", "price")
+
+
+```
+
+CHUNK 10: Exercise 2.2.1: Solution
+```{r}
+Auto_Names <- c("symboling", "normalized_losses", "make", "fuel_type","aspiration", "num_doors", "body_style", "drive_wheels","engine_location", "wheel_base", "length", "width", "height", "curb_weight", "engine_type","num_cylinders", "engine_size", "fuel_system", "bore", "stroke", "compression_ratio", "horsepower", "peak_rpm", "city_mpg", "highway_mpg", "price")
+
+automobile <- read_csv("automobile.csv",col_names = Auto_Names)
+
+# View the data set
+automobile %>% View
+```
+
+CHUNK 11: Reading simple XML file into a data frame
+```{r}
+#install.packages(“XML”) # Run this only once to get the library installed
+library(XML)
+# View the file contents in XML format
+test_xml <- xmlParse("test_simple.xml")
+test_xml
+
+# Read the data and convert to a data frame
+test_df <- xmlToDataFrame("test_simple.xml")
+test_df
+
+```
+
+CHUNK 12:
+```{r}
+# Read in xml file
+test <-  xmlParse("test_one_student.xml")
+# Locate the scores element
+scores <- getNodeSet(test,path="/Test_Results/Candidate/Scores")
+# Convert to data frame. Note that double brackets [[1]] must be used on scores because the output was a list
+xmlToDataFrame(scores[[1]])
+```
+
+CHUNK 13: Read in xml data with multiple entries
+```{r}
+# Read in xml file
+test <-  xmlParse("test_two_students.xml")
+# Locate the scores element
+scores <- getNodeSet(test,path="/Test_Results/Candidate/Scores")
+# scores is now a list where each element is a different candidate
+Steve_scores <- xmlToDataFrame(scores[[1]])
+Steve_scores
+Chalise_scores <- xmlToDataFrame(scores[[2]])
+Chalise_scores
+```
+
+CHUNK 14: Extracting attributes and element values to create a data frame
+```{r}
+# Read xml file
+test_xml <- xmlParse("test_one_student.xml")
+# Extract the Points values
+points <- xpathSApply(test_xml, path = "/Test_Results/Candidate/Scores/Question/Points", xmlValue)
+
+# Extract the bank attribute
+bank <- xpathSApply(test_xml, path = "/Test_Results/Candidate/Scores/Question", xmlGetAttr,name="bank")
+
+# Combine into data frame
+xml_df <- tibble("bank" = bank,"points" = points)
+xml_df
+
+```
+
+CHUNK 15: Extracting attributes and element values from a mortality xml file
+```{r}
+mort <- xmlParse("mort.xml")
+# Extract age from the attribute t
+age <- xpathSApply(mort,path="/XTbML/Table/Values/Axis/Y",xmlGetAttr,name="t")
+
+# Extract mortality rate from the Y elements
+mortality <- xpathSApply(mort,path="/XTbML/Table/Values/Axis/Y",xmlValue)
+
+# Combine into data frame
+mort_df <- tibble("age" = age, "mortality" = mortality)
+mort_df
+```
+
+CHUNK 16: Exercise 2.2.2: Extract the attributes from the author elements
+```{r}
+
+```
+
+CHUNK 17: Exercise 2.2.2: Solution
+```{r}
+dis <- xmlParse("disablement.xml")
+# Extract age from the attribute t
+age <- xpathSApply(dis,path="/XTbML/Table/Values/Axis/Y",xmlGetAttr,name="t")
+
+# Extract mortality rate from the Y elements
+disablement <- xpathSApply(dis,path="/XTbML/Table/Values/Axis/Y",xmlValue)
+
+# Combine into data frame
+dis_df <- tibble("age" = age, "disablement" = disablement)
+dis_df
+```
+
+CHUNK 18: Reading simple JSON file into a data frame
+```{r}
+# install.packages("jsonlite") # Run this only once
+library(jsonlite)
+
+# Read in the json data file
+test_df1 <- fromJSON("test_simple.json")
+test_df1
+```
+
+CHUNK 19: Read nested JSON file and unnest
+```{r}
+# Read in the nested data file and unnest the nested structure
+fromJSON("test_nested.json") %>% unpack(results)
+
+```
+
+CHUNK 20: Read nested JSON file and unnest the structure
+```{r}
+# unnest the structure using the unnest function because the Topics variable has square brackets
+fromJSON("test2_nested.json") %>% unnest(results)
+```
+
+CHUNK 21: Read nested JSON file and unpack the structure
+```{r}
+# Read in json file and get test variable, then unnest results variable
+fromJSON("test3_nested.json")[["test"]] %>% unnest(results)
+```
+
+CHUNK 22: Exercise 2.2.3 Read in and create a data frame from colors.json file
+```{r}
+
+```
+
+CHUNK 23: Exercise 2.2.3: Solution
+```{r}
+color_nested <- fromJSON("colors.json")
+color_nested[["colors"]] %>%  unpack(code)
+```
+
+CHUNK 24: Exercise 2.2.4: Read in the menu.xls file into three dataframes, Dinner, Sides, and Desserts
+```{r}
+# Install the readxl package
+# install.packages("readxl")
+library(readxl)
+
+
+```
+
+CHUNK 25: Exercise 2.2.4: Solution
+```{r}
+# Install the readxl package
+# install.packages("readxl")
+library(readxl)
+Dinner <- read_excel("menu.xls",sheet=1)
+Sides <- read_excel("menu.xls",sheet=2)
+Desserts <- read_excel("menu.xls",sheet=3)
+head(Dinner)
+head(Sides)
+head(Desserts)
+```
+
+CHUNK 26: Create a tall data frame
+```{r}
+#Creates tall data frame
+tall_books <- data.frame(
+  "ID" = c(01,01,01,07,07,07),
+  "Variable" = c("language","edition","author","language","edition","author"),
+  "Values" = c("Java","third","Herbert Schmidt","C++","second","E.Balagurusamy")
+)
+tall_books
+```
+
+CHUNK 27: Convert tall data to wide
+```{r}
+# converts to wide
+wide_books <- pivot_wider(tall_books,names_from=Variable, values_from = Values)
+wide_books
+```
+
+CHUNK 28: Convert wide data to tall
+```{r}
+
+tall_again <- pivot_longer(wide_books,c("language","edition","author"),names_to="Variable",values_to="Values")
+tall_again
+```
+
+CHUNK 29: Exercise 2.2.5. Convert the tall_measure.csv data set to a wide data set. Why is there a missing data point after converted when there wasn't one before?
+```{r}
+long_data <- read_csv("tall_measure.csv")
+
+```
+
+CHUNK 30: Exercise 2.2.5: Solution
+```{r}
+long_data <- read_csv("tall_measure.csv")
+
+pivot_wider(long_data,names_from=Month,values_from=Measurement)
+
+# There is one fewer observation in the tall data set for
+# Steve than there is for Tanya, so the extra observation
+# is missing for Steve
+```
+
+CHUNK 31: Create a data frame
+```{r}
+
+library(tidyverse)
+my_dat <- tibble(
+  "first_variable" = c(1, 2, 3),
+  "second_variable" = c(6, 7, 8)
+)
+my_dat
+```
+
+CHUNK 32: Write data to text file
+```{r}
+
+write_delim(my_dat, "datafile_space.txt") # Space delimiters is the default, see help on using the function to use other characters as delimiters
+
+# Comma delimited
+write_csv(my_dat, "datafile_comma.csv")
+```
+
+CHUNK 33: Appending a file
+```{r}
+
+new_dat <- tibble(
+  "first_variable" = c(4, 5),
+  "second_variable" = c(9, 10)
+)
+write_csv(new_dat, "datafile_comma.csv", append = TRUE)
+
+read_csv("datafile_comma.csv")
+```

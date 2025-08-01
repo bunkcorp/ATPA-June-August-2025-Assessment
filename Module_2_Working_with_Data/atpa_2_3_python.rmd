@@ -1,0 +1,741 @@
+---
+title: "ATPA 2.3 - Data Transformation and Cleaning"
+
+---
+To use Python first be sure a version of Python has been installed. Then do the following within RStudio:
+1. Go to Tools>Global Options>Python
+2. In the box select the version of Python to use. Hit select... and then look under all three tabs to locate the versions on your computer. Select the one you want to use.
+3. Save and restart R at the prompt.
+
+This call to reticulate is necessary each time you start a session.
+
+Note that when running python chunks you will see >>> in the Console rather than >. To be able to enter R commands in the Console, Enter exit after >>>. You will then see the > prompt.
+
+```{r}
+library(reticulate)
+py_discover_config() # Will verify the version of Python being used. You will see the output in the Console.
+```
+
+CHUNK 1: Create the data frame
+```{python}
+import pandas as pd
+
+trials = pd.DataFrame({"Phase":["A","A","A","B","B","B","C","C","C"],"Count":[50,40,65,70,70,90,30,20,25],"Successes":[20,17,31,40,33,41,12,9,9],"Location":["Austin Texas","Nashville Tennessee","Nashville Tennessee","Dallas Texas","Seattle Washington","Houston Texas","Orlando Florida","Cincinnati Ohio","El Paso Texas"]})
+trials
+```
+
+CHUNK 2: Subset to select Phase = A
+```{python}
+# Subset to only Phase A
+trials_A = trials.query("Phase == 'A'")
+trials_A
+```
+
+CHUNK 2A: Subsetting using brackets
+```{python}
+trials_A = trials.loc[trials.Phase == "A",:]
+trials_A
+```
+
+CHUNK 3: Subset to select Phase = A or B
+```{python}
+# Either Phase A or B
+trials_ABv1 = trials.query("Phase in ['A','B']") # or
+trials_ABv2 = trials.query("Phase == 'A' or Phase == 'B'")
+trials_ABv1
+trials_ABv2
+```
+
+CHUNK 4: Subset to select Phase not equal to A
+```{python}
+# Not Phase A
+trials_NotAv1 = trials.query("Phase != 'A'") # or
+trials_NotAv2 = trials.query("not Phase == 'A'")
+trials_NotAv1
+trials_NotAv2
+```
+
+CHUNK 5: Exercise 2.3.1: Use three different ways to subset to all locations where Phase is A or C
+```{python}
+
+```
+
+CHUNK 6: Exercise 2.3.1: Solution
+```{python}
+sol1 = trials.query("Phase in ['A','C']") 
+sol2 = trials.query("Phase == 'A' or Phase == 'C'") 
+sol3 = trials.query("Phase != 'B'") 
+sol1
+sol2
+sol3
+
+```
+
+CHUNK 7: Subset to Counts greater than or equal to 50
+```{python}
+# Count greater than or equal to 50
+trials_50 = trials.query("Count >= 50")
+trials_50
+```
+
+CHUNK 8: Subset to Count less than 40 or greater than 70
+```{python}
+# Count less than 40 or greater than 70
+trials_4070 = trials.query("Count < 40 or Count > 70")
+trials_4070
+```
+
+CHUNK 9: Subset to Count between 45 and 80
+```{python}
+# Count between 45 and 80
+trials_4580 = trials.query("Count > 45 and Count < 80")
+trials_4580
+```
+
+CHUNK 10: Subset to Location contains Texas
+```{python}
+# Location contains Texas
+trials_Texas = trials.loc[trials.Location.str.contains('Texas'),:]
+trials_Texas
+```
+
+CHUNK 11: Exercise 2.3.2: Subset to locations as indicated
+```{python}
+# Subset to locations that
+# a) contain "n"
+
+
+# b) ends with "n"
+
+
+# c) start with "n"
+```
+
+CHUNK 12: Exercise 2.3.2: Solution
+```{python}
+# Subset to locations that
+# a) contain "n"
+trials_contain_n = trials.loc[trials.Location.str.contains('n'),:]
+trials_contain_n
+
+# b) ends with "n"
+trials_end_n = trials.loc[trials.Location.str.endswith('n'),:]
+trials_end_n
+
+# c) start with "n"
+trials_start_n = trials.loc[trials.Location.str.startswith('n'),:]
+trials_start_n
+```
+
+CHUNK 13: Subset to Phase is A and Count exceeds 40
+```{python}
+# Phase is A and count is more than 40
+trials_A40 = trials.query("Phase == 'A' and Count > 40")
+trials_A40
+```
+
+CHUNK 14: Exercise 2.3.3: Subset to the conditions as outlined 
+```{python}
+
+# Subset to observations where Count is less than 50 AND Successes are more than 15.
+
+
+# Subset to observations where either Count is less than 50 OR Successes are more than 15.
+```
+
+CHUNK 15: Exercise 2.3.3: Solution
+```{python}
+
+# Subset to observations where Count is less than 50 AND Successes are more than 15.
+trials_50and15 = trials.query("Count < 50 and Successes > 15")
+trials_50and15
+
+# Subset to observations where either Count is less than 50 OR Successes are more than 15.
+trials_50or15 = trials.query("Count < 50 or Successes > 15")
+trials_50or15
+```
+
+CHUNK 16: Exercise 2.3.4: Subset to include only locations that include an “s” AND have more than 10 successes
+```{python}
+
+```
+
+CHUNK 17: Exercise 2.3.4: Solution
+```{python}
+
+trials_sand10 = trials.loc[trials.Location.str.contains('n') & (trials.Successes > 10),:]
+trials_sand10
+```
+
+CHUNK 18: Subset to the Count variable
+```{python}
+# Subset to the Count variable
+trials_Count = trials.loc[:,"Count"]
+trials_Count
+```
+
+CHUNK 19: Subset to the Count and Successes variables
+```{python}
+# Subset to counts and successes
+trials_CandSv1 = trials.loc[:,["Count","Successes"]] # or
+trials_CandSv2 = trials.iloc[:,1:3]
+trials_CandSv1
+trials_CandSv2
+```
+
+CHUNK 20: Subset to delete the variable Location
+```{python}
+# Subset to all variables except Location
+trials_noLocation = trials.drop(columns = ["Location"])
+trials_noLocation
+```
+
+CHUNK 21: Exercise 2.3.5: Subset to include Count and Successes for those in Phase A
+```{python}
+
+```
+
+CHUNK 22: Exercise 2.3.5: Solution
+```{python}
+sol = trials.query("Phase == 'A'") # Must do this first, before deleting the Phase column
+sol = sol.loc[:,["Count","Successes"]]
+sol
+```
+
+CHUNK 23: Order the data by increasing count
+```{python}
+# Sort by Count, low to high
+trials_sortCountInc = trials.sort_values(["Count"])
+trials_sortCountInc
+```
+
+CHUNK 24: Order the data by decreasing count
+```{python}
+# Sort counts high to low
+trials_sortCountDec = trials.sort_values(["Count"],ascending =False)
+trials_sortCountDec
+```
+
+CHUNK 25: Order the data by increasing count, using increasing successes to break ties
+```{python}
+# Successes is a tie breaker for counts
+trials_tiebreak1 = trials.sort_values(["Count","Successes"])
+trials_tiebreak1
+
+# The following breaks the tie using decreasing successes
+trials_tiebreak2 = trials.sort_values(["Count","Successes"], ascending = [True, False])
+trials_tiebreak2
+```
+
+CHUNK 26: Create the new variable Rate = Successes/Count
+```{python}
+# Create a new variable
+trials_rate1 = trials.assign(Rate = trials.Successes/trials.Count)
+trials_rate1
+trials_rate2 = trials.copy() # Ensures that an exact copy is made, which ignores the internal cration of Rate above.
+trials_rate2["Rate"] = trials_rate2.Successes/trials.Count
+trials_rate2
+```
+
+CHUNK 27: Creating two variables at once
+```{python}
+# Create multiple variables
+trials_multi = trials.assign(Large_Counts = trials.Count > 50, In_Texas = trials.Location.str.contains("Texas"))
+trials_multi
+```
+
+CHUNK 28: Create bins for the Count variable
+```{python}
+# Create binned variable
+trials_bin = trials.assign(Count_Level = pd.cut(trials.Count,bins = [0,35,65,100],labels = ["Low","Medium","High"]))
+trials_bin
+```
+
+CHUNK 29: Overwrite Location by making each observation have the value "Unknown"
+```{python}
+# Reassign an existing variable
+trials_unknown = trials.assign(Location = "Unknown")
+trials_unknown
+```
+
+CHUNK 30: Exercise 2.3.6: Create two sets of bins for the Successes variable
+```{python}
+# (a) Bin Successes using cutoffs of 15 and 30
+
+
+# (b) Bin Successes into four bins with an approximately equal number of observations in each bin. Check help on cut.
+```
+
+CHUNK 31: Exercise 2.3.6: Solution
+```{python}
+# (a) Bin Successes using cutoffs of 15 and 30
+trials_bin1 = trials.assign(Success_Level = pd.cut(trials.Successes,bins = [0,15,30,100],labels = ["Low","Medium","High"]))
+trials_bin1
+
+# (b) Bin Successes into four bins with an approximately equal number of observations in each bin.
+trials_bin2 = trials.assign(Success_Level = pd.cut(trials.Successes,bins = 4))  # By not specifying the labels, they will be generated automatically. See help to learn why the lower limit of the first interval was changed.
+trials_bin2
+```
+
+CHUNK 32: Obtain the mean count by phase
+```{python}
+# Find mean counts by phase
+# In Python, this can be done simply, as follows:
+trials_means = trials.groupby("Phase").agg({"Count":"mean"})
+trials_means
+# The following code puts Phase (in this case) as a variable, not a row label. It also changes the name of the aggregated variable
+trials_means2 = trials.groupby("Phase",as_index=False).agg({"Count":"mean"}).rename(columns={"Count":"Mean_Count"})
+trials_means2
+```
+
+CHUNK 33: Obtain the number of observations in each phase
+```{python}
+# Counts how many in each phase
+trials_number = trials.groupby("Phase",as_index=False).size().rename(columns={"size":"Number_in_Phase"})
+trials_number
+```
+
+CHUNK 34: Obtain the number of unique locations in each phase
+```{python}
+# Count the number of unique locations in each phase
+trials_unique = trials.groupby("Phase",as_index=False).agg({"Location":"nunique"}).rename(columns={"Location":"Unique_Locations"})
+trials_unique
+```
+
+CHUNK 35: Exercise 2.3.7: Obtain the number of unique values of Count in each Phase
+```{python}
+# Count the number of unique Count values there are in each Phase.
+
+```
+
+CHUNK 36: Exercise 2.3.7: Solution
+```{python}
+# Count the number of unique Count values there are in each Phase.
+trials_countOfCount = trials.groupby("Phase",as_index=False).agg({"Count":"nunique"}).rename(columns={"Count":"Unique_Counts"})
+trials_countOfCount
+```
+
+CHUNK 37: Exercise 2.3.8: 
+```{python}
+flights = pd.read_csv("flights.csv")
+pd.set_option('max_columns', None) # This will display all the columns
+
+# 1. Filter observations to only values where carrier is equal to “UA”
+
+# 2. Filter observations to only where the dest variable is either “MIA” or “ORD”
+
+# 3. Filter observations to only where air_time is between 60 and 120 minutes.
+
+# 4. Filter variables to only sched_dep_time and dep_delay
+
+# 5. Order the data from longest distance to shortest distance
+
+# 6. Create a new variable called delayed that returns TRUE if dep_delay is greater than 0 and FALSE otherwise.
+
+# 7. Create a new variable called mph that is equal to distance divided by air_time times 60
+
+# 8. Determine mean dep_delay values by carrier. Call it mean_delay
+
+# 9. Each plane has a unique value for tailnum. Determine how many distinct planes each carrier uses. Call it num_planes
+```
+
+CHUNK 38: Exercise 2.3.8: Solution
+```{python}
+flights = pd.read_csv("flights.csv")
+pd.set_option('max_columns', None) # This will display all the columns
+
+# 1. Filter observations to only values where carrier is equal to “UA”
+flights.query("carrier == 'UA'")
+
+# 2. Filter observations to only where the dest variable is either “MIA” or “ORD”
+flights.query("dest in ['MIA','ORD']")
+
+# 3. Filter observations to only where air_time is between 60 and 120 minutes.
+flights.query("air_time > 60 and air_time < 120")
+
+# 4. Filter variables to only sched_dep_time and dep_delay
+flights.loc[:,["sched_dep_time","dep_delay"]]
+
+# 5. Order the data from longest distance to shortest distance
+flights.sort_values("distance",ascending=False)
+
+# 6. Create a new variable called delayed that returns TRUE if dep_delay is greater than 0 and FALSE otherwise.
+flights.assign(delayed = flights.dep_delay > 0)
+
+# 7. Create a new variable called mph that is equal to distance divided by air_time times 60
+flights.assign(mph = flights.distance/flights.air_time*60.)
+
+# 8. Determine mean dep_delay values by carrier. Call it mean_delay
+flights.groupby("carrier",as_index=False).agg({"dep_delay":"mean"}).rename(columns={"dep_delay":"mean_delay"})
+
+# 9. Each plane has a unique value for tailnum. Determine how many distinct planes each carrier uses. Call it num_planes
+flights.groupby("carrier",as_index=False).agg({"tailnum":"nunique"}).rename(columns={"tailnum":"num_planes"})
+
+```
+
+CHUNK 39: Exercise 2.3.9
+```{python}
+# Determine the top 5 most common destinations from JFK airport.
+
+```
+
+CHUNK 40: Exercise 2.3.9: Solution
+```{python}
+# Determine the top 5 most common destinations from JFK airport.
+flights_jfk = flights.query("origin == 'JFK'").groupby("dest",as_index=False).size().rename(columns={"size":"number_flights"}).sort_values("number_flights",ascending=False)
+flights_jfk.head(5)
+```
+
+CHUNK 41: Exercise 2.3.10
+```{python}
+# Create a new variable that is the total number of nights booked by adding stay_in_weekday_nights and stay_in_weekend_nights. Keep only bookings where the reserved_room_type and the assigned_room_type are equal. Find the mean number of total nights stayed grouped by assigned_room_type.
+
+```
+
+CHUNK 42: Exercise 2.3.10: Solution
+```{python}
+# Create a new variable that is the total number of nights booked by adding stay_in_weekday_nights and stay_in_weekend_nights. Keep only bookings where the reserved_room_type and the assigned_room_type are equal. Find the mean number of total nights stayed grouped by assigned_room_type.
+
+hotel_bookings = pd.read_csv("hotel_bookings.csv")
+
+hotel_bookings.assign(total_stay = hotel_bookings.stays_in_week_nights + hotel_bookings.stays_in_weekend_nights).query("assigned_room_type == reserved_room_type").groupby("assigned_room_type",as_index=False).agg({"total_stay":"mean"}).rename(columns={"total_stay":"average_total_stay"})
+```
+
+CHUNK 43: Create and display the sample data
+```{python}
+import numpy as np
+security = pd.DataFrame({"Camera":["Lobby","Main Floor","Back Door","Front Door","Offices"],"Total Hours Recorded":[51,59,-1,22,27],"Incidents":[2,1,0,0,np.nan]})
+
+security
+```
+
+CHUNK 44: Rename Total Hours Recorded to Hours_Recorded
+```{python}
+# Renaming variables
+security = security.rename(columns = {"Total Hours Recorded":"Hours_Recorded"})
+security
+```
+
+CHUNK 45: Remove observations with Hours_Recorded = -1 or Incidents = NaN
+```{python}
+# Remove missing values specifically for each row
+security.dropna(subset=["Incidents"]).query("Hours_Recorded != -1") # This time we are not saving the output as we may decide on a different way to deal with missing values.
+```
+
+CHUNK 46: Remove observations with NaNs without filtering
+```{python}
+# Remove all instances of NaN
+security.dropna()
+```
+
+CHUNK 47: Change all instances of -1 to NaN
+```{python}
+# CHUNK 5
+# Recode all instances of missing to NA
+# Because this code makes a permanent change to the data, we do it with a new version
+security_recode = security.replace(-1,np.nan)
+security_recode
+del security_recode # removes the object
+```
+
+CHUNK 48: Exercise 2.3.11: Remove observations with 0 -1, and NA as if they are all missing values. Rename Incidents to Occurrences
+```{python}
+
+```
+
+CHUNK 49: Exercise 2.3.11: Solution
+```{python}
+# Remove observations with 0 -1, and NA as if they are all missing values. Rename Incidents to Occurrences
+security_drop = security.dropna(subset=["Incidents"]).query("Hours_Recorded != -1 & Incidents != 0")
+security_drop = security_drop.rename(columns = {"Incidents":"Occurrences"})
+security_drop
+```
+
+CHUNK 50: String to Numeric
+```{python}
+# String to Numeric
+x="3"; y="4"
+int(x)+int(y)
+```
+
+CHUNK 51: Numeric to String
+```{python}
+# Numeric to String
+str(3)
+```
+
+CHUNK 52: Changing case
+```{python}
+# Case
+"String".lower() # string
+"String".upper() # STRING
+```
+
+CHUNK 53: Working with a vector of strings
+```{python}
+X = ["String1", "String2"]
+[str.lower() for str in X]
+[str.upper() for str in X]
+```
+
+CHUNK 54: Replacing string content
+```{python}
+# Replacement
+x = "my_string"
+x.replace("my","your")
+X = ["my_string1","my_string2"]
+[str.replace("my","your") for str in X]
+```
+
+CHUNK 55: Replacing string content
+```{python}
+# Converting money to numeric
+x = "$84,510"
+float(x.replace("$","").replace(",","")) # 84510
+```
+
+CHUNK 56: Obtaining substrings
+```{python}
+# Substrings
+x = "apple"
+x[0:3]
+X = ["apple","pear"]
+[str[0:3] for str in X]
+```
+
+CHUNK 57: Combining and splitting strings
+```{python}
+# Combining Strings
+"apple"+"crisp"
+"".join(["honey","apple","crisp"]) # no space between the words
+"-".join(["honey","apple","crisp"]) # places a dash between the words
+# honey-apple-crisp
+" ".join(["honey","apple","crisp"]) # places a space between the words
+# honey apple crisp
+
+# Splitting Strings
+dessert = "honey apple crisp"
+dessert.split(" ")
+```
+
+CHUNK 58: Exercise 2.3.12: Perform the indicated tasks on a vector of words
+```{python}
+my_words = ["Actuarial","Exam","Passed"]
+
+# 1. Change all the letters to lower case
+
+
+# 2. Replace each letter “a” with a dollar sign, “$”
+
+
+# 3. Combine all three words putting a space in between
+```
+
+CHUNK 59: Exercise 2.3.12: Solution
+```{python}
+my_words = ["Actuarial","Exam","Passed"]
+
+# 1. Change all the letter to lower case
+[str.lower() for str in my_words]
+
+# 2. Replace all “a”’s with dollar signs, “$”
+[str.replace("a","$") for str in my_words]
+
+# 3. Combine all three words putting a space in between
+" ".join(my_words)
+```
+
+CHUNK 60: Making date variables
+```{python}
+# The datetime package comes with python and does not need to be installed
+import datetime as dt
+dt.date(year = 2022, month = 1, day=1)
+dt.datetime(year = 2022, month =1, day = 1, hour = 9, minute = 30, second = 55)
+```
+
+CHUNK 61: Converting string to date
+```{python}
+Date1 = "10/01/2021"
+Date2 = "20211001"
+dt.datetime.strptime(Date1, "%m/%d/%Y")
+dt.datetime.strptime(Date2, "%Y%m%d")
+Date_Time = "10-01-2021 5:30:41"
+dt.datetime.strptime(Date_Time, "%m-%d-%Y %H:%M:%S")
+```
+
+CHUNK 62: Calculating time differences
+```{python}
+# Time differences
+dt.date.today() - dt.date(2021,1,1)
+dt.datetime.now() - dt.datetime(2021,1,1,9,30,55)
+Time1 = dt.datetime.strptime("12:30:09","%H:%M:%S")
+Time2 =dt.datetime.strptime("12:35:30","%H:%M:%S")
+Time2 - Time1
+```
+
+CHUNK 63: Extract day/month/year from a date variable
+```{python}
+my_date = dt.datetime.strptime("07102003", "%m%d%Y")
+my_date.strftime("%m") # Extracts the month as a number
+my_date.strftime("%B") # Extracts the name of the month
+my_date.strftime("%Y") # Extracts the year
+my_date.strftime("%d") # Extracts the day of the month
+my_date.strftime("%w") # Extracts the day of the week as a number, Sunday is 0
+my_date.strftime("%A") # Extracts the day of week as a name
+
+```
+
+CHUNK 64: Exercise 2.3.13: Convert the Year, Month, and Day variables in the flight data to a single date variable
+```{python}
+# Reload the flights data if needed
+# flights = pd.read_csv("flights.csv")
+```
+
+CHUNK 65: Exercise 2.3.13: Solution
+```{python}
+# Reload the flights data if needed
+# flights = pd.read_csv("flights.csv")
+# flights.assign(Date = dt.date(year = flights.year, month = flights.month, day = flights.day)) # This seems logical but doesn't work. R can work with vectors, so a command like this can process all the rows at once. Python can only do one row at a time and so a loop is needed here.
+
+Date = [dt.date(year = flights.year[i], month = flights.month[i], day = flights.day[i]) for i in range(flights.shape[0])]
+flights["Date"] = Date
+del Date
+flights
+```
+
+CHUNK 66: Create ordered and unordered factor variables
+```{python}
+# Create an ordered factor variable
+fct_ordered = pd.Categorical(["good","good","poor","okay"],ordered=True,categories=["poor","okay","good"])
+fct_ordered
+
+# Create an unordered factor variable
+fct_unordered = pd.Categorical(["good","good","poor","okay"],ordered=False)
+fct_unordered
+
+# Convert an ordered factor variable to unordered
+fct_unordered_2 = pd.Categorical(fct_unordered,ordered=False)
+fct_unordered_2
+```
+
+CHUNK 67: Factor recoding and combining
+```{python}
+# Survey data set
+survey = pd.DataFrame({"Individual":[1,2,3,4,5],"Sex":pd.Categorical(["Male","male","fem.","Female","M"]),"Answer": pd.Categorical(["Y","Y","N","Yes","n"])})
+survey
+```
+
+CHUNK 68: Change factors to upper case
+```{python}
+# Recoding
+survey.assign(Sex = survey.Sex.str.upper(),Answer = survey.Answer.str.upper())
+
+```
+
+CHUNK 69: Change factors to upper case and retain only first letter
+```{python}
+survey_one = survey.assign(Sex = pd.Categorical(survey.Sex.str.upper().str[0]),Answer = pd.Categorical(survey.Answer.str.upper().str[0]))
+survey_one
+survey_one["Sex"].cat.categories
+survey_one["Answer"].cat.categories
+```
+
+CHUNK 70: Change factor values with direct recoding
+```{python}
+# Recoding directly
+survey_direct = survey
+survey_direct["Sex"] = pd.Categorical(survey_direct["Sex"].map({"M":"Male","male":"Male","fem.":"Female","Male":"Male","Female":"Female"}))
+survey_direct
+survey_direct["Sex"].cat.categories
+
+```
+
+CHUNK 71: Combining factors
+```{python}
+# Factor combining
+small_levels = {"AS","F9","HA","OO","YV"}
+mask = flights.carrier.isin(small_levels)
+flights_comb = flights
+flights_comb.carrier[mask] = "Other"
+flights_comb.carrier = pd.Categorical(flights_comb.carrier)
+flights_comb["carrier"].cat.categories
+flights_comb.carrier.value_counts()
+```
+
+CHUNK 72: Converting Boolean to integer
+```{python}
+# Convert Boolean to integer
+import numpy as np
+security = pd.DataFrame({"Camera":["Lobby","Main Floor","Back Door","Front Door","Offices"],"Total Hours Recorded":[51,59,-1,22,27],"Incidents":[2,1,0,0,np.nan]})
+security.iloc[:,1] > 30 # To create a Boolean variable for this example
+(security.iloc[:,1] > 30) * 1 # To convert it to 0 and 1
+```
+
+CHUNK 73: Making a factor variable numeric
+```{python}
+my_factor = pd.Series([15,5,10,15,15,15,10], dtype="category")
+pd.Series(my_factor,dtype="int")
+
+```
+
+CHUNK 74: Exercise 2.3.14
+```{python}
+Auto_Names = ["symboling", "normalized_losses", "make", "fuel_type","aspiration", "num_doors", "body_style", "drive_wheels","engine_location", "wheel_base", "length", "width", "height", "curb_weight", "engine_type","num_cylinders", "engine_size", "fuel_system", "bore", "stroke", "compression_ratio", "horsepower", "peak_rpm", "city_mpg", "highway_mpg", "price"]
+
+import pandas as pd
+auto = pd.read_csv("automobile.csv",names = Auto_Names)
+
+# 1 Replace those “?” values with NAs
+
+
+# 2 Remove all records with missing values
+
+
+# 3 Rename the variable drive_wheels to drive_type
+
+
+# 4 Recode all the variables in the new variable drive_type. Make “rwd” into “rear”, “fwd” into “front”, and “4wd” into “four”
+
+
+# 5 Change the values in the variable engine_location so that only the first two letters show and make those two letters all uppercase
+
+
+# 6 There are some numeric columns that had “?”, and as a result, they were marked as strings or characters. Convert those variables to numeric
+
+
+# 7 Combine factors in the body_style variable so that there are only three factors: “sedan”, “hatchback”, and “Other”
+```
+
+CHUNK 75: Exercise 2.3.14: Solution
+```{python}
+Auto_Names = ["symboling", "normalized_losses", "make", "fuel_type","aspiration", "num_doors", "body_style", "drive_wheels","engine_location", "wheel_base", "length", "width", "height", "curb_weight", "engine_type","num_cylinders", "engine_size", "fuel_system", "bore", "stroke", "compression_ratio", "horsepower", "peak_rpm", "city_mpg", "highway_mpg", "price"]
+
+import pandas as pd
+auto = pd.read_csv("automobile.csv",names = Auto_Names)
+
+# 1 Use the principles of data manipulation to replace those “?” values with NAs
+auto = auto.replace("?",np.nan)
+
+# 2 Remove all records with missing values
+auto = auto.dropna()
+
+# 3 Rename the variable drive_wheels to drive_type. 
+auto = auto.rename(columns={"drive_wheels":"drive_type"})
+
+# 4 Recode all the variables in the new variable drive_type. Make “rwd” into “rear”, “fwd” into “front”, and “4wd” into “four”. 
+auto["drive_type"] =  auto["drive_type"].map({"rwd":"rear","fwd":"front","4wd":"four"})
+
+# 5 Change the values in the variable engine_location  so that only the first two letters show and make those two letters all uppercase. 
+auto = auto.assign(engine_location=auto.engine_location.str.upper().str[0:2])
+
+# 6 There are some numeric columns that have “?”, and as a result, they were marked as strings or characters. Convert those variables to numeric. 
+auto = auto.assign(normalized_losses = [float(x) for x in auto.normalized_losses],stroke = [float(x) for x in auto.stroke],bore = [float(x) for x in auto.bore],price = [float(x) for x in auto.price])
+
+# 7 Combine factors in the body_style variable so that there are only three factors: “sedan”, “hatchback”, and “Other”
+big_levels = ["sedan","hatchback"]
+mask = auto.body_style.isin(big_levels)
+auto.body_style[-mask] = "Other"
+
+pd.set_option('max_columns', None) # This will display all the columns
+auto
+```

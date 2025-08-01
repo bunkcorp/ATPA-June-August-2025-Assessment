@@ -1,0 +1,357 @@
+---
+  title: "ATPA 2.6 - Missing and Extreme Values"
+---
+
+CHUNK 1: Load and prepare the flights data
+```{r}
+library(tidyverse)
+library(nycflights13)
+
+# Transforms the time variables to minutes from midnight.
+flights2 <- flights %>% mutate(dep_time = dep_time - 40 * floor(dep_time / 100), sched_dep_time = sched_dep_time - 40 * floor(sched_dep_time / 100))
+```
+
+CHUNK 2: Perform a permutation test for the dep_time variable in the flights data set
+```{r}
+
+# Find the test statistic for the data
+is_missing <- is.na(flights2$dep_time)
+Test_stat <- mean(flights2$sched_dep_time[is_missing]) - mean(flights2$sched_dep_time[!is_missing])
+Test_stat
+
+# Do a for loop to reorder the data, find the R values, and create a distribution to compare against the test statistic. The permutations are done on the variable that does not have missing value. That way the is_missing vector can be reused.
+set.seed(1234)
+nrun <- 1000
+R_vals <- numeric(nrun)
+for (i in 1:nrun) {
+  flights2$temp_sched <- sample(flights2$sched_dep_time)
+  R_vals[i] <- mean(flights2$temp_sched[is_missing]) - mean(flights2$temp_sched[!is_missing])
+}
+
+# Create a confidence interval
+CI <- quantile(R_vals, c(.025, .975))
+CI
+
+# Check condition
+Test_stat < CI[2] && Test_stat > CI[1]
+```
+
+CHUNK 2A: Perform the permutation test using the normal approximation
+```{r}
+n <- nrow(flights2)
+m <- sum(is_missing)
+v <- var(flights2$sched_dep_time)
+var_R <- n*v/m/(n-m)
+CI2 <- 1.96 * sqrt(var_R)
+CI2
+abs(Test_stat) < CI2
+
+# The following are some additional checks on the approximation
+# Calculate the variance of the sample of R-values and compare to the variance based on all permutations
+var(R_vals)
+var_R
+
+# Make a simple histogram of the R-values
+hist(R_vals)
+
+# In this case the approximation worked well
+```
+
+CHUNK 3: Create the production data set
+```{r}
+
+production <- tibble(
+  "Produced" = c(145, 212, 137, 187, 166),
+  "Employees" = c(6, 8, 6, 7, 7),
+  "Available_Machines" = c(19, 24, NA, 20, 18),
+  "Hours_Open" = c(10, 9, 8, 9, 6)
+)
+production
+```
+
+CHUNK 4: Mean imputation
+```{r}
+# install.packages("mice") # Uncomment if the package needs to be installed
+# With mice package, ignore the warning for number of logged event.
+library(mice)
+mean_imp <- mice(production, method = "mean", m = 1, maxit = 1)
+# you can set m and maxit to higher values if there is randomness in the imputation procedure and you want to see multiple versions, however, you do not need to
+production_mean <- complete(mean_imp) # Returns the new data frame with the imputed values
+production_mean
+```
+
+CHUNK 5: Regression imputation - mice
+```{r}
+# Because we will be using the data to predict produced, we do not
+# want to use it in the imputation
+reg_imp <- mice(production[, -1], method = "norm.predict", m = 1, maxit = 1)
+production_reg <- complete(reg_imp)
+production_reg
+```
+
+CHUNK 5-optional: Do the above imputation manually
+```{r}
+# Perform the regression
+reg <- lm(Available_Machines ~ Employees + Hours_Open, data = production)
+reg
+# Use the model to calculate the imputed value
+df <- data.frame("Employees" = 6, "Hours_Open" = 8)
+predict(reg, newdata = df)
+```
+
+CHUNK 6: K-Nearest Neighbors imputation
+```{r}
+
+# install.packages("caret" and "RANN") # Uncomment if the package needs to be installed
+library(caret)
+library(RANN)
+# Because we will be using the data to predict produced, we do not
+# want to use it in the imputation
+dat <- as.data.frame(production[, -1])
+kimp <- preProcess(dat, method = "knnImpute", k = 2)
+predict(kimp, dat)
+# preProcess also standardizes the data
+
+# Quick shortcut to convert back to original scale when all the data is numeric
+t(t(predict(kimp, dat)) * kimp$std + kimp$mean)
+```
+
+CHUNK 7: Imputing both categorical and numeric values
+```{r}
+production$Manager <- factor(c("On", "Off", "On", "Off", NA))
+cart_imp <- mice(production[, -1], method = "cart", m = 1, maxit = 1)
+production_cart <- complete(cart_imp)
+production_cart
+```
+
+CHUNK 8: Exercise 2.6.1
+```{r}
+# Read in automobile data set
+Auto_Names <- c("symboling", "normalized_losses", "make", "fuel_type", "aspiration", "num_doors", "body_style", "drive_wheels", "engine_location", "wheel_base", "length", "width", "height", "curb_weight", "engine_type", "num_cylinders", "engine_size", "fuel_system", "bore", "stroke", "compression_ratio", "horsepower", "peak_rpm", "city_mpg", "highway_mpg", "price")
+
+auto <- read_csv("automobile.csv", col_names = Auto_Names)
+cols_to_keep <- c("normalized_losses", "num_doors", "body_style", "curb_weight", "engine_type", "bore", "city_mpg", "price")
+auto <- auto %>% select(all_of(cols_to_keep))
+# Replace ?'s with NAs
+auto[auto == "?"] <- NA
+# Change these three columns from character to numeric
+missing_cols <- c("normalized_losses", "bore", "price")
+auto[missing_cols] <- apply(auto[missing_cols], 2, as.numeric)
+
+
+# Examine the normalized_loss variable for missingness at random.
+# 1. Check a box plot for curb_weight and city_mpg when normalized_loss is and isn't missing
+
+# 2. Perform a permutation test for the normalized_loss variable using curb_weight as the variable without missing data.
+
+# 3. Explain the missingness of bore
+
+# 4. Perform mean imputation for the missing values of price
+
+# 5. Perform regression imputation for price
+
+# 6. Perform imputation for both price and num_doors
+```
+
+CHUNK 9A: Exercise 2.6.1: Question 1
+```{r}
+# Read in automobile data set
+Auto_Names <- c("symboling", "normalized_losses", "make", "fuel_type", "aspiration", "num_doors", "body_style", "drive_wheels", "engine_location", "wheel_base", "length", "width", "height", "curb_weight", "engine_type", "num_cylinders", "engine_size", "fuel_system", "bore", "stroke", "compression_ratio", "horsepower", "peak_rpm", "city_mpg", "highway_mpg", "price")
+
+auto <- read_csv("automobile.csv", col_names = Auto_Names)
+cols_to_keep <- c("normalized_losses", "num_doors", "body_style", "curb_weight", "engine_type", "bore", "city_mpg", "price")
+auto <- auto %>% select(all_of(cols_to_keep))
+# Replace ?'s with NAs
+auto[auto == "?"] <- NA
+# Change these three columns from character to numeric
+missing_cols <- c("normalized_losses", "bore", "price")
+auto[missing_cols] <- apply(auto[missing_cols], 2, as.numeric)
+
+
+# Examine the normalized_losses variable for missingness at random.
+# 1. Check a box plot for curb_weight and city_mpg when normalized losses is and isn't missing
+auto$missing <- is.na(auto$normalized_losses)
+ggplot(auto) +
+  geom_boxplot(mapping = aes(x = missing, y = curb_weight))
+ggplot(auto) +
+  geom_boxplot(mapping = aes(x = missing, y = city_mpg))
+
+# It seems as if there may be a relationship between missingness and both curb_weight and city_mpg.
+```
+
+CHUNK 9B: Exercise 2.6.1: Question 2
+```{r}
+# 2. Perform a permutation test for the price variable using curb_weight as the variable without missing data.
+Test_stat <- mean(auto$curb_weight[auto$missing == TRUE]) - mean(auto$curb_weight[auto$missing == FALSE])
+Test_stat
+
+# Do a for loop to reorder the data, find the R values, and create a distribution to compare against the test statistic
+set.seed(1234)
+nrun <- 1000
+R_vals <- numeric(nrun)
+for (i in 1:nrun) {
+  auto$temp_curb_weight <- sample(auto$curb_weight)
+  R_vals[i] <- mean(auto$temp_curb_weight[auto$missing == TRUE]) - mean(auto$temp_curb_weight[auto$missing == FALSE])
+}
+
+# Create a confidence interval
+CI <- quantile(R_vals, c(.025, .975))
+CI
+
+# Check condition
+Test_stat < CI[2] && Test_stat > CI[1]
+# Normalized_losses are not missing completely at random
+
+auto <- auto %>% select(-c("missing", "temp_curb_weight")) # Remove the variables "missing" and "temp_curb_weight that were added earlier
+```
+
+CHUNK 9C: Exercise 2.6.1: Question 3
+```{r}
+# 3. Explain the missingness of bore with relationship to engine_type
+
+# Look at the four records where bore is missing
+auto %>% filter(is.na(bore))
+
+# All have engine_type = rotor. Now check that this is the only time rotor appears
+auto %>% filter(engine_type == "rotor")
+
+# When bore is missing, those are also the only incidences of the engine_type = rotor.
+# At this point an investigation of this relationship might be in order. We will elect to delete these records, but that will imply any model we build will not be able to make predictions for cars with that engine_type.
+
+# Remove bore
+auto <- auto %>% filter(!is.na(bore))
+```
+
+CHUNK 9D: Exercise 2.6.1: Question 4
+```{r}
+# 4. Perform mean imputation for the missing values of price.
+price_missing <- is.na(auto$price)
+mean_imp <- mice(auto, method = "mean", maxit = 1, m = 1)
+auto_imputed_mean <- complete(mean_imp)
+price_mean <- auto_imputed_mean$price
+price_mean[price_missing]
+```
+
+CHUNK 9E: Exercise 2.6.1 question 5
+```{r}
+# 5. Perform regression imputation for the missing values of price
+reg_imp <- mice(auto[, -1], method = "norm.predict", m = 1, maxit = 1)
+auto_imputed_reg <- complete(reg_imp)
+price_reg <- auto_imputed_reg$price
+price_reg[price_missing]
+```
+
+CHUNK 9F: Exercise 2.6.1 question 6
+```{r}
+# 6. Perform imputation for both num_doors and price
+
+doors_missing <- is.na(auto$num_doors)
+auto$num_doors <- factor(auto$num_doors)
+cart_imp <- mice(auto, method = "cart", m = 1, maxit = 1)
+auto_imputed_cart <- complete(cart_imp)
+doors_cart <- auto_imputed_cart$num_doors
+doors_cart[doors_missing]
+price_cart <- auto_imputed_cart$price
+price_cart[price_missing]
+```
+
+CHUNK 10: Identifying outliers
+```{r}
+library(tidyverse)
+
+hotel_bookings <- read_csv("hotel_bookings.csv")
+
+# Full data boxplot
+ggplot(hotel_bookings, mapping = aes(x = stays_in_week_nights)) +
+  geom_boxplot() +
+  ggtitle("Full Data")
+
+# Full data histogram
+ggplot(hotel_bookings, mapping = aes(x = stays_in_week_nights)) +
+  geom_histogram() +
+  ggtitle("Full Data")
+```
+
+CHUNK 11: Looking for outliers
+```{r}
+# Try cutoffs of z-scores of 3, 5, and 10
+# Add z-scores to the data frame
+hotel_bookings <- hotel_bookings %>% mutate(zscores = (stays_in_week_nights - mean(stays_in_week_nights)) / sd(stays_in_week_nights))
+
+# Set the cutoff values to check
+cutoff <- c(3, 5, 10)
+
+# Use a loop to evaluate all the selected cutoff values
+for (cut in cutoff) {
+  print(paste("Percentage of observations with z-scores greater than", as.character(cut), sep = " "))
+  print(100 * sum(hotel_bookings$zscores >= cut) / nrow(hotel_bookings))
+
+  print(hotel_bookings %>%
+    filter(zscores < cut) %>%
+    ggplot(mapping = aes(stays_in_week_nights)) +
+    geom_histogram() +
+    ggtitle(str_c("Trimmed above Zscore of ", as.character(cut))))
+}
+```
+
+CHUNKS 12 - 15 Various methods to deal with outliers
+CHUNK 12: 1. Log transform
+Because there are 0's, the transform is log(x+1)
+```{r}
+hotel_bookings %>%
+  mutate(logstay = log(stays_in_week_nights + 1)) %>%
+  ggplot(mapping = aes(x = logstay)) +
+  geom_histogram() +
+  ggtitle("Log Transform")
+```
+
+CHUNK 13: 2. Removing outliers. This is the same as in CHUNK 11. The cutoff in this example is a z-score of 5.
+```{r}
+cutoff <- 5
+hotel_bookings %>%
+  filter(zscores < cutoff) %>%
+  ggplot(mapping = aes(stays_in_week_nights)) +
+  geom_histogram() +
+  ggtitle(str_c("Trimmed above Zscore of ", as.character(cutoff)))
+```
+
+CHUNK 14: 3. Change the values. In this case we can cap all observations above 6 as being equal to 6. 
+```{r}
+cap <- 6
+hotel_bookings %>%
+  mutate(stays_in_week_nights = pmin(stays_in_week_nights, cap)) %>%
+  ggplot(mapping = aes(x = stays_in_week_nights)) +
+  geom_histogram() +
+  ggtitle(str_c("Capped at ", cap))
+```
+
+CHUNK 15: 4. Replace variable with percentiles.  
+```{r}
+hotel_bookings %>%
+  mutate(Perc_Stay = ntile(stays_in_week_nights, 100)) %>%
+  ggplot(mapping = aes(x = stays_in_week_nights, y = Perc_Stay)) +
+  geom_point() +
+  labs(x = "Weeknight Stays", y = "Percentiles")
+ggtitle("Percentile Transform by Raw Data")
+```
+
+CHUNK 16: Use DBSCAN to find outliers based on several observations. Change eps and minPts to affect the output. The number of outliers are the number of noise points and given a cluster value of 0. 
+```{r}
+
+# install.packages("dbscan") # Uncomment if package not already installed
+library(dbscan)
+hotel_small <- hotel_bookings %>%
+  select(stays_in_week_nights, stays_in_weekend_nights, adults)
+hotel_small <- hotel_small[1:10000,] # To quickly run the program
+
+eps <- 3
+minPts <- 10
+
+dbout <- dbscan(hotel_small, eps, minPts)
+dbout
+hotel_small[dbout$cluster == 0, ] # List the identified outliers
+hotel_small[dbout$cluster > 0, ] %>%
+  ggplot(mapping = aes(stays_in_week_nights)) +
+  geom_histogram() +
+  ggtitle(str_c("DBSCAN removed with eps = ", eps, " and minPts = ", minPts))
+```

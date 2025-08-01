@@ -1,0 +1,79 @@
+---
+title: "Module 2 Section 7 Case Study 1"
+---
+
+Read in data
+```{r}
+library(readxl)
+library(tidyverse)
+
+site_visits <- read_csv("tracking.csv")
+site_daily_1 <- read_excel("site_daily.xlsx", sheet = 2)
+site_daily_2 <- read_excel("site_daily.xlsx", sheet = 3)
+```
+
+Filter by first time visits
+Find the number of visits and the average duration per visit by day
+Make a histogram of the average duration
+```{r}
+by_day <- site_visits %>%
+  filter(Previous == 0) %>%
+  group_by(Day) %>%
+  summarize(
+    mean_duration = mean(Duration),
+    num_visits = n()
+  )
+by_day
+
+ggplot(data = by_day, aes(x = mean_duration)) +
+  geom_histogram() +
+  ggtitle("Average Duration of Site Visit by Day") +
+  xlab("Average Duration") +
+  ylab("Count")
+```
+
+Combine the data sets
+```{r}
+site_data_combined <- bind_rows(site_daily_1, site_daily_2)
+by_day_2 <- by_day %>% rename(date = Day)
+site_all <- inner_join(site_data_combined, by_day_2, by = "date")
+site_all
+```
+
+Fix the headliner_topic variable
+```{r}
+site_all_2 <- site_all %>%
+  mutate(headliner_topic = str_to_lower(headliner_topic))
+site_all_2$headliner_topic[site_all_2$headliner_topic == "ml"] <- "machine learning"
+table(site_all_2$headliner_topic)
+```
+
+Fix outlier in num_ads
+```{r}
+ggplot(site_all_2, aes(num_ads)) +
+  geom_histogram(binwidth = 1)
+
+site_all_3 <- site_all_2 %>% filter(num_ads < 70)
+ggplot(site_all_3, aes(num_ads)) +
+  geom_histogram(binwidth = 1)
+```
+
+Missing values in news, use cart regression to impute the values
+```{r}
+library(mice)
+cart_imp <- mice(site_all_3[names(site_all_3) != "mean_duration"], method = "cart", m = 1, maxit = 1)
+site_all_4 <- complete(cart_imp)
+# Add the target variable to the imputed data set
+site_all_4$mean_duration <- site_all_3$mean_duration
+```
+
+Create weekday variable and change character variables to factors
+```{r}
+site_all_4$day_of_week <- weekdays(site_all_3$date)
+site_all_4$headliner_topic <- as.factor(site_all_4$headliner_topic)
+site_all_4$day_of_week <- as.factor(site_all_4$day_of_week)
+site_all_4
+summary(site_all_4[, 1:3])
+summary(site_all_4[, 4:5])
+summary(site_all_4[, 6:7])
+```

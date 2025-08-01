@@ -1,0 +1,3 @@
+ATPA_module4_course_structure.js:https://cdn-files.soa.org/e-learning/atpa/atpa_4_3_python.rmd
+ATPA_module4_course_structure.js:https://cdn-files.soa.org/e-learning/atpa/atpa_4_3_r.rmd
+ATPA_module4_course_structure.js:https://cdn-files.soa.org/e-learning/atpa/atpa_4_5_r.rmd

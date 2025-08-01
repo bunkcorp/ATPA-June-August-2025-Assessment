@@ -1,0 +1,58 @@
+---
+title: "ATPA Assessment - Flights Prep"
+output: html_document
+---
+
+## Data prepation by assistant
+
+Read the six data files into a single data frame and summarize.
+
+```{python}
+# Include needed package
+import pandas as pd
+
+# Use function to do initial editing on each file as it is read in to save memory
+def read_boise(file):
+  df_all_cities = pd.read_csv(file)
+  df_boise = df_all_cities.query("ORIGIN == 'BOI'").drop(columns = ["ORIGIN", "ORIGIN_STATE_NM"])
+    # BOI is Boise per data dictionary
+  df_boise.YEAR = df_boise.YEAR.astype("object")
+  df_boise.QUARTER = df_boise.QUARTER.astype("object")
+  df_boise.MONTH = df_boise.MONTH.astype("object")
+  return df_boise
+
+# Create dataframe with all rows
+df_all = pd.concat([read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2016.csv"),
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2017.csv"),
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2018.csv"),
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2019.csv"),
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2020.csv"),
+                    read_boise("T_T100D_SEGMENT_US_CARRIER_ONLY_2021.csv")],axis=0)
+
+# Summarize data
+df_all.describe()
+df_all.describe(include="object")
+```
+
+
+Unitize to average values per departure and add GROUND_TIME as difference between ramp-to-ramp time and air time, then summarize.
+```{python}
+
+# Divide measures by number of departures
+df_temp = df_all.query("DEPARTURES_PERFORMED > 0") # to avoid dividing by 0
+df_temp.assign(PASSENGERS = df_temp.PASSENGERS/df_temp.DEPARTURES_PERFORMED)
+df_temp.assign(FREIGHT = df_temp.FREIGHT/df_temp.DEPARTURES_PERFORMED)
+df_temp.assign(MAIL = df_temp.MAIL/df_temp.DEPARTURES_PERFORMED)
+df_temp.assign(DISTANCE = df_temp.DISTANCE/df_temp.DEPARTURES_PERFORMED)
+df_temp.assign(RAMP_TO_RAMP = df_temp.RAMP_TO_RAMP/df_temp.DEPARTURES_PERFORMED)
+df_temp.assign(AIR_TIME = df_temp.AIR_TIME/df_temp.DEPARTURES_PERFORMED)
+
+# remove divisor and create ground time variable
+df_unit = df_temp.drop(columns=["DEPARTURES_PERFORMED"]).assign(GROUND_TIME = df_temp.RAMP_TO_RAMP - df_temp.AIR_TIME)
+
+# summarize new data frame
+df_unit.describe()
+```
+
+
+I think this looks OK? Next step is to add information from airport codes...but not feeling so good...

@@ -1,0 +1,125 @@
+---
+title: "ATPA 2.4 - Relational Databases"
+
+---
+
+```{r}
+library(reticulate)
+```
+
+CHUNK 1: Data for joins examples
+```{python}
+# Stock data
+import pandas as pd
+Table_1 = pd.DataFrame({"Ticker":["TSLA","AMZN","WFC","PCG"],"Name":["Tesla, Inc.","Amazon.com, Inc.","Wells Fargo & Company","PG&E Corporation"]})
+Table_2 = pd.DataFrame({"Ticker":["WFC","TSLA","F","AMZN"],"Price":[49,840,16,3400]})
+Table_1
+Table_2
+
+```
+
+CHUNK 2: Left join
+```{python}
+# Left join
+Table_1.merge(Table_2,on="Ticker",how="left")
+```
+
+CHUNK 3: Right join
+```{python}
+# Right join
+Table_1.merge(Table_2,on="Ticker",how="right")
+```
+
+CHUNK 4: Inner join
+```{python}
+# Inner join
+Table_1.merge(Table_2,on="Ticker",how="inner")
+```
+
+CHUNK 5: Outer or Full join
+```{python}
+# Outer or Full join
+Table_1.merge(Table_2,on="Ticker",how="outer")
+```
+
+CHUNK 6: Joins with multiple keys
+```{python}
+# Joins with multiple keys
+Revenue = pd.DataFrame({"Year":[2019,2019,2020,2020],"Month":["March","September","March","September"], "Revenue":[8400,9600,9100,10300]})
+Employee = pd.DataFrame({"Year":[2019,2019,2020,2020],"Month":["March","September","March","September"],"Employees":[55,56,56,60]})
+Revenue.merge(Employee,on=["Year","Month"],how="outer")
+```
+
+CHUNK 7: Joins with duplicate keys
+```{python}
+
+# Joins with duplicate keys
+Patient_Diet = pd.DataFrame({"Patient":["A","B","C","D"],"Diet": ["Traditional","Custom","Custom","Traditional"]})
+Diet_Cost = pd.DataFrame({"Diet":["Traditional","Custom"],"Cost":[40,65]})
+Patient_Diet.merge(Diet_Cost, on ="Diet",how="left")
+```
+
+CHUNK 8: Combine columns
+```{python}
+# Combine columns
+Table_3 = pd.DataFrame({"Week 1":[2,3,6],"Week 2":[2,3,7]})
+Table_4 = pd.DataFrame({"Week 3":[3,3,6],"Week 4":[5,2,5]})
+pd.concat([Table_3,Table_4],axis=1) # axis = 1 specifies this direction for concatenation
+```
+
+CHUNK 9: Combine rows
+```{python}
+# Combine rows
+Table_5 = pd.DataFrame({"ID": ["A","B","C"],"Week 1":[2,3,6],"Week 2":[2,3,7]})
+Table_6 = pd.DataFrame({"ID": ["D","E","F",],"Week 1":[3,3,6],"Week 2":[5,2,5]})
+pd.concat([Table_5,Table_6],axis=0) # axis = 0 specifies this direction for concatenation
+```
+
+CHUNK 10: Exercise 2.4.1: Construct the indicated joins
+```{python}
+movie_boxoffice = pd.read_csv("movie_boxoffice.csv")
+economy = pd.read_csv("economy.csv")
+movie_details = pd.read_csv("movie_details.csv")
+rotten_rutabagas = pd.read_csv("rotten_rutabagas.csv")
+movie_economy = pd.read_csv("movie_economy.csv")
+
+# 1 Combine US economy and movie economy
+
+# 2 Combine MPAA rating and Rotten Rutabagas score
+
+# 3 Add movie details to box office results
+
+# 4 Add all movies in box office, details and Rotten Rutabagas together into all_movies
+
+# 5 Add US economy and movie economy into all_movies
+```
+
+CHUNK 11: Exercise 2.4.1: Solution
+```{python}
+movie_boxoffice = pd.read_csv("movie_boxoffice.csv")
+economy = pd.read_csv("economy.csv")
+movie_details = pd.read_csv("movie_details.csv")
+rotten_rutabagas = pd.read_csv("rotten_rutabagas.csv")
+movie_economy = pd.read_csv("movie_economy.csv")
+
+# 1 Combine US economy and movie economy
+df1 = economy.merge(movie_economy,on="year",how="inner")
+df1
+
+# 2 Combine MPAA Rating and Rotten Rutabagas score
+df2 = movie_details.merge(rotten_rutabagas,on="movie",how="inner")
+df2
+
+# 3 Add movie details to box office results
+df3 = movie_boxoffice.merge(movie_details,on="movie",how="left")
+df3
+
+# 4 Add all movies in box office, details and Rotten Rutabagas together into all_movies
+df4 = movie_boxoffice.merge(movie_details,on="movie",how="outer")
+all_movies = df4.merge(rotten_rutabagas,on="movie",how="outer")
+all_movies
+
+# 5 Add US economy and movie economy into all_movies
+df5 = all_movies.merge(economy,on="year",how="left").merge(movie_economy,on="year",how="left")
+df5
+```
