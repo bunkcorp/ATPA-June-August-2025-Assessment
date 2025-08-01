@@ -1,0 +1,74 @@
+
+# TASK 5: BAYESIAN ANALYSIS OF ARREST RATES
+
+## 5a) Crime Category Summary
+
+### Data Overview:
+- Total crime categories analyzed: 31
+- Total incidents: 26,955
+- Total arrests: 26,955
+
+### Top 5 Crime Categories by Incident Count:
+                          Crime_Category  Number_of_Incidents  Number_of_Arrests  Arrest_Rate
+                        Assault Offenses                13138              13138          1.0
+                  Drug/Narcotic Offenses                 4622               4622          1.0
+                  Larceny/Theft Offenses                 3568               3568          1.0
+Destruction/Damage/Vandalism of Property                 1557               1557          1.0
+                Stolen Property Offenses                  855                855          1.0
+
+## 5b) Bayesian Model Specification
+
+### Prior Distribution:
+- **Distribution**: Beta(α=2, β=8)
+- **Prior Mean**: 0.2 (20% arrest rate)
+- **Justification**: Represents conservative prior belief that arrest rates are generally low
+
+### Likelihood:
+- **Model**: Binomial likelihood for each crime category
+- **Parameters**: Ni (number of incidents), yi (number of arrests)
+- **Assumption**: Independent arrest outcomes within each category
+
+### Posterior Distribution:
+- **Conjugate Update**: Beta(α + yi, β + Ni - yi)
+- **Inference**: 95% credible intervals for true arrest rates
+
+## 5c) Bayesian Analysis Results
+
+### Key Findings:
+
+1. **Posterior Estimates**:
+   - All posterior means are close to 1.0 (reflecting that all incidents resulted in arrests)
+   - Credible intervals reflect uncertainty based on sample size
+
+2. **Uncertainty Quantification**:
+   - Categories with more incidents have narrower credible intervals
+   - Smaller categories show more uncertainty in arrest rate estimates
+
+3. **Model Performance**:
+   - Conjugate structure allows for analytical posterior computation
+   - Prior influence diminishes with larger sample sizes
+
+### Top 5 Categories - Detailed Results:
+                          Crime_Category  N_Incidents  Posterior_Mean  Credible_Interval_Lower  Credible_Interval_Upper
+                        Assault Offenses        13138        0.999392                 0.998903                 0.999737
+                  Drug/Narcotic Offenses         4622        0.998273                 0.996888                 0.999254
+                  Larceny/Theft Offenses         3568        0.997764                 0.995972                 0.999034
+Destruction/Damage/Vandalism of Property         1557        0.994895                 0.990812                 0.997792
+                Stolen Property Offenses          855        0.990751                 0.983379                 0.995994
+
+## 5d) Business Implications
+
+### Policy Recommendations:
+1. **Resource Allocation**: Focus on high-volume crime categories
+2. **Monitoring**: Track arrest rate changes over time
+3. **Evaluation**: Use credible intervals for decision-making
+
+### Limitations:
+- Selection bias: All incidents resulted in arrests
+- Prior specification may need adjustment
+- Results may not generalize to other contexts
+
+### Future Work:
+- Update priors with additional data
+- Consider hierarchical models for category relationships
+- Incorporate temporal trends in arrest rates

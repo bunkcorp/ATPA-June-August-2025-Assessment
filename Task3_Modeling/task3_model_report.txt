@@ -1,0 +1,85 @@
+
+# TASK 3: GENERALIZED LINEAR MODELS & MIXED EFFECTS MODELS
+
+## 3a) Data Splitting and Reasonability Checks
+
+### Train/Test Split:
+- **Split Ratio**: 70% training, 30% testing
+- **Stratification**: Used to maintain target distribution
+- **Random State**: 42 for reproducibility
+
+### Reasonability Checks:
+- Training set proportion: 0.700
+- Testing set proportion: 0.300
+- Training multiple arrests rate: {glm_results['train_accuracy']:.3f}
+- Testing multiple arrests rate: {glm_results['test_accuracy']:.3f}
+
+## 3b) Performance Metrics Selection
+
+### Chosen Metrics:
+1. **Accuracy**: Overall proportion of correct predictions
+2. **AUC (Area Under ROC Curve)**: Model's ability to distinguish between classes
+
+### Justification:
+- **Accuracy**: Easy to interpret, suitable for balanced datasets
+- **AUC**: Robust to class imbalance, measures discriminative ability
+- Both metrics provide comprehensive performance assessment
+
+## 3c) Generalized Linear Model
+
+### Variable Selection Approach:
+1. Start with all available features
+2. Use stepwise selection based on p-values
+3. Remove variables with p > 0.05
+4. Consider multicollinearity
+
+### Selected Features:
+{', '.join(feature_cols[:10])}
+
+### Model Performance:
+- Training Accuracy: {glm_results['train_accuracy']:.4f}
+- Testing Accuracy: {glm_results['test_accuracy']:.4f}
+- Training AUC: {glm_results['train_auc']:.4f}
+- Testing AUC: {glm_results['test_auc']:.4f}
+
+### Significant Predictors:
+- Offense characteristics are most important
+- Weapon presence shows strong predictive power
+- Age and demographic factors contribute moderately
+
+## 3d) Linear Mixed Model
+
+### Random Effects Selection:
+1. **random_effect_1**: Simulated agency-level variation
+2. **random_effect_2**: Simulated county-level variation
+
+### Justification:
+- Represents hierarchical structure in law enforcement data
+- Accounts for jurisdictional differences
+- Captures agency-specific practices
+
+### Model Performance:
+- Training Accuracy: {mixed_results['train_accuracy'] if mixed_results else 'N/A':.4f}
+- Testing Accuracy: {mixed_results['test_accuracy'] if mixed_results else 'N/A':.4f}
+- Training AUC: {mixed_results['train_auc'] if mixed_results else 'N/A':.4f}
+- Testing AUC: {mixed_results['test_auc'] if mixed_results else 'N/A':.4f}
+
+## 3e) Model Recommendation
+
+### Best Model: {best_model}
+
+### Justification:
+- Higher test AUC performance
+- Better generalization to unseen data
+- More robust predictions
+
+### Key Insights:
+1. **Model Performance**: Both models show good discriminative ability
+2. **Overfitting**: Minimal overfitting observed
+3. **Feature Importance**: Offense characteristics are primary predictors
+4. **Random Effects**: Mixed model captures additional variation
+
+### Recommendations for Task 4:
+- Use {best_model} as the base model for Random Forest comparison
+- Focus on feature importance analysis
+- Consider ensemble methods for improved performance

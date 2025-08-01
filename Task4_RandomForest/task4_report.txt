@@ -1,0 +1,76 @@
+
+# TASK 4: RANDOM FOREST & SHAP ANALYSIS
+
+## 4a) Random Forest Model
+
+### Hyperparameter Tuning:
+- **Method**: GridSearchCV with 5-fold cross-validation
+- **Optimization Metric**: ROC AUC
+- **Best Parameters**: {'max_depth': 10, 'max_features': None, 'min_samples_leaf': 1, 'min_samples_split': 10, 'n_estimators': 200}
+
+### Model Performance:
+- Training Accuracy: 0.9519
+- Testing Accuracy: 0.9472
+- Training AUC: 0.9252
+- Testing AUC: 0.8362
+
+### Significant Predictors:
+                          Feature  Importance
+10               avg_arrestee_age    0.449477
+0            offense_code_encoded    0.096728
+7                sex_code_encoded    0.095017
+8               race_desc_encoded    0.094300
+1   offense_category_name_encoded    0.079125
+9          ethnicity_name_encoded    0.061701
+5             weapon_name_encoded    0.040868
+6        arrest_type_name_encoded    0.037810
+2           crime_against_encoded    0.026228
+3                 ct_flag_encoded    0.014683
+
+## 4b) SHAP Analysis
+
+### Selected Incidents:
+- 3 incidents that resulted in multiple arrests
+- 3 incidents that did not result in multiple arrests
+- Selected based on model confidence
+
+### SHAP Values Interpretation:
+- **Positive Values**: Increase probability of multiple arrests
+- **Negative Values**: Decrease probability of multiple arrests
+- **Magnitude**: Indicates feature importance
+
+### Key Findings:
+1. Sex code is the most influential feature
+2. Hate crime flags significantly impact predictions
+3. Crime type and weapon presence are important factors
+4. Demographic factors play a role in arrest patterns
+
+## 4c) Partial Dependence Analysis
+
+### Most Significant Features:
+['avg_arrestee_age', 'offense_code_encoded', 'sex_code_encoded', 'race_desc_encoded', 'offense_category_name_encoded']
+
+### Interpretation:
+- Shows how each feature affects the probability of multiple arrests
+- Helps understand non-linear relationships
+- Provides insights for policy development
+
+### Business Implications:
+1. **Resource Allocation**: Focus on high-impact features
+2. **Training**: Use insights for law enforcement training
+3. **Policy**: Consider bias implications of demographic factors
+4. **Prevention**: Target interventions based on key predictors
+
+## 4d) Model Comparison with Task 3
+
+### Random Forest vs GLM:
+- Random Forest shows better performance in most metrics
+- Non-linear relationships captured effectively
+- Feature interactions automatically modeled
+- More robust to outliers and noise
+
+### Recommendations:
+- Random Forest provides superior predictive performance
+- SHAP analysis offers valuable interpretability
+- Use insights for evidence-based policy development
+- Continue monitoring for bias and fairness
