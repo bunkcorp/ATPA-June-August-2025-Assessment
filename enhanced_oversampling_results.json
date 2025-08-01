@@ -1,0 +1,112 @@
+{
+  "Baseline": {
+    "accuracy": 1.0,
+    "sensitivity": 1.0,
+    "specificity": 1.0,
+    "precision": 1.0,
+    "f1_score": 1.0,
+    "auc": 1.0,
+    "confusion_matrix": [
+      [
+        7647,
+        0
+      ],
+      [
+        0,
+        440
+      ]
+    ],
+    "tp": 440,
+    "fp": 0,
+    "fn": 0,
+    "tn": 7647
+  },
+  "SMOTE": {
+    "accuracy": 1.0,
+    "sensitivity": 1.0,
+    "specificity": 1.0,
+    "precision": 1.0,
+    "f1_score": 1.0,
+    "auc": 1.0,
+    "confusion_matrix": [
+      [
+        7647,
+        0
+      ],
+      [
+        0,
+        440
+      ]
+    ],
+    "tp": 440,
+    "fp": 0,
+    "fn": 0,
+    "tn": 7647
+  },
+  "ADASYN": {
+    "accuracy": 1.0,
+    "sensitivity": 1.0,
+    "specificity": 1.0,
+    "precision": 1.0,
+    "f1_score": 1.0,
+    "auc": 1.0,
+    "confusion_matrix": [
+      [
+        7647,
+        0
+      ],
+      [
+        0,
+        440
+      ]
+    ],
+    "tp": 440,
+    "fp": 0,
+    "fn": 0,
+    "tn": 7647
+  },
+  "Class Weights": {
+    "accuracy": 1.0,
+    "sensitivity": 1.0,
+    "specificity": 1.0,
+    "precision": 1.0,
+    "f1_score": 1.0,
+    "auc": 1.0,
+    "confusion_matrix": [
+      [
+        7647,
+        0
+      ],
+      [
+        0,
+        440
+      ]
+    ],
+    "tp": 440,
+    "fp": 0,
+    "fn": 0,
+    "tn": 7647
+  },
+  "SMOTE+ENN": {
+    "accuracy": 1.0,
+    "sensitivity": 1.0,
+    "specificity": 1.0,
+    "precision": 1.0,
+    "f1_score": 1.0,
+    "auc": 1.0,
+    "confusion_matrix": [
+      [
+        7647,
+        0
+      ],
+      [
+        0,
+        440
+      ]
+    ],
+    "tp": 440,
+    "fp": 0,
+    "fn": 0,
+    "tn": 7647
+  }
+}
