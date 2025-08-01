@@ -1,298 +1,237 @@
 # Task 2: Privacy & Bias Analysis
 ## ATPA Assessment - June to August 2025
 
----
-
-## 📊 **Task Overview**
-
-**Points**: 2/2  
-**Status**: ✅ Complete  
-**Key Achievement**: Comprehensive privacy and bias analysis for criminal justice data usage
+### Overview
+This task addresses the benefits and risks of using demographic data in criminal justice modeling, analyzes bias patterns, and discusses professional standards compliance for NMInsights. The analysis follows ATPA course materials and ethical guidelines for actuarial practice.
 
 ---
 
-## 🎯 **Business Context**
+## 📊 **Demographic Data Analysis Results**
 
-This task addresses the critical ethical considerations in using demographic data for criminal justice analysis. As NMInsights works with sensitive law enforcement data, understanding the benefits, risks, and professional standards is essential for responsible data science practice.
-
----
-
-## 📋 **Task Requirements**
-
-### **2a) Benefits and Risks of Demographic Data**
-- [X] Outline benefits of demographic data in crime analysis
-- [X] Identify potential harms and bias concerns
-- [X] Address victim data considerations
-- [X] Address offender data considerations
-
-### **2b) Professional Standards Compliance**
-- [X] Reference applicable professional guidance
-- [X] Provide specific prevention steps
-- [X] Document clear guidelines for responsible use
-- [X] Suggest oversight mechanisms
-
----
-
-## 🔍 **Demographic Data Analysis**
-
-### **Available Demographic Variables**
+### **1. Available Demographic Variables**
 
 The analysis identified the following demographic variables in the dataset:
 
-- **Age**: `age_num` - Numeric age of arrestee
-- **Sex**: `sex_code` - Gender identification
-- **Race**: `race_desc` - Racial/ethnic identification
-- **Ethnicity**: `ethnicity_name` - Hispanic/Latino identification
-- **Residence**: `resident_code` - Geographic residence information
+- **avg_arrestee_age**: Average age of arrestees
+- **sex_code**: Gender (M/F)
+- **race_desc**: Race description
+- **ethnicity_name**: Ethnicity classification
+- **hc_code**: Home county code
+- **offense_category_name**: Type of offense
+- **crime_against**: Category of crime (Person/Property/Society)
+- **weapon_name**: Weapon involved in incident
 
-### **Data Quality Assessment**
+---
+
+### **2. Demographic Distributions**
+
+#### Age Distribution
+| Age | Count | Percentage |
+|-----|-------|------------|
+| 32.0 | 1,055 | 3.9% |
+| 33.0 | 1,012 | 3.8% |
+| 31.0 | 993 | 3.7% |
+| 34.0 | 960 | 3.6% |
+| 29.0 | 943 | 3.5% |
+
+**Key Finding**: Average arrestee age is approximately 32 years, with a wide distribution across age groups.
+
+#### Gender Distribution
+| Gender | Count | Percentage |
+|--------|-------|------------|
+| Male (M) | 19,077 | 70.8% |
+| Female (F) | 7,878 | 29.2% |
+
+**Key Finding**: Males represent 70.8% of all arrestees, indicating significant gender disparity.
+
+#### Race Distribution
+| Race | Count | Percentage |
+|------|-------|------------|
+| White | 19,568 | 72.6% |
+| American Indian or Alaska Native | 3,973 | 14.7% |
+| Black or African American | 1,670 | 6.2% |
+| Unknown | 1,609 | 6.0% |
+| Asian | 104 | 0.4% |
+
+**Key Finding**: White individuals represent the majority (72.6%), followed by American Indian/Alaska Native (14.7%).
+
+#### Ethnicity Distribution
+| Ethnicity | Count | Percentage |
+|-----------|-------|------------|
+| Hispanic or Latino | 12,279 | 45.6% |
+| Not Hispanic or Latino | 10,495 | 38.9% |
+| Unknown | 3,619 | 13.4% |
+| Not Specified | 562 | 2.1% |
+
+**Key Finding**: Hispanic or Latino individuals represent 45.6% of arrestees, reflecting New Mexico's demographic composition.
+
+---
+
+### **3. Bias Pattern Analysis**
+
+#### Multiple Arrests Rate by Gender
+| Gender | Multiple Arrests Rate | Risk Ratio |
+|--------|----------------------|------------|
+| Female (F) | 11.36% | 3.80 |
+| Male (M) | 2.99% | 1.00 |
+
+**Critical Finding**: Females have a 3.8 times higher rate of multiple arrests than males, indicating significant gender bias.
+
+#### Multiple Arrests Rate by Race
+| Race | Multiple Arrests Rate | Risk Level |
+|------|----------------------|------------|
+| Asian | 8.65% | High |
+| Unknown | 6.84% | Medium |
+| Black or African American | 6.77% | Medium |
+| White | 5.27% | Low |
+| American Indian or Alaska Native | 5.03% | Low |
+
+**Key Finding**: Asian individuals show the highest multiple arrests rate (8.65%), while American Indian/Alaska Native individuals show the lowest (5.03%).
+
+#### Multiple Arrests Rate by Age Group
+| Age Group | Multiple Arrests Rate | Risk Level |
+|-----------|----------------------|------------|
+| Under 18 | 10.55% | High |
+| 18-25 | 4.55% | Low |
+| 26-35 | 5.84% | Medium |
+| 36-50 | 5.25% | Low |
+| Over 50 | 2.54% | Low |
+
+**Key Finding**: Individuals under 18 have the highest multiple arrests rate (10.55%), indicating age-related bias.
+
+---
+
+## 📈 **Demographic Visualizations**
 
 ![Demographic Analysis](task2_demographic_analysis.png)
-
-**Key Findings:**
-- **Age Distribution**: Wide range from juveniles to elderly
-- **Gender Patterns**: Significant gender differences in arrest patterns
-- **Racial/Ethnic Diversity**: Representation across multiple categories
-- **Geographic Factors**: Residence patterns show regional variations
+*Figure: Comprehensive demographic analysis showing age, gender, race, and ethnicity distributions.*
 
 ---
 
-## ✅ **Benefits of Demographic Data in Crime Analysis**
+## 🔍 **Benefits and Risks Analysis**
 
-### **1. Resource Allocation**
-- **Targeted Interventions**: Identify high-risk demographic groups for prevention programs
-- **Geographic Focus**: Concentrate resources in areas with specific demographic patterns
-- **Age-Specific Programs**: Develop interventions tailored to different age groups
+### **Benefits of Demographic Data Usage**
 
-### **2. Policy Development**
-- **Evidence-Based Decisions**: Use demographic patterns to inform policy choices
-- **Equity Assessment**: Identify disparities in arrest patterns across groups
-- **Prevention Strategies**: Design programs based on demographic risk factors
+#### **1. Predictive Accuracy**
+- **Enhanced Model Performance**: Demographic variables improve prediction accuracy
+- **Risk Assessment**: Better identification of high-risk situations
+- **Resource Allocation**: More effective law enforcement deployment
 
-### **3. Law Enforcement Effectiveness**
-- **Training Programs**: Develop specialized training for different demographic contexts
-- **Community Relations**: Build trust through demographic-aware policing
-- **Performance Monitoring**: Track outcomes across demographic groups
+#### **2. Policy Development**
+- **Evidence-Based Decisions**: Data-driven policy recommendations
+- **Targeted Interventions**: Focused prevention programs
+- **Performance Monitoring**: Clear benchmarks for law enforcement
 
-### **4. Research and Analysis**
-- **Pattern Recognition**: Identify demographic factors in criminal behavior
-- **Risk Assessment**: Develop predictive models incorporating demographic factors
-- **Trend Analysis**: Monitor changes in demographic patterns over time
+#### **3. Public Safety**
+- **Crime Prevention**: Proactive identification of risk factors
+- **Community Protection**: Enhanced public safety outcomes
+- **Efficiency Gains**: Optimized resource utilization
 
----
+### **Risks of Demographic Data Usage**
 
-## ⚠️ **Risks and Potential Harms**
+#### **1. Bias and Discrimination**
+- **Algorithmic Bias**: Models may perpetuate existing biases
+- **Disparate Impact**: Unequal treatment across demographic groups
+- **Reinforcement of Stereotypes**: Amplification of negative associations
 
-### **1. Bias and Discrimination**
-- **Algorithmic Bias**: Machine learning models may perpetuate existing biases
-- **Racial Profiling**: Demographic data could enable discriminatory practices
-- **Stereotyping**: Reinforce negative stereotypes about specific groups
-- **Disparate Impact**: Policies may disproportionately affect certain demographics
+#### **2. Privacy Concerns**
+- **Data Protection**: Risk of personal information exposure
+- **Surveillance Concerns**: Potential for over-policing
+- **Civil Liberties**: Impact on individual rights
 
-### **2. Privacy Violations**
-- **Individual Identification**: Risk of re-identification from demographic combinations
-- **Data Breaches**: Sensitive demographic information exposed
-- **Surveillance Concerns**: Potential for mass surveillance of specific groups
-- **Stigma**: Negative consequences for individuals in certain demographic categories
-
-### **3. Legal and Ethical Issues**
-- **Civil Rights Violations**: Potential violations of equal protection rights
-- **Due Process Concerns**: Unfair treatment based on demographic factors
-- **Consent Issues**: Lack of informed consent for data usage
-- **Transparency Problems**: Lack of clarity about how data is used
-
-### **4. Social Harm**
-- **Community Distrust**: Erosion of trust in law enforcement
-- **Social Stigma**: Negative labeling of demographic groups
-- **Economic Disparities**: Exacerbation of existing inequalities
-- **Political Manipulation**: Misuse of data for political purposes
-
----
-
-## 🎯 **Victim Data Considerations**
-
-### **Privacy Protection**
-- **Anonymization**: Ensure victim identities cannot be reconstructed
-- **Consent Requirements**: Obtain explicit consent for data usage
-- **Limited Access**: Restrict access to victim demographic information
-- **Purpose Limitation**: Use only for stated purposes
-
-### **Ethical Guidelines**
-- **Dignity Respect**: Protect victim dignity and privacy
-- **Trauma Sensitivity**: Consider psychological impact of data usage
-- **Support Services**: Ensure data usage doesn't interfere with victim services
-- **Legal Protections**: Comply with victim rights laws
-
----
-
-## 🎯 **Offender Data Considerations**
-
-### **Bias Prevention**
-- **Fair Treatment**: Ensure equal treatment regardless of demographics
-- **Individual Assessment**: Focus on individual behavior, not group characteristics
-- **Context Consideration**: Account for social and economic factors
-- **Proportional Response**: Ensure responses are proportional to offenses
-
-### **Rehabilitation Focus**
-- **Individual Needs**: Address individual rehabilitation needs
-- **Support Services**: Provide appropriate support based on individual circumstances
-- **Reintegration**: Facilitate successful community reintegration
-- **Prevention**: Focus on preventing future offenses
+#### **3. Legal and Ethical Issues**
+- **Constitutional Rights**: Potential violations of equal protection
+- **Professional Standards**: Compliance with actuarial ethics
+- **Public Trust**: Erosion of community confidence
 
 ---
 
 ## 📋 **Professional Standards Compliance**
 
-### **Applicable Standards**
+### **ASOP Compliance**
 
-#### **1. American Statistical Association (ASA)**
-- **Ethical Guidelines**: Follow ASA ethical guidelines for statistical practice
-- **Transparency**: Ensure transparency in methodology and assumptions
-- **Objectivity**: Maintain objectivity in analysis and interpretation
-- **Competence**: Ensure appropriate expertise for analysis
+#### **1. ASOP No. 23 - Data Quality**
+- ✅ **Data Validation**: Comprehensive data quality assessment
+- ✅ **Documentation**: Clear methodology and limitations
+- ✅ **Transparency**: Open communication of data sources
 
-#### **2. Association for Computing Machinery (ACM)**
-- **Code of Ethics**: Follow ACM Code of Ethics and Professional Conduct
-- **Public Interest**: Prioritize public interest in all decisions
-- **Privacy**: Respect privacy and confidentiality
-- **Fairness**: Ensure fairness and avoid discrimination
+#### **2. ASOP No. 41 - Actuarial Communications**
+- ✅ **Clear Communication**: Non-technical language for stakeholders
+- ✅ **Limitations Disclosure**: Honest assessment of model limitations
+- ✅ **Professional Judgment**: Expert interpretation of results
 
-#### **3. Criminal Justice Standards**
-- **Due Process**: Ensure due process rights are protected
-- **Equal Protection**: Maintain equal protection under the law
-- **Civil Rights**: Respect civil rights and liberties
-- **Professional Conduct**: Follow law enforcement professional standards
+#### **3. ASOP No. 56 - Modeling**
+- ✅ **Model Validation**: Robust testing and validation procedures
+- ✅ **Sensitivity Analysis**: Assessment of model assumptions
+- ✅ **Documentation**: Comprehensive model documentation
 
-### **Prevention Steps**
+### **Ethical Considerations**
 
-#### **1. Technical Safeguards**
-- **Data Encryption**: Encrypt all demographic data
-- **Access Controls**: Implement strict access controls
-- **Audit Trails**: Maintain comprehensive audit trails
-- **Data Minimization**: Collect only necessary demographic information
+#### **1. Fairness and Equity**
+- **Bias Monitoring**: Regular assessment of demographic bias
+- **Equal Treatment**: Ensuring fair application across groups
+- **Transparency**: Clear communication of model decisions
 
-#### **2. Procedural Safeguards**
-- **Review Boards**: Establish data usage review boards
-- **Training Programs**: Provide training on ethical data usage
-- **Regular Audits**: Conduct regular audits of data usage
-- **Incident Response**: Develop incident response procedures
+#### **2. Privacy Protection**
+- **Data Minimization**: Using only necessary demographic data
+- **Security Measures**: Protecting personal information
+- **Consent and Notification**: Appropriate data usage practices
 
-#### **3. Policy Safeguards**
-- **Clear Policies**: Establish clear data usage policies
-- **Consent Procedures**: Implement informed consent procedures
-- **Purpose Limitation**: Limit data usage to stated purposes
-- **Retention Policies**: Establish data retention and disposal policies
-
-### **Oversight Mechanisms**
-
-#### **1. Internal Oversight**
-- **Data Governance Committee**: Establish internal governance committee
-- **Regular Reviews**: Conduct regular reviews of data usage
-- **Compliance Monitoring**: Monitor compliance with policies
-- **Incident Reporting**: Establish incident reporting procedures
-
-#### **2. External Oversight**
-- **Independent Audits**: Conduct independent audits
-- **Public Reporting**: Provide public reports on data usage
-- **Stakeholder Input**: Seek input from community stakeholders
-- **Regulatory Compliance**: Ensure compliance with regulations
-
-#### **3. Community Engagement**
-- **Public Forums**: Hold public forums on data usage
-- **Community Advisory Boards**: Establish community advisory boards
-- **Transparency Reports**: Provide transparency reports
-- **Feedback Mechanisms**: Establish feedback mechanisms
+#### **3. Professional Responsibility**
+- **Public Interest**: Prioritizing community safety
+- **Stakeholder Communication**: Clear reporting to policymakers
+- **Continuous Improvement**: Ongoing model refinement
 
 ---
 
-## 📊 **Bias Pattern Analysis**
+## 🎯 **Misuse Prevention Strategies**
 
-### **Demographic Patterns Identified**
+### **1. Technical Safeguards**
+- **Bias Testing**: Regular assessment of demographic bias
+- **Model Auditing**: Independent review of model performance
+- **Performance Monitoring**: Continuous tracking of outcomes
 
-The analysis revealed several important demographic patterns:
+### **2. Policy Safeguards**
+- **Clear Guidelines**: Established protocols for data usage
+- **Oversight Mechanisms**: Regular review by stakeholders
+- **Transparency Requirements**: Public reporting of model performance
 
-#### **Age Patterns**
-- **Younger individuals** show higher arrest rates for certain offenses
-- **Age-related interventions** may be more effective for specific crime types
-- **Juvenile considerations** require special attention and protection
-
-#### **Gender Patterns**
-- **Gender differences** exist in arrest patterns across crime categories
-- **Gender-specific interventions** may be appropriate for certain offenses
-- **Gender bias** must be carefully monitored and addressed
-
-#### **Racial/Ethnic Patterns**
-- **Disparities** exist in arrest rates across racial/ethnic groups
-- **Systemic factors** may contribute to observed patterns
-- **Equity-focused interventions** are needed to address disparities
-
-### **Bias Mitigation Strategies**
-
-#### **1. Model Development**
-- **Bias Testing**: Test models for bias across demographic groups
-- **Fairness Metrics**: Include fairness metrics in model evaluation
-- **Regular Auditing**: Regularly audit models for bias
-- **Diverse Training Data**: Ensure training data represents diverse populations
-
-#### **2. Policy Implementation**
-- **Impact Assessment**: Assess policy impact across demographic groups
-- **Equity Monitoring**: Monitor equity in policy implementation
-- **Adjustment Mechanisms**: Implement mechanisms to adjust for bias
-- **Transparency**: Maintain transparency about bias mitigation efforts
+### **3. Operational Safeguards**
+- **Training Programs**: Education on bias and fairness
+- **Decision Support**: Human oversight of automated decisions
+- **Appeal Processes**: Mechanisms for challenging model outcomes
 
 ---
 
-## 🎯 **Recommendations for Responsible Use**
+## 📊 **Key Findings Summary**
 
-### **1. Data Collection**
-- **Minimize Collection**: Collect only necessary demographic information
-- **Informed Consent**: Obtain informed consent for data collection
-- **Purpose Limitation**: Limit collection to stated purposes
-- **Security Measures**: Implement strong security measures
+### **1. Demographic Patterns**
+- **Gender Disparity**: Females show 3.8x higher multiple arrests rate
+- **Age Bias**: Individuals under 18 have highest risk (10.55%)
+- **Racial Variation**: Asian individuals show highest risk (8.65%)
 
-### **2. Data Analysis**
-- **Bias Testing**: Test for bias in all analyses
-- **Context Consideration**: Consider social and economic context
-- **Individual Focus**: Focus on individual behavior, not group characteristics
-- **Transparency**: Maintain transparency in methodology
+### **2. Model Implications**
+- **Bias Detection**: Clear evidence of demographic bias in arrest patterns
+- **Risk Factors**: Age and gender are significant predictors
+- **Policy Impact**: Need for targeted interventions for high-risk groups
 
-### **3. Policy Development**
-- **Evidence-Based**: Base policies on evidence, not stereotypes
-- **Equity Focus**: Focus on equity and fairness
-- **Community Input**: Seek community input in policy development
-- **Impact Assessment**: Assess policy impact across groups
-
-### **4. Implementation**
-- **Training**: Provide training on responsible data usage
-- **Monitoring**: Monitor implementation for bias
-- **Adjustment**: Adjust policies based on monitoring results
-- **Communication**: Communicate clearly about data usage
+### **3. Professional Recommendations**
+- **Bias Monitoring**: Implement regular bias assessment protocols
+- **Transparency**: Clear communication of model limitations
+- **Continuous Improvement**: Ongoing model refinement and validation
 
 ---
 
-## 📁 **Deliverables**
+## ✅ **Assessment Compliance**
 
-### **Analysis Files**
-- `task2_privacy_analysis.py`: Privacy and bias analysis script
-- `task2_privacy_report.txt`: Comprehensive privacy analysis report
-
-### **Visualizations**
-- `task2_demographic_analysis.png`: Demographic analysis visualizations
-
----
-
-## ✅ **Task 2 Completion Status**
-
-**All Requirements Met:**
-- [X] Benefits of demographic data thoroughly documented
-- [X] Risks and potential harms identified and analyzed
-- [X] Victim and offender data considerations addressed
-- [X] Professional standards compliance documented
-- [X] Prevention steps and oversight mechanisms provided
-- [X] Bias pattern analysis completed
-- [X] Recommendations for responsible use developed
-
-**Key Achievement**: Comprehensive privacy and bias analysis providing ethical framework for responsible criminal justice data usage.
+This implementation addresses:
+- ✅ **Demographic Analysis**: Comprehensive analysis of available variables
+- ✅ **Bias Detection**: Identification of demographic bias patterns
+- ✅ **Professional Standards**: ASOP compliance and ethical considerations
+- ✅ **Risk Assessment**: Analysis of benefits and risks
+- ✅ **Documentation**: Clear methodology and findings
+- ✅ **Visualization**: Comprehensive demographic plots
+- ✅ **Business Context**: Criminal justice focus with appropriate metrics
 
 ---
 
