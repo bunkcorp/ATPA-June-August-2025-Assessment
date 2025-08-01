@@ -11,9 +11,9 @@
 - **Overall Requirements**: "Key Metrics: Accuracy, AUC, Sensitivity, Specificity"
 
 ### **What We Should Have Implemented:**
-- **Primary Metrics**: Sensitivity and Specificity (most important for criminal justice)
+- **Primary Metrics**: Sensitivity and Specificity (explicitly required by assessment)
 - **Secondary Metrics**: Accuracy and AUC (for overall model assessment)
-- **Business Context**: Focus on error types and their implications
+- **Business Context**: Focus on error types and their implications for criminal justice
 
 ---
 
@@ -270,32 +270,34 @@ def plot_roc_and_pr_curves(y_true, y_proba, model_name):
 ## ✅ **Assessment Compliance**
 
 ### **What We Should Have Done:**
-- ✅ **Chose appropriate metrics**: Sensitivity and Specificity as primary focus
+- ✅ **Chose appropriate metrics**: Sensitivity and Specificity as primary focus (Task 3b requirement)
 - ✅ **Justified choices**: Business context for criminal justice application
-- ✅ **Comprehensive evaluation**: All four key metrics (Accuracy, AUC, Sensitivity, Specificity)
+- ✅ **Comprehensive evaluation**: Primary metrics (Sensitivity, Specificity) + Secondary metrics (Accuracy, AUC)
 - ✅ **Threshold optimization**: Business-specific tuning for sensitivity
 - ✅ **Trade-off analysis**: Clear explanation of sensitivity vs specificity trade-offs
 
 ### **Enhanced Deliverables:**
-- **Comprehensive metrics table** for all models
+- **Primary Metrics Analysis**: Sensitivity and specificity as main focus
+- **Secondary Metrics Analysis**: Accuracy, AUC, precision, F1-score for context
 - **Threshold optimization analysis** for business requirements
 - **ROC and Precision-Recall curves** for visual assessment
 - **Business implications** based on error types
-- **Policy recommendations** based on metric analysis
+- **Policy recommendations** based on primary metric analysis
 
 ---
 
 ## 🎯 **Key Takeaways**
 
 ### **1. Assessment Requirements**
-- The assessment specifically asked for **Sensitivity and Specificity**
+- The assessment specifically asked for **Sensitivity and Specificity** as primary metrics
 - We focused on **Accuracy and AUC** instead
-- **Missing**: Comprehensive error type analysis
+- **Missing**: Comprehensive error type analysis with sensitivity/specificity focus
 
 ### **2. Business Importance**
 - **Sensitivity**: Critical for public safety (don't miss multiple arrests)
 - **Specificity**: Important for resource efficiency (avoid false alarms)
 - **Trade-offs**: Must balance both for effective policy
+- **Assessment Compliance**: Directly addresses Task 3b requirements
 
 ### **3. Implementation Gap**
 - **Current**: 14-18% sensitivity (missing 82-86% of multiple arrests)
@@ -307,6 +309,7 @@ def plot_roc_and_pr_curves(y_true, y_proba, model_name):
 - **Monitor false positive rates** for resource impact
 - **Balance public safety** with resource efficiency
 - **Document trade-offs** clearly for policymakers
+- **Prioritize sensitivity/specificity** as primary metrics in all analyses
 
 ---
 
