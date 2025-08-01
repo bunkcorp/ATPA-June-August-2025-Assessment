@@ -21,6 +21,7 @@ from ethics import EthicsFramework
 from curriculum import ATPACurriculum
 from exam_analysis import ExamAnalysis
 from professional_resources import ProfessionalResources
+from practical_examples import PracticalExamples
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -49,6 +50,7 @@ try:
     curriculum = ATPACurriculum()
     exam_analysis = ExamAnalysis()
     professional_resources = ProfessionalResources()
+    practical_examples = PracticalExamples()
     logger.info("MCP layers initialized successfully")
 except Exception as e:
     logger.error(f"Error initializing MCP layers: {e}")
@@ -60,6 +62,7 @@ except Exception as e:
     curriculum = None
     exam_analysis = None
     professional_resources = None
+    practical_examples = None
 
 # Mount static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -613,6 +616,90 @@ async def search_professional_content(query: str = Query(..., description="Searc
     return professional_resources.search_professional_content(query)
 
 # ============================================================================
+# PRACTICAL EXAMPLES LAYER ENDPOINTS
+# ============================================================================
+
+@app.get("/examples/overview")
+async def get_practical_examples_overview():
+    """Get overview of all practical examples"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_examples_overview()
+
+@app.get("/examples/code-statistics")
+async def get_code_statistics():
+    """Get code statistics across all examples"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_code_statistics()
+
+@app.get("/examples/language-comparison")
+async def get_language_comparison():
+    """Get comparison between Python and R implementations"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_language_comparison()
+
+@app.get("/examples/topic-coverage")
+async def get_topic_coverage():
+    """Get topic coverage analysis"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_topic_coverage()
+
+@app.get("/examples/practical-applications")
+async def get_practical_applications():
+    """Get practical applications analysis"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_practical_applications()
+
+@app.get("/examples/category/{category}")
+async def get_examples_by_category(category: str):
+    """Get examples by category (data_preparation, advanced_modeling, etc.)"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_example_by_category(category)
+
+@app.get("/examples/language/{language}")
+async def get_examples_by_language(language: str):
+    """Get examples by programming language"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_example_by_language(language)
+
+@app.get("/examples/topic/{topic}")
+async def get_code_chunks_by_topic(topic: str):
+    """Get code chunks related to a specific topic"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_code_chunks_by_topic(topic)
+
+@app.get("/examples/task/{task_number}")
+async def get_task_specific_examples(task_number: int):
+    """Get examples relevant to specific ATPA tasks"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_task_specific_examples(task_number)
+
+@app.get("/examples/search")
+async def search_practical_content(query: str = Query(..., description="Search query")):
+    """Search across all practical examples"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.search_practical_content(query)
+
+# ============================================================================
 # FRONTEND ENDPOINTS (Optional)
 # ============================================================================
 
@@ -634,7 +721,8 @@ async def get_status():
             "ethics": ethics is not None,
             "curriculum": curriculum is not None,
             "exam_analysis": exam_analysis is not None,
-            "professional_resources": professional_resources is not None
+            "professional_resources": professional_resources is not None,
+            "practical_examples": practical_examples is not None
         },
         "data_loaded": {
             "incidents": loader.incidents_df is not None if loader else False,
@@ -727,6 +815,18 @@ async def get_documentation():
                 "GET /professional/communication-checklist": "Get comprehensive communication checklist",
                 "GET /professional/cross-references": "Get cross-references between resources",
                 "GET /professional/search": "Search across all professional resources"
+            },
+            "practical_examples": {
+                "GET /examples/overview": "Get overview of all practical examples",
+                "GET /examples/code-statistics": "Get code statistics across all examples",
+                "GET /examples/language-comparison": "Get comparison between Python and R implementations",
+                "GET /examples/topic-coverage": "Get topic coverage analysis",
+                "GET /examples/practical-applications": "Get practical applications analysis",
+                "GET /examples/category/{category}": "Get examples by category",
+                "GET /examples/language/{language}": "Get examples by programming language",
+                "GET /examples/topic/{topic}": "Get code chunks related to a specific topic",
+                "GET /examples/task/{task_number}": "Get examples relevant to specific ATPA tasks",
+                "GET /examples/search": "Search across all practical examples"
             }
         }
     }
