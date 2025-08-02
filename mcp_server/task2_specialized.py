@@ -35,7 +35,50 @@ class Task2SpecializedSearch:
             "victim",
             "offender",
             "criminal justice",
-            "public policy"
+            "public policy",
+            "anti-discrimination laws",
+            "civil rights act",
+            "equal credit opportunity act",
+            "protected characteristics",
+            "race color religion",
+            "national origin",
+            "sex gender",
+            "age discrimination",
+            "disability",
+            "sexual orientation",
+            "gender identity",
+            "transgender",
+            "zip code correlation",
+            "redlining",
+            "fair lending",
+            "discriminatory practices",
+            "bias detection",
+            "fairness assessment",
+            "ethical principles",
+            "regulatory compliance",
+            "data protection",
+            "data privacy",
+            "regulations on data",
+            "united states regulations",
+            "laws defining protected classes",
+            "anti-discrimination laws regulations",
+            "risk classification insurance",
+            "discrimination insurance",
+            "insurance laws united states",
+            "guidelines principles predictive models",
+            "data protection regulations",
+            "privacy regulations",
+            "insurance regulations",
+            "predictive modeling guidelines",
+            "modeling principles",
+            "insurance risk classification",
+            "discriminatory practices insurance",
+            "protected class definitions",
+            "regulatory framework",
+            "compliance requirements",
+            "data governance",
+            "privacy protection",
+            "insurance compliance"
         ]
         
         results = {}
@@ -69,7 +112,33 @@ class Task2SpecializedSearch:
             "documentation standards",
             "transparency requirements",
             "ethical guidelines",
-            "governance framework"
+            "governance framework",
+            "actuarial standards board",
+            "professional responsibility",
+            "ethical conduct",
+            "actuarial professionalism",
+            "standards of practice",
+            "professional ethics",
+            "actuarial code of conduct",
+            "professional oversight",
+            "ethical decision making",
+            "professional accountability",
+            "data protection standards",
+            "privacy standards",
+            "regulatory standards",
+            "insurance standards",
+            "predictive modeling standards",
+            "modeling guidelines",
+            "professional guidelines",
+            "ethical modeling",
+            "responsible modeling",
+            "model governance",
+            "data stewardship",
+            "privacy protection standards",
+            "regulatory compliance standards",
+            "insurance compliance standards",
+            "professional best practices",
+            "ethical best practices"
         ]
         
         results = {}
@@ -125,6 +194,8 @@ class Task2SpecializedSearch:
             'task_2a_benefits_risks': self.search_demographic_data_benefits_risks(),
             'task_2b_professional_standards': self.search_professional_standards_misuse_prevention(),
             'criminal_justice_context': self.search_criminal_justice_specific(),
+            'insurance_regulatory_content': self.search_insurance_regulatory_content(),
+            'nminsights_guidance': self.get_nminsights_specific_guidance(),
             'ethical_framework': self.curriculum.get_ethical_framework_details(),
             'data_quality_guidelines': self.curriculum.get_data_quality_guidelines()
         }
@@ -169,6 +240,48 @@ class Task2SpecializedSearch:
             'search_terms': search_terms,
             'results': results,
             'summary': f"Found relevant guidance for {len([r for r in results.values() if r])} research organization terms"
+        }
+    
+    def search_insurance_regulatory_content(self) -> Dict:
+        """
+        Search for content specifically about insurance regulations and data protection
+        """
+        search_terms = [
+            "data protection",
+            "data privacy",
+            "regulations on data",
+            "united states regulations",
+            "laws defining protected classes",
+            "anti-discrimination laws regulations",
+            "risk classification insurance",
+            "discrimination insurance",
+            "insurance laws united states",
+            "guidelines principles predictive models",
+            "data protection regulations",
+            "privacy regulations",
+            "insurance regulations",
+            "predictive modeling guidelines",
+            "modeling principles",
+            "insurance risk classification",
+            "discriminatory practices insurance",
+            "protected class definitions",
+            "regulatory framework",
+            "compliance requirements",
+            "data governance",
+            "privacy protection",
+            "insurance compliance"
+        ]
+        
+        results = {}
+        for term in search_terms:
+            search_result = self.curriculum.search_curriculum(term)
+            if search_result['results']:
+                results[term] = search_result['results'][:3]  # Top 3 results
+        
+        return {
+            'search_terms': search_terms,
+            'results': results,
+            'summary': f"Found relevant content for {len([r for r in results.values() if r])} insurance regulatory terms"
         }
 
 # Test function

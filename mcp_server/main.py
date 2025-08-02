@@ -25,6 +25,9 @@ from practical_examples import PracticalExamples
 from classification_metrics import ClassificationMetrics
 from task_implementation import ATPATaskImplementation
 from task2_specialized import Task2SpecializedSearch
+from task3_specialized import Task3SpecializedSearch
+from task4_specialized import Task4SpecializedSearch
+from task1_specialized import Task1SpecializedSearch
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -57,6 +60,9 @@ try:
     classification_metrics = ClassificationMetrics()
     task_implementation = ATPATaskImplementation(loader, protocol)
     task2_specialized = Task2SpecializedSearch()
+    task3_specialized = Task3SpecializedSearch()
+    task4_specialized = Task4SpecializedSearch()
+    task1_specialized = Task1SpecializedSearch()
     logger.info("MCP layers initialized successfully")
 except Exception as e:
     logger.error(f"Error initializing MCP layers: {e}")
@@ -72,6 +78,9 @@ except Exception as e:
     classification_metrics = None
     task_implementation = None
     task2_specialized = None
+    task3_specialized = None
+    task4_specialized = None
+    task1_specialized = None
 
 # Mount static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -101,7 +110,10 @@ async def root():
         "version": "1.0.0",
         "endpoints": {
             "context": "/fields",
+            "task1_specialized": "/task1",
             "task2_specialized": "/task2",
+            "task3_specialized": "/task3",
+            "task4_specialized": "/task4",
             "model": "/data",
             "protocol": "/merged",
             "insights": "/eda/summary"
@@ -490,6 +502,75 @@ async def get_curriculum_summary():
     return curriculum.get_curriculum_summary()
 
 # ============================================================================
+# TASK 1 SPECIALIZED ENDPOINTS
+# ============================================================================
+
+@app.get("/task1/data-preparation-content")
+async def get_data_preparation_content():
+    """Get content about data preparation and cleaning"""
+    if not task1_specialized:
+        raise HTTPException(status_code=500, detail="Task 1 specialized layer not initialized")
+    
+    return task1_specialized.search_data_preparation_content()
+
+@app.get("/task1/data-joins-content")
+async def get_data_joins_content():
+    """Get content about data joins and merging"""
+    if not task1_specialized:
+        raise HTTPException(status_code=500, detail="Task 1 specialized layer not initialized")
+    
+    return task1_specialized.search_data_joins_content()
+
+@app.get("/task1/eda-content")
+async def get_eda_content():
+    """Get content about Exploratory Data Analysis"""
+    if not task1_specialized:
+        raise HTTPException(status_code=500, detail="Task 1 specialized layer not initialized")
+    
+    return task1_specialized.search_eda_content()
+
+@app.get("/task1/data-validation-content")
+async def get_data_validation_content():
+    """Get content about data validation and quality"""
+    if not task1_specialized:
+        raise HTTPException(status_code=500, detail="Task 1 specialized layer not initialized")
+    
+    return task1_specialized.search_data_validation_content()
+
+@app.get("/task1/variable-analysis-content")
+async def get_variable_analysis_content():
+    """Get content about variable analysis and transformation"""
+    if not task1_specialized:
+        raise HTTPException(status_code=500, detail="Task 1 specialized layer not initialized")
+    
+    return task1_specialized.search_variable_analysis_content()
+
+@app.get("/task1/structured-content")
+async def get_task1_structured_content():
+    """Get all Task 1 structured content organized by requirements"""
+    if not task1_specialized:
+        raise HTTPException(status_code=500, detail="Task 1 specialized layer not initialized")
+    
+    return task1_specialized.get_task1_structured_content()
+
+@app.get("/task1/task1-terms")
+async def search_specific_task1_terms(terms: str = Query(..., description="Comma-separated Task 1 terms")):
+    """Search for specific Task 1 terms"""
+    if not task1_specialized:
+        raise HTTPException(status_code=500, detail="Task 1 specialized layer not initialized")
+    
+    term_list = [term.strip() for term in terms.split(",")]
+    return task1_specialized.search_specific_task1_terms(term_list)
+
+@app.get("/task1/requirements-content")
+async def get_task1_requirements_content():
+    """Get content specifically for Task 1 requirements (1a-1d)"""
+    if not task1_specialized:
+        raise HTTPException(status_code=500, detail="Task 1 specialized layer not initialized")
+    
+    return task1_specialized.get_task1_requirements_content()
+
+# ============================================================================
 # TASK 2 SPECIALIZED ENDPOINTS
 # ============================================================================
 
@@ -541,6 +622,160 @@ async def get_nminsights_guidance():
         raise HTTPException(status_code=500, detail="Task 2 specialized layer not initialized")
     
     return task2_specialized.get_nminsights_specific_guidance()
+
+@app.get("/task2/insurance-regulatory-content")
+async def get_insurance_regulatory_content():
+    """Get content specifically about insurance regulations and data protection"""
+    if not task2_specialized:
+        raise HTTPException(status_code=500, detail="Task 2 specialized layer not initialized")
+    
+    return task2_specialized.search_insurance_regulatory_content()
+
+# ============================================================================
+# TASK 3 SPECIALIZED ENDPOINTS
+# ============================================================================
+
+@app.get("/task3/data-splitting-content")
+async def get_data_splitting_content():
+    """Get content about data splitting and reasonability checks"""
+    if not task3_specialized:
+        raise HTTPException(status_code=500, detail="Task 3 specialized layer not initialized")
+    
+    return task3_specialized.search_data_splitting_content()
+
+@app.get("/task3/glm-content")
+async def get_glm_content():
+    """Get content about Generalized Linear Models"""
+    if not task3_specialized:
+        raise HTTPException(status_code=500, detail="Task 3 specialized layer not initialized")
+    
+    return task3_specialized.search_glm_content()
+
+@app.get("/task3/mixed-models-content")
+async def get_mixed_models_content():
+    """Get content about mixed models and random effects"""
+    if not task3_specialized:
+        raise HTTPException(status_code=500, detail="Task 3 specialized layer not initialized")
+    
+    return task3_specialized.search_mixed_models_content()
+
+@app.get("/task3/model-validation-content")
+async def get_model_validation_content():
+    """Get content about model validation and assessment"""
+    if not task3_specialized:
+        raise HTTPException(status_code=500, detail="Task 3 specialized layer not initialized")
+    
+    return task3_specialized.search_model_validation_content()
+
+@app.get("/task3/variable-selection-content")
+async def get_variable_selection_content():
+    """Get content about variable selection and feature engineering"""
+    if not task3_specialized:
+        raise HTTPException(status_code=500, detail="Task 3 specialized layer not initialized")
+    
+    return task3_specialized.search_variable_selection_content()
+
+@app.get("/task3/performance-metrics-content")
+async def get_performance_metrics_content():
+    """Get content about performance metrics and evaluation"""
+    if not task3_specialized:
+        raise HTTPException(status_code=500, detail="Task 3 specialized layer not initialized")
+    
+    return task3_specialized.search_performance_metrics_content()
+
+@app.get("/task3/structured-content")
+async def get_task3_structured_content():
+    """Get all Task 3 structured content organized by requirements"""
+    if not task3_specialized:
+        raise HTTPException(status_code=500, detail="Task 3 specialized layer not initialized")
+    
+    return task3_specialized.get_task3_structured_content()
+
+@app.get("/task3/modeling-terms")
+async def search_specific_modeling_terms(terms: str = Query(..., description="Comma-separated modeling terms")):
+    """Search for specific modeling terms"""
+    if not task3_specialized:
+        raise HTTPException(status_code=500, detail="Task 3 specialized layer not initialized")
+    
+    term_list = [term.strip() for term in terms.split(",")]
+    return task3_specialized.search_specific_modeling_terms(term_list)
+
+@app.get("/task3/requirements-content")
+async def get_task3_requirements_content():
+    """Get content specifically for Task 3 requirements (3a-3e)"""
+    if not task3_specialized:
+        raise HTTPException(status_code=500, detail="Task 3 specialized layer not initialized")
+    
+    return task3_specialized.get_task3_requirements_content()
+
+# ============================================================================
+# TASK 4 SPECIALIZED ENDPOINTS
+# ============================================================================
+
+@app.get("/task4/random-forest-content")
+async def get_random_forest_content():
+    """Get content about Random Forest models"""
+    if not task4_specialized:
+        raise HTTPException(status_code=500, detail="Task 4 specialized layer not initialized")
+    
+    return task4_specialized.search_random_forest_content()
+
+@app.get("/task4/shapley-values-content")
+async def get_shapley_values_content():
+    """Get content about SHAP values and model interpretability"""
+    if not task4_specialized:
+        raise HTTPException(status_code=500, detail="Task 4 specialized layer not initialized")
+    
+    return task4_specialized.search_shapley_values_content()
+
+@app.get("/task4/partial-dependence-content")
+async def get_partial_dependence_content():
+    """Get content about partial dependence plots"""
+    if not task4_specialized:
+        raise HTTPException(status_code=500, detail="Task 4 specialized layer not initialized")
+    
+    return task4_specialized.search_partial_dependence_content()
+
+@app.get("/task4/ensemble-methods-content")
+async def get_ensemble_methods_content():
+    """Get content about ensemble methods"""
+    if not task4_specialized:
+        raise HTTPException(status_code=500, detail="Task 4 specialized layer not initialized")
+    
+    return task4_specialized.search_ensemble_methods_content()
+
+@app.get("/task4/model-interpretability-content")
+async def get_model_interpretability_content():
+    """Get content about model interpretability"""
+    if not task4_specialized:
+        raise HTTPException(status_code=500, detail="Task 4 specialized layer not initialized")
+    
+    return task4_specialized.search_model_interpretability_content()
+
+@app.get("/task4/structured-content")
+async def get_task4_structured_content():
+    """Get all Task 4 structured content organized by requirements"""
+    if not task4_specialized:
+        raise HTTPException(status_code=500, detail="Task 4 specialized layer not initialized")
+    
+    return task4_specialized.get_task4_structured_content()
+
+@app.get("/task4/task4-terms")
+async def search_specific_task4_terms(terms: str = Query(..., description="Comma-separated Task 4 terms")):
+    """Search for specific Task 4 terms"""
+    if not task4_specialized:
+        raise HTTPException(status_code=500, detail="Task 4 specialized layer not initialized")
+    
+    term_list = [term.strip() for term in terms.split(",")]
+    return task4_specialized.search_specific_task4_terms(term_list)
+
+@app.get("/task4/requirements-content")
+async def get_task4_requirements_content():
+    """Get content specifically for Task 4 requirements (4a-4c)"""
+    if not task4_specialized:
+        raise HTTPException(status_code=500, detail="Task 4 specialized layer not initialized")
+    
+    return task4_specialized.get_task4_requirements_content()
 
 # ============================================================================
 # EXAM ANALYSIS LAYER ENDPOINTS
