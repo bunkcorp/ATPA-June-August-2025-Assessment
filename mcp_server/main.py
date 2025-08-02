@@ -22,6 +22,8 @@ from curriculum import ATPACurriculum
 from exam_analysis import ExamAnalysis
 from professional_resources import ProfessionalResources
 from practical_examples import PracticalExamples
+from classification_metrics import ClassificationMetrics
+from task_implementation import ATPATaskImplementation
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -51,6 +53,8 @@ try:
     exam_analysis = ExamAnalysis()
     professional_resources = ProfessionalResources()
     practical_examples = PracticalExamples()
+    classification_metrics = ClassificationMetrics()
+    task_implementation = ATPATaskImplementation(loader, protocol)
     logger.info("MCP layers initialized successfully")
 except Exception as e:
     logger.error(f"Error initializing MCP layers: {e}")
@@ -63,6 +67,8 @@ except Exception as e:
     exam_analysis = None
     professional_resources = None
     practical_examples = None
+    classification_metrics = None
+    task_implementation = None
 
 # Mount static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -700,6 +706,325 @@ async def search_practical_content(query: str = Query(..., description="Search q
     return practical_examples.search_practical_content(query)
 
 # ============================================================================
+# CLASSIFICATION METRICS LAYER ENDPOINTS
+# ============================================================================
+
+@app.post("/metrics/calculate")
+async def calculate_classification_metrics(
+    y_true: List[int],
+    y_pred: List[int],
+    y_pred_proba: Optional[List[float]] = None,
+    model_name: str = "Model"
+):
+    """Calculate comprehensive classification metrics"""
+    if not classification_metrics:
+        raise HTTPException(status_code=500, detail="Classification metrics layer not initialized")
+    
+    try:
+        y_true_array = np.array(y_true)
+        y_pred_array = np.array(y_pred)
+        y_pred_proba_array = np.array(y_pred_proba) if y_pred_proba else None
+        
+        metrics = classification_metrics.calculate_comprehensive_metrics(
+            y_true_array, y_pred_array, y_pred_proba_array, model_name
+        )
+        return metrics
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error calculating metrics: {str(e)}")
+
+@app.post("/metrics/compare")
+async def compare_models(model_results: Dict[str, Dict]):
+    """Compare multiple models using comprehensive metrics"""
+    if not classification_metrics:
+        raise HTTPException(status_code=500, detail="Classification metrics layer not initialized")
+    
+    return classification_metrics.compare_models(model_results)
+
+@app.get("/metrics/confusion-matrix/{model_name}")
+async def get_confusion_matrix_plot(model_name: str):
+    """Generate confusion matrix plot for a model"""
+    if not classification_metrics:
+        raise HTTPException(status_code=500, detail="Classification metrics layer not initialized")
+    
+    if model_name not in classification_metrics.confusion_matrices:
+        raise HTTPException(status_code=404, detail=f"Model {model_name} not found")
+    
+    cm = classification_metrics.confusion_matrices[model_name]
+    plot_path = classification_metrics.generate_confusion_matrix_plot(cm, model_name)
+    return {"plot_path": plot_path}
+
+@app.get("/metrics/interpretation/{model_name}")
+async def get_arrest_prediction_interpretation(model_name: str):
+    """Get business interpretation for arrest prediction metrics"""
+    if not classification_metrics:
+        raise HTTPException(status_code=500, detail="Classification metrics layer not initialized")
+    
+    if model_name not in classification_metrics.metrics_history:
+        raise HTTPException(status_code=404, detail=f"Model {model_name} not found")
+    
+    metrics = classification_metrics.metrics_history[model_name]
+    return classification_metrics.get_arrest_prediction_interpretation(metrics)
+
+@app.get("/metrics/summary-table")
+async def get_metrics_summary_table():
+    """Get summary table of all metrics for all models"""
+    if not classification_metrics:
+        raise HTTPException(status_code=500, detail="Classification metrics layer not initialized")
+    
+    if not classification_metrics.metrics_history:
+        return {"message": "No models have been evaluated yet"}
+    
+    summary_df = classification_metrics.get_metrics_summary_table(classification_metrics.metrics_history)
+    return {"summary_table": summary_df.to_dict('records')}
+
+@app.get("/metrics/task-guidance/{task_number}")
+async def get_atpa_task_guidance(task_number: int):
+    """Get ATPA task-specific guidance for classification metrics"""
+    if not classification_metrics:
+        raise HTTPException(status_code=500, detail="Classification metrics layer not initialized")
+    
+    return classification_metrics.get_atpa_task_guidance(task_number)
+
+@app.get("/metrics/essential-metrics")
+async def get_essential_metrics_explanation():
+    """Get explanation of essential classification metrics for arrest prediction"""
+    if not classification_metrics:
+        raise HTTPException(status_code=500, detail="Classification metrics layer not initialized")
+    
+    return {
+        "essential_metrics": {
+            "confusion_matrix": {
+                "description": "Shows True Positives, False Positives, True Negatives, False Negatives",
+                "importance": "Critical for understanding model performance in arrest prediction",
+                "interpretation": "Helps identify if model is missing arrests (false negatives) or creating false alarms (false positives)"
+            },
+            "sensitivity": {
+                "description": "True Positive Rate - ability to identify actual arrests",
+                "importance": "Critical for arrest prediction - high sensitivity means fewer missed arrests",
+                "target": "> 0.7 for operational use"
+            },
+            "specificity": {
+                "description": "True Negative Rate - ability to identify non-arrests",
+                "importance": "Prevents false alarms and resource waste",
+                "target": "> 0.7 for operational use"
+            },
+            "precision": {
+                "description": "Positive Predictive Value - accuracy of positive predictions",
+                "importance": "Ensures predicted arrests are likely to be actual arrests",
+                "target": "> 0.7 for operational use"
+            },
+            "f1_score": {
+                "description": "Harmonic mean of precision and recall",
+                "importance": "Balanced metric for imbalanced data (19% arrest rate)",
+                "target": "> 0.6 for imbalanced data"
+            },
+            "balanced_accuracy": {
+                "description": "Average of sensitivity and specificity",
+                "importance": "Better than accuracy for imbalanced data",
+                "target": "> 0.7 for operational use"
+            },
+            "roc_auc": {
+                "description": "Area under ROC curve - overall discrimination ability",
+                "importance": "Measures model's ability to rank predictions correctly",
+                "target": "> 0.8 for good discrimination"
+            }
+        },
+        "class_imbalance_considerations": {
+            "problem": "19% arrest rate creates class imbalance",
+            "solutions": [
+                "Use balanced_accuracy instead of accuracy",
+                "Focus on F1-score for balanced evaluation",
+                "Consider sensitivity vs specificity trade-offs",
+                "Use ROC-AUC for overall performance"
+            ]
+        }
+    }
+
+# ============================================================================
+# ATPA TASK ENDPOINTS
+# ============================================================================
+
+@app.post("/tasks/run-task1")
+async def run_task1_data_preparation(sample_size: Optional[int] = Query(None, ge=100, le=50000)):
+    """Run Task 1: Data Preparation and Quality Analysis"""
+    if task_implementation is None:
+        raise HTTPException(status_code=503, detail="Task implementation service unavailable")
+    
+    try:
+        results = task_implementation.task1_data_preparation(sample_size)
+        return {
+            "status": "success",
+            "task": "Task 1: Data Preparation",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"Error running Task 1: {e}")
+        raise HTTPException(status_code=500, detail=f"Error running Task 1: {str(e)}")
+
+@app.post("/tasks/run-task2")
+async def run_task2_privacy_ethics():
+    """Run Task 2: Privacy and Ethics Analysis"""
+    if task_implementation is None:
+        raise HTTPException(status_code=503, detail="Task implementation service unavailable")
+    
+    try:
+        results = task_implementation.task2_privacy_ethics_analysis()
+        return {
+            "status": "success",
+            "task": "Task 2: Privacy and Ethics Analysis",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"Error running Task 2: {e}")
+        raise HTTPException(status_code=500, detail=f"Error running Task 2: {str(e)}")
+
+@app.post("/tasks/run-task3")
+async def run_task3_generalized_linear_models():
+    """Run Task 3: Generalized Linear Models"""
+    if task_implementation is None:
+        raise HTTPException(status_code=503, detail="Task implementation service unavailable")
+    
+    try:
+        results = task_implementation.task3_generalized_linear_models()
+        return {
+            "status": "success",
+            "task": "Task 3: Generalized Linear Models",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"Error running Task 3: {e}")
+        raise HTTPException(status_code=500, detail=f"Error running Task 3: {str(e)}")
+
+@app.post("/tasks/run-task4")
+async def run_task4_random_forest_shap():
+    """Run Task 4: Random Forest with SHAP Analysis"""
+    if task_implementation is None:
+        raise HTTPException(status_code=503, detail="Task implementation service unavailable")
+    
+    try:
+        results = task_implementation.task4_random_forest_shap()
+        return {
+            "status": "success",
+            "task": "Task 4: Random Forest with SHAP Analysis",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"Error running Task 4: {e}")
+        raise HTTPException(status_code=500, detail=f"Error running Task 4: {str(e)}")
+
+@app.post("/tasks/run-task5")
+async def run_task5_bayesian_analysis():
+    """Run Task 5: Bayesian Analysis"""
+    if task_implementation is None:
+        raise HTTPException(status_code=503, detail="Task implementation service unavailable")
+    
+    try:
+        results = task_implementation.task5_bayesian_analysis()
+        return {
+            "status": "success",
+            "task": "Task 5: Bayesian Analysis",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"Error running Task 5: {e}")
+        raise HTTPException(status_code=500, detail=f"Error running Task 5: {str(e)}")
+
+@app.post("/tasks/run-task6")
+async def run_task6_executive_summary():
+    """Run Task 6: Executive Summary"""
+    if task_implementation is None:
+        raise HTTPException(status_code=503, detail="Task implementation service unavailable")
+    
+    try:
+        results = task_implementation.task6_executive_summary()
+        return {
+            "status": "success",
+            "task": "Task 6: Executive Summary",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"Error running Task 6: {e}")
+        raise HTTPException(status_code=500, detail=f"Error running Task 6: {str(e)}")
+
+@app.post("/tasks/run-all")
+async def run_all_tasks(sample_size: Optional[int] = Query(None, ge=100, le=50000)):
+    """Run all ATPA tasks in sequence"""
+    if task_implementation is None:
+        raise HTTPException(status_code=503, detail="Task implementation service unavailable")
+    
+    try:
+        results = task_implementation.run_all_tasks(sample_size)
+        return {
+            "status": "success",
+            "message": "All ATPA tasks completed successfully",
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"Error running all tasks: {e}")
+        raise HTTPException(status_code=500, detail=f"Error running all tasks: {str(e)}")
+
+@app.get("/tasks/status")
+async def get_task_status():
+    """Get status of completed tasks"""
+    if task_implementation is None:
+        raise HTTPException(status_code=503, detail="Task implementation service unavailable")
+    
+    completed_tasks = list(task_implementation.results.keys())
+    return {
+        "completed_tasks": completed_tasks,
+        "total_tasks": 6,
+        "progress": len(completed_tasks) / 6
+    }
+
+@app.get("/tasks/results/{task_number}")
+async def get_task_results(task_number: int):
+    """Get results for a specific task"""
+    if task_implementation is None:
+        raise HTTPException(status_code=503, detail="Task implementation service unavailable")
+    
+    task_key = f"task{task_number}"
+    if task_key not in task_implementation.results:
+        raise HTTPException(status_code=404, detail=f"Task {task_number} not completed yet")
+    
+    return {
+        "task": f"Task {task_number}",
+        "results": task_implementation.results[task_key]
+    }
+
+@app.post("/tasks/save-results")
+async def save_task_results(filepath: str = Query(..., description="Path to save results")):
+    """Save all task results to file"""
+    if task_implementation is None:
+        raise HTTPException(status_code=503, detail="Task implementation service unavailable")
+    
+    try:
+        task_implementation.save_results(filepath)
+        return {
+            "status": "success",
+            "message": f"Results saved to {filepath}"
+        }
+    except Exception as e:
+        logger.error(f"Error saving results: {e}")
+        raise HTTPException(status_code=500, detail=f"Error saving results: {str(e)}")
+
+@app.post("/tasks/load-results")
+async def load_task_results(filepath: str = Query(..., description="Path to load results from")):
+    """Load task results from file"""
+    if task_implementation is None:
+        raise HTTPException(status_code=503, detail="Task implementation service unavailable")
+    
+    try:
+        task_implementation.load_results(filepath)
+        return {
+            "status": "success",
+            "message": f"Results loaded from {filepath}",
+            "completed_tasks": list(task_implementation.results.keys())
+        }
+    except Exception as e:
+        logger.error(f"Error loading results: {e}")
+        raise HTTPException(status_code=500, detail=f"Error loading results: {str(e)}")
+
+# ============================================================================
 # FRONTEND ENDPOINTS (Optional)
 # ============================================================================
 
@@ -722,7 +1047,9 @@ async def get_status():
             "curriculum": curriculum is not None,
             "exam_analysis": exam_analysis is not None,
             "professional_resources": professional_resources is not None,
-            "practical_examples": practical_examples is not None
+            "practical_examples": practical_examples is not None,
+            "classification_metrics": classification_metrics is not None,
+            "task_implementation": task_implementation is not None
         },
         "data_loaded": {
             "incidents": loader.incidents_df is not None if loader else False,
@@ -827,6 +1154,15 @@ async def get_documentation():
                 "GET /examples/topic/{topic}": "Get code chunks related to a specific topic",
                 "GET /examples/task/{task_number}": "Get examples relevant to specific ATPA tasks",
                 "GET /examples/search": "Search across all practical examples"
+            },
+            "classification_metrics": {
+                "POST /metrics/calculate": "Calculate comprehensive classification metrics",
+                "POST /metrics/compare": "Compare multiple models using comprehensive metrics",
+                "GET /metrics/confusion-matrix/{model_name}": "Generate confusion matrix plot for a model",
+                "GET /metrics/interpretation/{model_name}": "Get business interpretation for arrest prediction metrics",
+                "GET /metrics/summary-table": "Get summary table of all metrics for all models",
+                "GET /metrics/task-guidance/{task_number}": "Get ATPA task-specific guidance for classification metrics",
+                "GET /metrics/essential-metrics": "Get explanation of essential classification metrics for arrest prediction"
             }
         }
     }

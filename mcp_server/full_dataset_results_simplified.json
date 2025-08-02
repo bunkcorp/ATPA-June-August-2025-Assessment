@@ -1,0 +1,124 @@
+{
+  "task1": {
+    "total_records": 96904,
+    "total_columns": 65,
+    "missing_data_summary": {
+      "total_missing_values": 96904,
+      "missing_percentage": 1.5384615384615385
+    },
+    "data_types_summary": {
+      "int64": 17,
+      "float64": 17,
+      "object": 10,
+      "bool": 5,
+      "datetime64[ns]": 3,
+      "int32": 3,
+      "category": 1
+    },
+    "duplicate_records": 0
+  },
+  "task2": {
+    "protected_variables": [
+      "agency_id",
+      "offender_age_code",
+      "offender_age_num",
+      "offender_age_name",
+      "offender_sex_code",
+      "offender_race_id",
+      "offender_ethnicity_id",
+      "outside_agency_id",
+      "victim_age_id",
+      "victim_age_num",
+      "victim_sex_code",
+      "victim_race_id",
+      "victim_ethnicity_id",
+      "agency_name",
+      "agency_type_name"
+    ],
+    "protected_variables_count": 15,
+    "ethics_recommendations": [
+      "Protected variables identified. Consider excluding these from model training to prevent bias.",
+      "Ensure model predictions are not used to perpetuate existing biases in the criminal justice system.",
+      "Regularly monitor model performance across demographic groups."
+    ]
+  },
+  "task3": {
+    "best_model": "l1_regularized",
+    "best_model_metrics": {
+      "accuracy": 0.849182188741551,
+      "precision": 0.6239870340356564,
+      "recall": 0.5219631236442517,
+      "f1_score": 0.5684334858998967,
+      "auc": 0.9113723798540683
+    },
+    "model_comparison": {
+      "standard": {
+        "accuracy": 0.849182188741551,
+        "precision": 0.6245522631064799,
+        "recall": 0.5200650759219089,
+        "f1_score": 0.5675395768604823,
+        "auc": 0.9113487084684676
+      },
+      "l1_regularized": {
+        "accuracy": 0.849182188741551,
+        "precision": 0.6239870340356564,
+        "recall": 0.5219631236442517,
+        "f1_score": 0.5684334858998967,
+        "auc": 0.9113723798540683
+      },
+      "l2_regularized": {
+        "accuracy": 0.849182188741551,
+        "precision": 0.6245522631064799,
+        "recall": 0.5200650759219089,
+        "f1_score": 0.5675395768604823,
+        "auc": 0.9113487084684676
+      }
+    }
+  },
+  "task4": {
+    "random_forest_metrics": {
+      "accuracy": 0.8919044424952273,
+      "precision": 0.7485179407176287,
+      "recall": 0.6504880694143167,
+      "f1_score": 0.6960684752647612,
+      "auc": 0.9502582634560941
+    },
+    "top_features": [
+      "('offender_race_id', array([0.05338963, 0.05338963]))",
+      "('offender_age_name', array([0.0347197, 0.0347197]))",
+      "('offender_sex_code', array([0.03037741, 0.03037741]))",
+      "('offender_ethnicity_id', array([0.02624535, 0.02624535]))",
+      "('offender_age_code', array([0.02488867, 0.02488867]))",
+      "('crime_severity', array([0.02021716, 0.02021716]))",
+      "('relationship_name', array([0.01832403, 0.01832403]))",
+      "('ct_flag', array([0.0151912, 0.0151912]))",
+      "('offense_category_name', array([0.01459623, 0.01459623]))",
+      "('victim_type_name', array([0.00969431, 0.00969431]))"
+    ]
+  },
+  "task5": {
+    "bayesian_metrics": {
+      "accuracy": 0.8491305918167277,
+      "precision": 0.6237848347375243,
+      "recall": 0.5219631236442517,
+      "f1_score": 0.5683495718925303,
+      "auc": 0.9113698053749042
+    },
+    "coefficient_analysis": {
+      "significant_features": []
+    }
+  },
+  "task6": {
+    "overview": {
+      "total_incidents": 96904,
+      "arrest_rate": 0.19028110294724676,
+      "data_quality_score": 98.46153846153847
+    },
+    "key_insights": [
+      "Arrest rate: 19.0%",
+      "Best performing model: l1_regularized (AUC: 0.911)",
+      "Data quality: 98.5% complete"
+    ],
+    "recommendations": []
+  }
+}

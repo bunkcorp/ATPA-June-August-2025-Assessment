@@ -1,0 +1,36 @@
+2025-08-01 20:59:40,697 - INFO - ATPA MCP Server Startup
+2025-08-01 20:59:40,697 - INFO - ==================================================
+2025-08-01 20:59:40,697 - INFO - Checking dependencies...
+2025-08-01 20:59:42,123 - ERROR - Missing required packages: scikit-learn
+2025-08-01 20:59:42,123 - INFO - Installing missing packages...
+Requirement already satisfied: scikit-learn in /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages (1.3.2)
+Requirement already satisfied: numpy<2.0,>=1.17.3 in /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages (from scikit-learn) (1.25.2)
+Requirement already satisfied: scipy>=1.5.0 in /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages (from scikit-learn) (1.14.1)
+Requirement already satisfied: joblib>=1.1.1 in /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages (from scikit-learn) (1.4.2)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages (from scikit-learn) (3.5.0)
+2025-08-01 20:59:42,590 - INFO - Dependencies installed successfully!
+2025-08-01 20:59:42,591 - INFO - Checking data files...
+2025-08-01 20:59:42,591 - INFO - All required data files found!
+2025-08-01 20:59:42,591 - INFO - Starting server...
+2025-08-01 20:59:42,591 - INFO - Starting ATPA MCP Server...
+2025-08-01 20:59:42,591 - INFO - Server will be available at: http://localhost:8000
+2025-08-01 20:59:42,591 - INFO - Dashboard will be available at: http://localhost:8000/dashboard
+2025-08-01 20:59:42,591 - INFO - API documentation will be available at: http://localhost:8000/docs
+2025-08-01 20:59:42,591 - INFO - Press Ctrl+C to stop the server
+INFO:context:Loaded 0 fields from data dictionary
+INFO:context:Incident fields: 0
+INFO:context:Arrestee fields: 0
+INFO:curriculum:Loaded Data and Model Ethics successfully
+INFO:curriculum:Loaded Working with Data successfully
+INFO:curriculum:Loaded Advanced Models successfully
+INFO:curriculum:Loaded Model Explainability and Communication successfully
+INFO:exam_analysis:Loaded October-December 2024 Model Solution successfully
+INFO:exam_analysis:Loaded Sample Assessment Model Solution successfully
+INFO:exam_analysis:Loaded June-August 2025 Assignment successfully
+INFO:professional_resources:Loaded SHAP Analysis Guide successfully
+INFO:professional_resources:Loaded Executive Summary Template successfully
+INFO:professional_resources:Loaded ASOP 41 Actuarial Communications successfully
+INFO:practical_examples:Loaded Module_2_Working_with_Data/atpa_2_2_python.rmd successfully
+INFO:practical_examples:Loaded Module_4_Model_Explainability/atpa_4_3_python.rmd successfully
+INFO:__main__:MCP layers initialized successfully
+WARNING:  You must pass the application as an import string to enable 'reload' or 'workers'.

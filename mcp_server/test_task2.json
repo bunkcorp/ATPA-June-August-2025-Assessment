@@ -1,0 +1,31 @@
+{
+  "protected_variables": [
+    "agency_id",
+    "offender_age_code",
+    "offender_age_num",
+    "offender_age_name",
+    "offender_sex_code",
+    "offender_race_id",
+    "offender_ethnicity_id",
+    "outside_agency_id",
+    "victim_age_id",
+    "victim_age_num",
+    "victim_sex_code",
+    "victim_race_id",
+    "victim_ethnicity_id",
+    "agency_name",
+    "agency_type_name"
+  ],
+  "demographic_analysis": {},
+  "bias_assessment": {},
+  "fairness_metrics": {
+    "overall_arrest_rate": 0.19028110294724676,
+    "demographic_parity": {}
+  },
+  "ethics_recommendations": [
+    "Protected variables identified. Consider excluding these from model training to prevent bias.",
+    "Ensure model predictions are not used to perpetuate existing biases in the criminal justice system.",
+    "Regularly monitor model performance across demographic groups."
+  ],
+  "timestamp": "2025-08-01T23:23:38.620894"
+}
