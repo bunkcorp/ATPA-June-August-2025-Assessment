@@ -1803,6 +1803,39 @@ async def test_data_loading():
         logger.error(f"Error testing data loading: {e}")
         return {"error": str(e)}
 
+@app.post("/data/load-full")
+async def load_full_datasets():
+    """Load the complete datasets (not samples)"""
+    if not loader:
+        raise HTTPException(status_code=500, detail="Loader layer not initialized")
+    
+    try:
+        # Force reload with full datasets
+        loader.incidents_df = None
+        loader.arrestee_df = None
+        loader.incidents_cleaned = False
+        loader.arrestee_cleaned = False
+        
+        # Load full datasets
+        loader.load_incidents()  # No sample_size = full dataset
+        loader.load_arrestee()   # No sample_size = full dataset
+        
+        # Clean the data
+        loader.clean_incidents_data()
+        loader.clean_arrestee_data()
+        
+        return {
+            "message": "Full datasets loaded successfully",
+            "incidents_records": len(loader.incidents_df),
+            "arrestee_records": len(loader.arrestee_df),
+            "incidents_columns": len(loader.incidents_df.columns),
+            "arrestee_columns": len(loader.arrestee_df.columns)
+        }
+    
+    except Exception as e:
+        logger.error(f"Error loading full datasets: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Model Solution Analysis Endpoints
 @app.get("/model-solution/overview")
 async def get_model_solution_overview():
