@@ -7,6 +7,77 @@ The ATPA MCP (Model-Context-Protocol) Server is a comprehensive FastAPI applicat
 1. **What characteristics of criminal incidents are associated with arrests?**
 2. **Which types of crimes are more or less likely to lead to arrests?**
 
+## Quick Start
+
+### ⚠️ IMPORTANT: Run from the correct directory!
+
+**You MUST run the server from the `mcp_server` directory:**
+
+```bash
+# Navigate to the mcp_server directory
+cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
+
+# Install dependencies (if not already installed)
+pip3 install -r requirements.txt
+
+# Start the server
+python3 main.py
+```
+
+### Alternative Startup Methods
+
+#### Method 1: Direct Python execution (Recommended)
+```bash
+cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
+python3 main.py
+```
+
+#### Method 2: Using uvicorn directly
+```bash
+cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
+python3 -m uvicorn main:app --host 127.0.0.1 --port 8000
+```
+
+#### Method 3: Simple curriculum test server
+```bash
+cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
+python3 simple_curriculum_server.py
+```
+
+#### Method 4: Using the startup script (Easiest)
+```bash
+cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
+./start_server.sh
+```
+
+#### Method 5: Test the server functionality
+```bash
+cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
+python3 test_server.py
+```
+
+### Server Access
+
+Once started, the server will be available at:
+- **Main Application**: http://127.0.0.1:8000
+- **API Documentation**: http://127.0.0.1:8000/docs
+- **Interactive Dashboard**: http://127.0.0.1:8000/dashboard
+
+### Testing the Server
+
+After starting the server, test it with:
+
+```bash
+# Test basic connectivity
+curl http://127.0.0.1:8000/
+
+# Test curriculum functionality
+curl http://127.0.0.1:8000/curriculum/overview
+
+# Test search functionality
+curl "http://127.0.0.1:8000/curriculum/search?query=ethical framework"
+```
+
 ## Architecture
 
 The server follows a layered MCP architecture:
@@ -59,16 +130,26 @@ The server follows a layered MCP architecture:
   - Risk assessment for criminal justice context
 - **Endpoints**: `/ethics/framework`, `/ethics/bias-assessment`, `/ethics/fairness-metrics`, etc.
 
+### 6. Curriculum Layer (`curriculum.py`)
+- **Purpose**: Complete ATPA curriculum integration
+- **Functionality**:
+  - Access to all four ATPA modules
+  - Cross-module search functionality
+  - Learning objectives extraction
+  - Specialized content access (ethics, modeling, explainability)
+  - Curriculum relationships and dependencies
+- **Endpoints**: `/curriculum/overview`, `/curriculum/search`, `/curriculum/ethical-framework`, etc.
+
 ## Installation
 
 1. **Navigate to the MCP server directory**:
    ```bash
-   cd mcp_server
+   cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
    ```
 
 2. **Install dependencies**:
    ```bash
-   pip install -r requirements.txt
+   pip3 install -r requirements.txt
    ```
 
 3. **Verify data files exist**:
@@ -81,10 +162,14 @@ The server follows a layered MCP architecture:
 ### Starting the Server
 
 ```bash
-python main.py
+# Make sure you're in the mcp_server directory
+cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
+
+# Start the server
+python3 main.py
 ```
 
-The server will start on `http://localhost:8000`
+The server will start on `http://127.0.0.1:8000`
 
 ### API Endpoints
 
@@ -121,6 +206,17 @@ The server will start on `http://localhost:8000`
 - `GET /ethics/summary` - Get comprehensive ethical summary
 - `GET /ethics/compliance-checklist` - Get ATPA compliance checklist
 
+#### Curriculum Layer
+- `GET /curriculum/overview` - Get overview of all ATPA modules
+- `GET /curriculum/module/{module_key}` - Get content for specific module
+- `GET /curriculum/search` - Search across all modules
+- `GET /curriculum/learning-objectives` - Get learning objectives for all modules
+- `GET /curriculum/ethical-framework` - Get detailed ethical framework from Module 1
+- `GET /curriculum/modeling-techniques` - Get modeling techniques from Module 3
+- `GET /curriculum/explainability-techniques` - Get explainability techniques from Module 4
+- `GET /curriculum/data-quality-guidelines` - Get data quality guidelines from Module 2
+- `GET /curriculum/summary` - Get comprehensive curriculum summary
+
 #### Utility
 - `GET /` - Server information
 - `GET /health` - Health check
@@ -130,7 +226,7 @@ The server will start on `http://localhost:8000`
 
 ### Web Dashboard
 
-Access the interactive dashboard at `http://localhost:8000/dashboard` to:
+Access the interactive dashboard at `http://127.0.0.1:8000/dashboard` to:
 
 - View server status and data availability
 - Create merged datasets
@@ -138,6 +234,7 @@ Access the interactive dashboard at `http://localhost:8000/dashboard` to:
 - View interactive visualizations
 - Perform data quality checks
 - Browse API documentation
+- Access ATPA curriculum content
 
 ## Data Processing Pipeline
 
@@ -211,27 +308,30 @@ The server is designed around NMInsights' research questions:
 
 ### 1. Initial Setup
 ```bash
+# Navigate to mcp_server directory
+cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
+
 # Install dependencies
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Start server
-python main.py
+python3 main.py
 ```
 
 ### 2. Data Exploration
 ```bash
 # Check server status
-curl http://localhost:8000/api/status
+curl http://127.0.0.1:8000/api/status
 
 # Create merged dataset
-curl -X POST "http://localhost:8000/merged/create?sample_size=10000"
+curl -X POST "http://127.0.0.1:8000/merged/create?sample_size=10000"
 
 # Get summary statistics
-curl http://localhost:8000/eda/summary
+curl http://127.0.0.1:8000/eda/summary
 ```
 
 ### 3. Interactive Analysis
-- Open `http://localhost:8000/dashboard`
+- Open `http://127.0.0.1:8000/dashboard`
 - Use the web interface for exploration
 - View interactive visualizations
 
@@ -239,22 +339,32 @@ curl http://localhost:8000/eda/summary
 
 ### Create Merged Dataset
 ```bash
-curl -X POST "http://localhost:8000/merged/create?sample_size=10000"
+curl -X POST "http://127.0.0.1:8000/merged/create?sample_size=10000"
 ```
 
 ### Get Arrest Analysis
 ```bash
-curl http://localhost:8000/merged/arrest-analysis
+curl http://127.0.0.1:8000/merged/arrest-analysis
 ```
 
 ### Get Paginated Data
 ```bash
-curl "http://localhost:8000/merged/data?page=1&page_size=100"
+curl "http://127.0.0.1:8000/merged/data?page=1&page_size=100"
 ```
 
 ### Get Field Metadata
 ```bash
-curl http://localhost:8000/fields/incident_id
+curl http://127.0.0.1:8000/fields/incident_id
+```
+
+### Search Curriculum
+```bash
+curl "http://127.0.0.1:8000/curriculum/search?query=bias detection"
+```
+
+### Get Ethical Framework
+```bash
+curl http://127.0.0.1:8000/curriculum/ethical-framework
 ```
 
 ## File Structure
@@ -266,6 +376,15 @@ mcp_server/
 ├── loader.py            # Model layer - data loading and cleaning
 ├── protocol.py          # Protocol layer - data merging and target creation
 ├── insights.py          # Insights layer - EDA and visualization
+├── ethics.py            # Ethics layer - Module 1 integration
+├── curriculum.py        # Curriculum layer - all 4 modules integration
+├── exam_analysis.py     # Exam analysis layer
+├── professional_resources.py # Professional resources layer
+├── practical_examples.py # Practical examples layer
+├── classification_metrics.py # Classification metrics layer
+├── task_implementation.py # Task implementation layer
+├── simple_curriculum_server.py # Simple test server
+├── test_curriculum.py   # Curriculum functionality test script
 ├── requirements.txt     # Python dependencies
 ├── README.md           # This file
 ├── templates/
@@ -277,21 +396,35 @@ mcp_server/
 
 ### Common Issues
 
-1. **Data Files Not Found**
-   - Verify paths in `main.py` match your file structure
-   - Check file permissions
+1. **"Could not import module 'main'"**
+   - **Solution**: Make sure you're running from the `mcp_server` directory
+   ```bash
+   cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
+   python3 main.py
+   ```
 
-2. **Memory Issues with Large Files**
-   - Use sampling: `?sample_size=10000`
-   - Increase system memory or use chunked processing
+2. **"No such file or directory"**
+   - **Solution**: Check that you're in the correct directory
+   ```bash
+   pwd  # Should show: /Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server
+   ls   # Should show main.py, curriculum.py, etc.
+   ```
 
-3. **Missing Dependencies**
-   - Run `pip install -r requirements.txt`
-   - Check Python version compatibility
+3. **Data Files Not Found**
+   - **Verify paths in `main.py` match your file structure**
+   - **Check file permissions**
 
-4. **Port Already in Use**
-   - Change port in `main.py` or kill existing process
-   - Use `lsof -i :8000` to find process using port
+4. **Memory Issues with Large Files**
+   - **Use sampling**: `?sample_size=10000`
+   - **Increase system memory or use chunked processing**
+
+5. **Missing Dependencies**
+   - **Run `pip3 install -r requirements.txt`**
+   - **Check Python version compatibility**
+
+6. **Port Already in Use**
+   - **Change port in `main.py` or kill existing process**
+   - **Use `lsof -i :8000` to find process using port**
 
 ### Logging
 

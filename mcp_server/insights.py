@@ -33,8 +33,8 @@ class DataInsights:
         summary = {
             'dataset_overview': {
                 'total_incidents': len(df),
-                'total_arrests': int(df['arrest'].sum()),
-                'arrest_rate': float(df['arrest'].mean()),
+                'total_arrests': int(df['ARREST'].sum()),
+                'arrest_rate': float(df['ARREST'].mean()),
                 'unique_agencies': int(df['agency_id'].nunique()),
                 'date_range': {
                     'start': str(df['incident_date'].min()) if 'incident_date' in df.columns else None,
@@ -42,8 +42,8 @@ class DataInsights:
                 }
             },
             'arrest_distribution': {
-                'arrests': int(df['arrest'].sum()),
-                'no_arrests': int((df['arrest'] == 0).sum()),
+                'arrests': int(df['ARREST'].sum()),
+                'no_arrests': int((df['ARREST'] == 0).sum()),
                 'multiple_arrests': int((df['arrest_count'] > 1).sum()) if 'arrest_count' in df.columns else 0
             },
             'crime_categories': self._get_crime_category_summary(df),
@@ -60,7 +60,7 @@ class DataInsights:
             return {}
         
         crime_summary = df.groupby('offense_category_name').agg({
-            'arrest': ['count', 'sum', 'mean'],
+            'ARREST': ['count', 'sum', 'mean'],
             'incident_id': 'count'
         }).round(3)
         
@@ -75,19 +75,19 @@ class DataInsights:
         
         # Hourly patterns
         if 'incident_hour' in df.columns:
-            hourly = df.groupby('incident_hour')['arrest'].agg(['count', 'sum', 'mean']).round(3)
+            hourly = df.groupby('incident_hour')['ARREST'].agg(['count', 'sum', 'mean']).round(3)
             patterns['hourly'] = hourly.to_dict('index')
         
         # Daily patterns
         if 'incident_date' in df.columns:
             df['day_of_week'] = df['incident_date'].dt.day_name()
-            daily = df.groupby('day_of_week')['arrest'].agg(['count', 'sum', 'mean']).round(3)
+            daily = df.groupby('day_of_week')['ARREST'].agg(['count', 'sum', 'mean']).round(3)
             patterns['daily'] = daily.to_dict('index')
         
         # Monthly patterns
         if 'incident_date' in df.columns:
             df['month'] = df['incident_date'].dt.month
-            monthly = df.groupby('month')['arrest'].agg(['count', 'sum', 'mean']).round(3)
+            monthly = df.groupby('month')['ARREST'].agg(['count', 'sum', 'mean']).round(3)
             patterns['monthly'] = monthly.to_dict('index')
         
         return patterns
@@ -98,13 +98,13 @@ class DataInsights:
         
         # Agency patterns
         if 'agency_name' in df.columns:
-            agency_summary = df.groupby('agency_name')['arrest'].agg(['count', 'sum', 'mean']).round(3)
+            agency_summary = df.groupby('agency_name')['ARREST'].agg(['count', 'sum', 'mean']).round(3)
             agency_summary.columns = ['total_incidents', 'total_arrests', 'arrest_rate']
             patterns['by_agency'] = agency_summary.head(10).to_dict('index')  # Top 10 agencies
         
         # County patterns
         if 'county_name' in df.columns:
-            county_summary = df.groupby('county_name')['arrest'].agg(['count', 'sum', 'mean']).round(3)
+            county_summary = df.groupby('county_name')['ARREST'].agg(['count', 'sum', 'mean']).round(3)
             county_summary.columns = ['total_incidents', 'total_arrests', 'arrest_rate']
             patterns['by_county'] = county_summary.to_dict('index')
         
@@ -341,9 +341,9 @@ class DataInsights:
         checks = {
             'data_volume': {
                 'total_incidents': len(df),
-                'total_arrests': int(df['arrest'].sum()),
-                'arrest_rate': float(df['arrest'].mean()),
-                'reasonability': 'Reasonable' if 0.01 <= df['arrest'].mean() <= 0.5 else 'Check needed'
+                'total_arrests': int(df['ARREST'].sum()),
+                'arrest_rate': float(df['ARREST'].mean()),
+                'reasonability': 'Reasonable' if 0.01 <= df['ARREST'].mean() <= 0.5 else 'Check needed'
             },
             'date_ranges': {
                 'incident_date_range': {

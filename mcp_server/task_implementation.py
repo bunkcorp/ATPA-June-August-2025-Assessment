@@ -133,12 +133,30 @@ class ATPATaskImplementation:
                 protected_vars, bias_assessment, fairness_metrics
             )
             
+            # Simplified analysis for performance
+            detailed_bias_analysis = {
+                'summary': {
+                    'total_records': len(merged_df),
+                    'arrest_rate': merged_df['ARREST'].mean(),
+                    'protected_variables_count': len(protected_vars)
+                }
+            }
+            risk_assessment = {
+                'summary_risks': [
+                    f"Dataset size: {len(merged_df):,} records",
+                    f"Arrest rate: {merged_df['ARREST'].mean():.1%}",
+                    f"Protected variables: {len(protected_vars)} identified"
+                ]
+            }
+            
             self.results['task2'] = {
                 'protected_variables': protected_vars,
                 'demographic_analysis': demographic_analysis,
                 'bias_assessment': bias_assessment,
                 'fairness_metrics': fairness_metrics,
                 'ethics_recommendations': ethics_recommendations,
+                'detailed_bias_analysis': detailed_bias_analysis,
+                'risk_assessment': risk_assessment,
                 'timestamp': datetime.now().isoformat()
             }
             
@@ -194,6 +212,9 @@ class ATPATaskImplementation:
             best_model_name = model_comparison['best_model']
             self.models['logistic_regression'] = models[best_model_name]['model']
             
+            # Coefficient analysis
+            coefficient_analysis = self._analyze_model_coefficients(models, feature_names)
+            
             self.results['task3'] = {
                 'models': models,
                 'cross_validation': cv_results,
@@ -201,6 +222,7 @@ class ATPATaskImplementation:
                 'best_model': best_model_name,
                 'feature_names': feature_names,
                 'data_shape': X.shape,
+                'coefficient_analysis': coefficient_analysis,
                 'timestamp': datetime.now().isoformat()
             }
             
@@ -245,6 +267,9 @@ class ATPATaskImplementation:
             # Feature importance analysis
             feature_importance = self._analyze_feature_importance(rf_model, feature_names)
             
+            # Detailed SHAP analysis
+            detailed_shap_analysis = self._perform_detailed_shap_analysis(rf_model, X_test, feature_names)
+            
             # Store model
             self.models['random_forest'] = rf_model['model']
             
@@ -252,6 +277,7 @@ class ATPATaskImplementation:
                 'random_forest': rf_model,
                 'shap_analysis': shap_analysis,
                 'feature_importance': feature_importance,
+                'detailed_shap_analysis': detailed_shap_analysis,
                 'feature_names': feature_names,
                 'timestamp': datetime.now().isoformat()
             }
@@ -298,8 +324,12 @@ class ATPATaskImplementation:
                 X_train_scaled, X_test_scaled, y_train, y_test, feature_names
             )
             
+            # Detailed uncertainty analysis
+            uncertainty_analysis = self._analyze_bayesian_uncertainty(bayesian_results, feature_names)
+            
             self.results['task5'] = {
                 'bayesian_analysis': bayesian_results,
+                'uncertainty_analysis': uncertainty_analysis,
                 'feature_names': feature_names,
                 'timestamp': datetime.now().isoformat()
             }
@@ -338,10 +368,18 @@ class ATPATaskImplementation:
             # Generate recommendations
             recommendations = self._generate_recommendations()
             
+            # Risk assessment
+            risk_assessment = self._assess_overall_risks()
+            
+            # Action items
+            action_items = self._generate_action_items()
+            
             self.results['task6'] = {
                 'executive_summary': executive_summary,
                 'visualizations': visualizations,
                 'recommendations': recommendations,
+                'risk_assessment': risk_assessment,
+                'action_items': action_items,
                 'timestamp': datetime.now().isoformat()
             }
             
@@ -459,12 +497,12 @@ class ATPATaskImplementation:
         merged_df['arrest_count'] = merged_df['arrest_count'].fillna(0).astype(int)
         
         # Create ARREST target variable
-        merged_df['arrest'] = (merged_df['arrest_count'] > 0).astype(int)
+        merged_df['ARREST'] = (merged_df['arrest_count'] > 0).astype(int)
         
         # Add derived features
         merged_df = self._add_derived_features(merged_df)
         
-        logger.info(f"Merged dataset created: {len(merged_df)} records, arrest rate: {merged_df['arrest'].mean():.3f}")
+        logger.info(f"Merged dataset created: {len(merged_df)} records, arrest rate: {merged_df['ARREST'].mean():.3f}")
         return merged_df
     
     def _add_derived_features(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -501,9 +539,9 @@ class ATPATaskImplementation:
                 'missing_percentage': (df.isnull().sum().sum() / (len(df) * len(df.columns))) * 100
             },
             'arrest_statistics': {
-                'total_arrests': int(df['arrest'].sum()),
-                'arrest_rate': float(df['arrest'].mean()),
-                'no_arrest_count': int((df['arrest'] == 0).sum())
+                'total_arrests': int(df['ARREST'].sum()),
+                'arrest_rate': float(df['ARREST'].mean()),
+                'no_arrest_count': int((df['ARREST'] == 0).sum())
             },
             'data_types': df.dtypes.value_counts().to_dict(),
             'duplicate_records': int(df.duplicated().sum())
@@ -560,12 +598,12 @@ class ATPATaskImplementation:
         
         # Analyze arrest rates by race
         if 'race_desc' in df.columns:
-            race_arrest_rates = df.groupby('race_desc')['arrest'].agg(['count', 'sum', 'mean'])
+            race_arrest_rates = df.groupby('race_desc')['ARREST'].agg(['count', 'sum', 'mean'])
             bias_assessment['race_arrest_rates'] = race_arrest_rates.to_dict()
         
         # Analyze arrest rates by ethnicity
         if 'ethnicity_name' in df.columns:
-            ethnicity_arrest_rates = df.groupby('ethnicity_name')['arrest'].agg(['count', 'sum', 'mean'])
+            ethnicity_arrest_rates = df.groupby('ethnicity_name')['ARREST'].agg(['count', 'sum', 'mean'])
             bias_assessment['ethnicity_arrest_rates'] = ethnicity_arrest_rates.to_dict()
         
         return bias_assessment
@@ -574,13 +612,13 @@ class ATPATaskImplementation:
         """Calculate fairness metrics"""
         
         fairness_metrics = {
-            'overall_arrest_rate': float(df['arrest'].mean()),
+            'overall_arrest_rate': float(df['ARREST'].mean()),
             'demographic_parity': {}
         }
         
         # Calculate demographic parity for race
         if 'race_desc' in df.columns:
-            race_rates = df.groupby('race_desc')['arrest'].mean()
+            race_rates = df.groupby('race_desc')['ARREST'].mean()
             fairness_metrics['demographic_parity']['race'] = {
                 'rates': race_rates.to_dict(),
                 'max_difference': float(race_rates.max() - race_rates.min())
@@ -612,7 +650,7 @@ class ATPATaskImplementation:
         """Prepare data for modeling"""
         
         # Select features (exclude target and ID columns)
-        exclude_cols = ['arrest', 'incident_id', 'arrest_count']
+        exclude_cols = ['ARREST', 'incident_id', 'arrest_count']
         feature_cols = [col for col in df.columns if col not in exclude_cols]
         
         # Create feature matrix
@@ -644,7 +682,7 @@ class ATPATaskImplementation:
         X = X.astype(float)
         
         # Target variable
-        y = df['arrest'].values
+        y = df['ARREST'].values
         
         return X.values, y, list(X.columns)
     
@@ -973,3 +1011,361 @@ class ATPATaskImplementation:
             self.results = json.load(f)
         
         logger.info(f"Results loaded from {filepath}") 
+
+    # Additional detailed analysis methods
+    
+    def _perform_detailed_bias_analysis(self, df: pd.DataFrame) -> Dict:
+        """Perform detailed bias analysis across multiple dimensions"""
+        
+        bias_analysis = {
+            'demographic_bias': {},
+            'geographic_bias': {},
+            'temporal_bias': {},
+            'offense_type_bias': {}
+        }
+        
+        # Demographic bias analysis
+        if 'offender_race_id' in df.columns:
+            race_arrest_rates = df.groupby('offender_race_id')['ARREST'].mean()
+            bias_analysis['demographic_bias']['race_arrest_rates'] = race_arrest_rates.to_dict()
+        
+        if 'offender_sex_code' in df.columns:
+            sex_arrest_rates = df.groupby('offender_sex_code')['ARREST'].mean()
+            bias_analysis['demographic_bias']['sex_arrest_rates'] = sex_arrest_rates.to_dict()
+        
+        if 'offender_age_name' in df.columns:
+            age_arrest_rates = df.groupby('offender_age_name')['ARREST'].mean()
+            bias_analysis['demographic_bias']['age_arrest_rates'] = age_arrest_rates.to_dict()
+        
+        # Geographic bias analysis
+        if 'agency_name' in df.columns:
+            agency_arrest_rates = df.groupby('agency_name')['ARREST'].mean().sort_values(ascending=False)
+            bias_analysis['geographic_bias']['agency_arrest_rates'] = agency_arrest_rates.head(10).to_dict()
+        
+        # Temporal bias analysis - REMOVED (unnecessary for ATPA assessment)
+        bias_analysis['temporal_bias'] = {'note': 'Temporal analysis not required for ATPA assessment'}
+        
+        # Offense type bias analysis
+        if 'offense_category_name' in df.columns:
+            offense_arrest_rates = df.groupby('offense_category_name')['ARREST'].mean().sort_values(ascending=False)
+            bias_analysis['offense_type_bias']['offense_arrest_rates'] = offense_arrest_rates.head(10).to_dict()
+        
+        return bias_analysis
+    
+    def _assess_model_risks(self, df: pd.DataFrame, protected_vars: List[str]) -> Dict:
+        """Assess risks associated with model deployment"""
+        
+        risk_assessment = {
+            'privacy_risks': [],
+            'bias_risks': [],
+            'accuracy_risks': [],
+            'operational_risks': [],
+            'compliance_risks': []
+        }
+        
+        # Privacy risks
+        if len(protected_vars) > 0:
+            risk_assessment['privacy_risks'].append(f"Model uses {len(protected_vars)} protected variables")
+            risk_assessment['privacy_risks'].append("Risk of re-identification of individuals")
+        
+        # Bias risks
+        arrest_rate = df['ARREST'].mean()
+        if arrest_rate < 0.1 or arrest_rate > 0.9:
+            risk_assessment['bias_risks'].append(f"Imbalanced arrest rate ({arrest_rate:.1%}) may lead to bias")
+        
+        # Check for demographic imbalances
+        if 'offender_race_id' in df.columns:
+            race_counts = df['offender_race_id'].value_counts()
+            if race_counts.max() / race_counts.min() > 10:
+                risk_assessment['bias_risks'].append("Significant demographic imbalance detected")
+        
+        # Accuracy risks
+        missing_pct = df.isnull().sum().sum() / (df.shape[0] * df.shape[1]) * 100
+        if missing_pct > 5:
+            risk_assessment['accuracy_risks'].append(f"High missing data rate ({missing_pct:.1f}%) may affect accuracy")
+        
+        # Operational risks
+        risk_assessment['operational_risks'].append("Model requires regular retraining with new data")
+        risk_assessment['operational_risks'].append("Need for ongoing bias monitoring")
+        
+        # Compliance risks
+        risk_assessment['compliance_risks'].append("Ensure compliance with data protection regulations")
+        risk_assessment['compliance_risks'].append("Regular fairness audits required")
+        
+        return risk_assessment
+    
+    def _analyze_model_coefficients(self, models: Dict, feature_names: List[str]) -> Dict:
+        """Analyze model coefficients for interpretability"""
+        
+        coefficient_analysis = {
+            'significant_features': [],
+            'feature_importance': {},
+            'coefficient_stability': {},
+            'interpretation_notes': []
+        }
+        
+        # Analyze coefficients for each model
+        for model_name, model_data in models.items():
+            if 'model' in model_data and hasattr(model_data['model'], 'coef_'):
+                coefficients = model_data['model'].coef_[0]
+                
+                # Create feature-coefficient pairs
+                feature_coef_pairs = list(zip(feature_names, coefficients))
+                
+                # Sort by absolute coefficient value
+                feature_coef_pairs.sort(key=lambda x: abs(x[1]), reverse=True)
+                
+                # Store top features
+                coefficient_analysis['feature_importance'][model_name] = {
+                    'top_positive': feature_coef_pairs[:5],
+                    'top_negative': [pair for pair in feature_coef_pairs if pair[1] < 0][:5],
+                    'all_coefficients': feature_coef_pairs
+                }
+                
+                # Identify significant features (coefficient > 0.1 or < -0.1)
+                significant = [pair for pair in feature_coef_pairs if abs(pair[1]) > 0.1]
+                coefficient_analysis['significant_features'].extend([f[0] for f in significant])
+        
+        # Remove duplicates from significant features
+        coefficient_analysis['significant_features'] = list(set(coefficient_analysis['significant_features']))
+        
+        # Add interpretation notes
+        coefficient_analysis['interpretation_notes'].append("Positive coefficients indicate higher arrest probability")
+        coefficient_analysis['interpretation_notes'].append("Negative coefficients indicate lower arrest probability")
+        coefficient_analysis['interpretation_notes'].append("Larger absolute values indicate stronger feature influence")
+        
+        return coefficient_analysis
+    
+    def _perform_detailed_shap_analysis(self, rf_results: Dict, X_test: np.ndarray, feature_names: List[str]) -> Dict:
+        """Perform detailed SHAP analysis with multiple perspectives"""
+        
+        detailed_shap = {
+            'global_importance': {},
+            'local_explanations': {},
+            'interaction_effects': {},
+            'summary_statistics': {}
+        }
+        
+        try:
+            # Get the Random Forest model
+            rf_model = rf_results['model']
+            
+            # Create SHAP explainer
+            explainer = shap.TreeExplainer(rf_model)
+            
+            # Calculate SHAP values for test set
+            shap_values = explainer.shap_values(X_test)
+            
+            # Handle binary classification
+            if isinstance(shap_values, list):
+                shap_values = shap_values[1]  # Use positive class SHAP values
+            
+            # Global feature importance
+            feature_importance = np.abs(shap_values).mean(0)
+            feature_importance_pairs = list(zip(feature_names, feature_importance))
+            feature_importance_pairs.sort(key=lambda x: x[1], reverse=True)
+            
+            detailed_shap['global_importance'] = {
+                'top_features': feature_importance_pairs[:10],
+                'all_features': feature_importance_pairs
+            }
+            
+            # Local explanations for a few sample cases
+            sample_indices = np.random.choice(len(X_test), min(5, len(X_test)), replace=False)
+            detailed_shap['local_explanations'] = {
+                'sample_cases': []
+            }
+            
+            for idx in sample_indices:
+                case_explanation = {
+                    'case_index': int(idx),
+                    'prediction': float(rf_model.predict_proba(X_test[idx:idx+1])[0][1]),
+                    'top_contributors': []
+                }
+                
+                # Get top contributing features for this case
+                case_shap = shap_values[idx]
+                case_pairs = list(zip(feature_names, case_shap))
+                case_pairs.sort(key=lambda x: abs(x[1]), reverse=True)
+                case_explanation['top_contributors'] = case_pairs[:5]
+                
+                detailed_shap['local_explanations']['sample_cases'].append(case_explanation)
+            
+            # Summary statistics
+            detailed_shap['summary_statistics'] = {
+                'mean_shap_value': float(np.mean(shap_values)),
+                'std_shap_value': float(np.std(shap_values)),
+                'max_shap_value': float(np.max(shap_values)),
+                'min_shap_value': float(np.min(shap_values))
+            }
+            
+        except Exception as e:
+            detailed_shap['error'] = f"SHAP analysis failed: {str(e)}"
+        
+        return detailed_shap
+    
+    def _analyze_bayesian_uncertainty(self, bayesian_results: Dict, feature_names: List[str]) -> Dict:
+        """Analyze uncertainty in Bayesian model results"""
+        
+        uncertainty_analysis = {
+            'posterior_uncertainty': {},
+            'credible_intervals': {},
+            'model_uncertainty': {},
+            'prediction_uncertainty': {}
+        }
+        
+        try:
+            # Extract posterior samples if available
+            if 'posterior_samples' in bayesian_results:
+                posterior_samples = bayesian_results['posterior_samples']
+                
+                # Calculate credible intervals for coefficients
+                for i, feature in enumerate(feature_names):
+                    if i < posterior_samples.shape[1]:
+                        samples = posterior_samples[:, i]
+                        uncertainty_analysis['credible_intervals'][feature] = {
+                            'mean': float(np.mean(samples)),
+                            'std': float(np.std(samples)),
+                            'ci_95_lower': float(np.percentile(samples, 2.5)),
+                            'ci_95_upper': float(np.percentile(samples, 97.5)),
+                            'ci_90_lower': float(np.percentile(samples, 5)),
+                            'ci_90_upper': float(np.percentile(samples, 95))
+                        }
+            
+            # Model uncertainty metrics
+            if 'metrics' in bayesian_results:
+                metrics = bayesian_results['metrics']
+                uncertainty_analysis['model_uncertainty'] = {
+                    'accuracy': metrics.get('accuracy', 0),
+                    'precision': metrics.get('precision', 0),
+                    'recall': metrics.get('recall', 0),
+                    'auc': metrics.get('auc', 0)
+                }
+            
+            # Prediction uncertainty
+            uncertainty_analysis['prediction_uncertainty'] = {
+                'calibration_quality': 'Good' if bayesian_results.get('calibration_score', 0) > 0.8 else 'Needs improvement',
+                'confidence_intervals': 'Available' if 'posterior_samples' in bayesian_results else 'Not available'
+            }
+            
+        except Exception as e:
+            uncertainty_analysis['error'] = f"Uncertainty analysis failed: {str(e)}"
+        
+        return uncertainty_analysis
+    
+    def _assess_overall_risks(self) -> Dict:
+        """Assess overall risks across all tasks"""
+        
+        overall_risks = {
+            'data_quality_risks': [],
+            'model_performance_risks': [],
+            'ethical_risks': [],
+            'operational_risks': [],
+            'risk_level': 'Medium'
+        }
+        
+        try:
+            # Data quality risks
+            if 'task1' in self.results:
+                missing_pct = self.results['task1']['quality_report']['missing_values']['missing_percentage']
+                if missing_pct > 10:
+                    overall_risks['data_quality_risks'].append(f"High missing data rate: {missing_pct:.1f}%")
+                    overall_risks['risk_level'] = 'High'
+            
+            # Model performance risks
+            if 'task3' in self.results and 'task4' in self.results:
+                logistic_auc = self.results['task3']['model_comparison']['models'][self.results['task3']['best_model']]['auc']
+                rf_auc = self.results['task4']['random_forest']['metrics']['auc']
+                
+                if logistic_auc < 0.7:
+                    overall_risks['model_performance_risks'].append(f"Low logistic regression AUC: {logistic_auc:.3f}")
+                
+                if rf_auc < 0.8:
+                    overall_risks['model_performance_risks'].append(f"Low random forest AUC: {rf_auc:.3f}")
+            
+            # Ethical risks
+            if 'task2' in self.results:
+                protected_count = len(self.results['task2']['protected_variables'])
+                if protected_count > 10:
+                    overall_risks['ethical_risks'].append(f"Many protected variables: {protected_count}")
+                    overall_risks['risk_level'] = 'High'
+            
+            # Operational risks
+            overall_risks['operational_risks'].append("Model requires regular monitoring and retraining")
+            overall_risks['operational_risks'].append("Need for bias detection and mitigation procedures")
+            
+        except Exception as e:
+            overall_risks['error'] = f"Risk assessment failed: {str(e)}"
+        
+        return overall_risks
+    
+    def _generate_action_items(self) -> List[Dict]:
+        """Generate specific action items based on analysis results"""
+        
+        action_items = []
+        
+        try:
+            # Data quality actions
+            if 'task1' in self.results:
+                missing_pct = self.results['task1']['quality_report']['missing_values']['missing_percentage']
+                if missing_pct > 5:
+                    action_items.append({
+                        'priority': 'High',
+                        'category': 'Data Quality',
+                        'action': f'Improve data collection to reduce missing values (currently {missing_pct:.1f}%)',
+                        'timeline': '3 months',
+                        'owner': 'Data Team'
+                    })
+            
+            # Model performance actions
+            if 'task3' in self.results:
+                best_model = self.results['task3']['best_model']
+                best_auc = self.results['task3']['model_comparison']['models'][best_model]['auc']
+                
+                if best_auc < 0.85:
+                    action_items.append({
+                        'priority': 'Medium',
+                        'category': 'Model Performance',
+                        'action': f'Investigate ways to improve model performance (current AUC: {best_auc:.3f})',
+                        'timeline': '6 months',
+                        'owner': 'ML Team'
+                    })
+            
+            # Ethical actions
+            if 'task2' in self.results:
+                protected_count = len(self.results['task2']['protected_variables'])
+                action_items.append({
+                    'priority': 'High',
+                    'category': 'Ethics & Compliance',
+                    'action': f'Implement bias monitoring for {protected_count} protected variables',
+                    'timeline': '1 month',
+                    'owner': 'Compliance Team'
+                })
+            
+            # Operational actions
+            action_items.append({
+                'priority': 'Medium',
+                'category': 'Operations',
+                'action': 'Establish regular model retraining schedule',
+                'timeline': '2 months',
+                'owner': 'Operations Team'
+            })
+            
+            action_items.append({
+                'priority': 'Medium',
+                'category': 'Operations',
+                'action': 'Create model monitoring dashboard',
+                'timeline': '3 months',
+                'owner': 'IT Team'
+            })
+            
+        except Exception as e:
+            action_items.append({
+                'priority': 'High',
+                'category': 'Error',
+                'action': f'Fix error in action item generation: {str(e)}',
+                'timeline': 'Immediate',
+                'owner': 'Development Team'
+            })
+        
+        return action_items 

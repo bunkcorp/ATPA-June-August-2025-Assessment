@@ -215,7 +215,7 @@ async def create_merged_dataset(sample_size: Optional[int] = Query(None, ge=100,
             "message": "Merged dataset created successfully",
             "records": len(merged_df),
             "columns": len(merged_df.columns),
-            "arrest_rate": float(merged_df['arrest'].mean())
+            "arrest_rate": float(merged_df['ARREST'].mean())
         }
     
     except Exception as e:
@@ -1168,4 +1168,4 @@ async def get_documentation():
     }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True) 
+    uvicorn.run(app, host="127.0.0.1", port=8000) 

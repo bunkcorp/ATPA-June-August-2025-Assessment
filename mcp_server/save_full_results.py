@@ -60,14 +60,18 @@ def extract_key_metrics(task1, task2, task3, task4, task5, task6):
             'missing_percentage': safe_get(task1, 'quality_report', 'missing_values', 'missing_percentage')
         },
         'data_types_summary': safe_get(task1, 'quality_report', 'data_types'),
-        'duplicate_records': safe_get(task1, 'quality_report', 'duplicate_records')
+        'duplicate_records': safe_get(task1, 'quality_report', 'duplicate_records'),
+        'missing_analysis': safe_get(task1, 'missing_analysis', default={}),
+        'imputation_summary': safe_get(task1, 'imputation_summary', default={})
     }
     
     # Task 2 - Privacy & Ethics
     task2_summary = {
         'protected_variables': safe_get(task2, 'protected_variables', default=[]),
         'protected_variables_count': len(safe_get(task2, 'protected_variables', default=[])),
-        'ethics_recommendations': safe_get(task2, 'ethics_recommendations', default=[])
+        'ethics_recommendations': safe_get(task2, 'ethics_recommendations', default=[]),
+        'detailed_bias_analysis': safe_get(task2, 'detailed_bias_analysis', default={}),
+        'risk_assessment': safe_get(task2, 'risk_assessment', default={})
     }
     
     # Task 3 - Generalized Linear Models
@@ -75,7 +79,8 @@ def extract_key_metrics(task1, task2, task3, task4, task5, task6):
     task3_summary = {
         'best_model': best_model,
         'best_model_metrics': safe_get(task3, 'models', best_model, 'metrics', default={}),
-        'model_comparison': {}
+        'model_comparison': {},
+        'coefficient_analysis': safe_get(task3, 'coefficient_analysis', default={})
     }
     
     # Add model comparison if available
@@ -92,7 +97,8 @@ def extract_key_metrics(task1, task2, task3, task4, task5, task6):
     # Task 4 - Random Forest with SHAP
     task4_summary = {
         'random_forest_metrics': safe_get(task4, 'random_forest', 'metrics', default={}),
-        'top_features': safe_get(task4, 'shap_analysis', 'feature_importance_ranking', default=[])[:10]  # Top 10 features
+        'top_features': safe_get(task4, 'shap_analysis', 'feature_importance_ranking', default=[])[:10],  # Top 10 features
+        'detailed_shap_analysis': safe_get(task4, 'detailed_shap_analysis', default={})
     }
     
     # Task 5 - Bayesian Analysis
@@ -100,14 +106,17 @@ def extract_key_metrics(task1, task2, task3, task4, task5, task6):
         'bayesian_metrics': safe_get(task5, 'bayesian_analysis', 'metrics', default={}),
         'coefficient_analysis': {
             'significant_features': safe_get(task5, 'bayesian_analysis', 'coefficient_analysis', 'significant_features', default=[])[:10]  # Top 10
-        }
+        },
+        'uncertainty_analysis': safe_get(task5, 'uncertainty_analysis', default={})
     }
     
     # Task 6 - Executive Summary
     task6_summary = {
         'overview': safe_get(task6, 'executive_summary', 'overview', default={}),
         'key_insights': safe_get(task6, 'executive_summary', 'key_insights', default=[]),
-        'recommendations': safe_get(task6, 'executive_summary', 'recommendations', default=[])
+        'recommendations': safe_get(task6, 'executive_summary', 'recommendations', default=[]),
+        'risk_assessment': safe_get(task6, 'risk_assessment', default={}),
+        'action_items': safe_get(task6, 'action_items', default=[])
     }
     
     return {

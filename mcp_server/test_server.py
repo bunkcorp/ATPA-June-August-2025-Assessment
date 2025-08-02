@@ -1,94 +1,117 @@
 #!/usr/bin/env python3
 """
-Test script for ATPA MCP Server
+Test script to verify ATPA MCP Server functionality
 """
+
 import requests
 import time
-import subprocess
 import sys
-import os
 
 def test_server():
-    """Test if the server is running"""
+    """Test the server endpoints"""
+    base_url = "http://127.0.0.1:8000"
+    
+    print("🧪 Testing ATPA MCP Server...")
+    print(f"📍 Server URL: {base_url}")
+    print("")
+    
+    # Test 1: Basic connectivity
+    print("1️⃣ Testing basic connectivity...")
     try:
-        response = requests.get("http://127.0.0.1:8000/health", timeout=5)
+        response = requests.get(f"{base_url}/", timeout=5)
         if response.status_code == 200:
-            print("✅ Server is running!")
-            print(f"Response: {response.json()}")
-            return True
+            print("✅ Server is responding")
+            data = response.json()
+            print(f"   Message: {data.get('message', 'N/A')}")
         else:
-            print(f"❌ Server responded with status code: {response.status_code}")
+            print(f"❌ Server returned status code: {response.status_code}")
             return False
-    except requests.exceptions.ConnectionError:
-        print("❌ Server is not running or not accessible")
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Could not connect to server: {e}")
+        print("   Make sure the server is running with: python3 main.py")
         return False
-    except Exception as e:
-        print(f"❌ Error testing server: {e}")
-        return False
-
-def start_server():
-    """Start the server"""
-    print("🚀 Starting ATPA MCP Server...")
     
-    # Try different methods to start the server
-    methods = [
-        ["python3", "main.py"],
-        ["python3", "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8000"],
-        ["uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8000"]
-    ]
+    # Test 2: Curriculum overview
+    print("\n2️⃣ Testing curriculum overview...")
+    try:
+        response = requests.get(f"{base_url}/curriculum/overview", timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            modules = data.get('modules', {})
+            print(f"✅ Found {len(modules)} curriculum modules:")
+            for module_key, module_info in modules.items():
+                status = "✓" if module_info.get('loaded', False) else "✗"
+                print(f"   - {module_info.get('title', 'Unknown')} ({status})")
+        else:
+            print(f"❌ Curriculum overview failed: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Curriculum test failed: {e}")
     
-    for method in methods:
-        try:
-            print(f"Trying method: {' '.join(method)}")
-            process = subprocess.Popen(method, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            
-            # Wait a bit for the server to start
-            time.sleep(3)
-            
-            # Test if server is running
-            if test_server():
-                print("✅ Server started successfully!")
-                return process
-            else:
-                print("❌ Server failed to start with this method")
-                process.terminate()
-                
-        except Exception as e:
-            print(f"❌ Error with method {' '.join(method)}: {e}")
-            continue
+    # Test 3: Curriculum search
+    print("\n3️⃣ Testing curriculum search...")
+    try:
+        response = requests.get(f"{base_url}/curriculum/search?query=ethical framework", timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            results = data.get('results', [])
+            print(f"✅ Search found {len(results)} results for 'ethical framework'")
+        else:
+            print(f"❌ Search failed: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Search test failed: {e}")
     
-    print("❌ All methods failed to start the server")
-    return None
-
-def main():
-    """Main function"""
-    print("=" * 50)
-    print("ATPA MCP SERVER TEST")
-    print("=" * 50)
+    # Test 4: Ethical framework
+    print("\n4️⃣ Testing ethical framework...")
+    try:
+        response = requests.get(f"{base_url}/curriculum/ethical-framework", timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            principles = data.get('principles', {})
+            print(f"✅ Found {len(principles)} ethical principles:")
+            for principle in principles.keys():
+                print(f"   - {principle}")
+        else:
+            print(f"❌ Ethical framework failed: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Ethical framework test failed: {e}")
     
-    # First test if server is already running
-    if test_server():
-        print("Server is already running!")
-        return
+    # Test 5: Modeling techniques
+    print("\n5️⃣ Testing modeling techniques...")
+    try:
+        response = requests.get(f"{base_url}/curriculum/modeling-techniques", timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            techniques = data.get('techniques', {})
+            print(f"✅ Found {len(techniques)} modeling techniques:")
+            for technique in techniques.keys():
+                print(f"   - {technique}")
+        else:
+            print(f"❌ Modeling techniques failed: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Modeling techniques test failed: {e}")
     
-    # Try to start the server
-    process = start_server()
+    print("\n" + "="*50)
+    print("🎉 Server testing completed!")
+    print("="*50)
+    print("")
+    print("📚 API Documentation: http://127.0.0.1:8000/docs")
+    print("🎛️  Dashboard: http://127.0.0.1:8000/dashboard")
+    print("")
     
-    if process:
-        print("\n🎉 Server is now running!")
-        print("📊 Dashboard: http://127.0.0.1:8000/dashboard")
-        print("📚 API Docs: http://127.0.0.1:8000/docs")
-        print("🔍 Health: http://127.0.0.1:8000/health")
-        
-        try:
-            # Keep the server running
-            process.wait()
-        except KeyboardInterrupt:
-            print("\n🛑 Stopping server...")
-            process.terminate()
-            print("✅ Server stopped")
-    else:
-        print("❌ Failed to start server")
+    return True
 
 if __name__ == "__main__":
-    main() 
+    # Wait a moment for server to start if needed
+    print("⏳ Waiting 2 seconds for server to be ready...")
+    time.sleep(2)
+    
+    success = test_server()
+    
+    if not success:
+        print("\n❌ Server test failed!")
+        print("💡 To start the server, run:")
+        print("   cd \"/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server\"")
+        print("   python3 main.py")
+        sys.exit(1)
+    else:
+        print("✅ All tests passed!") 

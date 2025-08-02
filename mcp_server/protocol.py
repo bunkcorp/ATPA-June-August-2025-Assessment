@@ -51,7 +51,7 @@ class DataProtocol:
         
         # Create ARREST target variable
         # An incident has an arrest if it appears in the arrestee dataset
-        incidents_df['arrest'] = incidents_df['incident_id'].isin(arrestee_df['incident_id']).astype(int)
+        incidents_df['ARREST'] = incidents_df['incident_id'].isin(arrestee_df['incident_id']).astype(int)
         
         # Perform left join to preserve all incidents
         merged_df = incidents_df.merge(
@@ -78,7 +78,7 @@ class DataProtocol:
         self.merged_created = True
         
         logger.info(f"Merged dataset created: {len(merged_df)} records, {len(merged_df.columns)} columns")
-        logger.info(f"Arrest rate: {merged_df['arrest'].mean():.3f} ({merged_df['arrest'].sum()} arrests out of {len(merged_df)} incidents)")
+        logger.info(f"Arrest rate: {merged_df['ARREST'].mean():.3f} ({merged_df['ARREST'].sum()} arrests out of {len(merged_df)} incidents)")
         
         return merged_df
     
@@ -166,9 +166,9 @@ class DataProtocol:
             'total_records': len(df),
             'total_columns': len(df.columns),
             'arrest_statistics': {
-                'total_arrests': int(df['arrest'].sum()),
-                'arrest_rate': float(df['arrest'].mean()),
-                'no_arrest_count': int((df['arrest'] == 0).sum()),
+                'total_arrests': int(df['ARREST'].sum()),
+                'arrest_rate': float(df['ARREST'].mean()),
+                'no_arrest_count': int((df['ARREST'] == 0).sum()),
                 'arrest_count_distribution': df['arrest_count'].value_counts().to_dict()
             },
             'data_quality': {
@@ -275,14 +275,14 @@ class DataProtocol:
         df = self.merged_df
         
         analysis = {
-            'overall_arrest_rate': float(df['arrest'].mean()),
-            'arrest_by_crime_type': df.groupby('offense_category_name')['arrest'].agg(['count', 'sum', 'mean']).to_dict('index'),
-            'arrest_by_crime_against': df.groupby('crime_against')['arrest'].agg(['count', 'sum', 'mean']).to_dict('index'),
-            'arrest_by_agency_size': df.groupby('agency_size')['arrest'].agg(['count', 'sum', 'mean']).to_dict('index') if 'agency_size' in df.columns else {},
-            'arrest_by_hour': df.groupby('incident_hour_category')['arrest'].agg(['count', 'sum', 'mean']).to_dict('index') if 'incident_hour_category' in df.columns else {},
+                          'overall_arrest_rate': float(df['ARREST'].mean()),
+              'arrest_by_crime_type': df.groupby('offense_category_name')['ARREST'].agg(['count', 'sum', 'mean']).to_dict('index'),
+                          'arrest_by_crime_against': df.groupby('crime_against')['ARREST'].agg(['count', 'sum', 'mean']).to_dict('index'),
+              'arrest_by_agency_size': df.groupby('agency_size')['ARREST'].agg(['count', 'sum', 'mean']).to_dict('index') if 'agency_size' in df.columns else {},
+                          'arrest_by_hour': df.groupby('incident_hour_category')['ARREST'].agg(['count', 'sum', 'mean']).to_dict('index') if 'incident_hour_category' in df.columns else {},
             'time_to_arrest': {
-                'mean_days': float(df[df['arrest'] == 1]['days_to_arrest'].mean()) if 'days_to_arrest' in df.columns else None,
-                'median_days': float(df[df['arrest'] == 1]['days_to_arrest'].median()) if 'days_to_arrest' in df.columns else None
+                        'mean_days': float(df[df['ARREST'] == 1]['days_to_arrest'].mean()) if 'days_to_arrest' in df.columns else None,
+        'median_days': float(df[df['ARREST'] == 1]['days_to_arrest'].median()) if 'days_to_arrest' in df.columns else None
             } if 'days_to_arrest' in df.columns else {}
         }
         
