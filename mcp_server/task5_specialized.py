@@ -482,7 +482,7 @@ class Task5SpecializedSearch:
             'conjugate_methods_content': self.search_conjugate_methods_content(),
             'credible_intervals_content': self.search_credible_intervals_content(),
             'business_problem_analysis_content': self.search_business_problem_analysis_content(),
-            'bayesian_techniques': self.curriculum.get_bayesian_techniques(),
+            'bayesian_techniques': self.search_bayesian_analysis_content(),
             'curriculum_summary': self.curriculum.get_curriculum_summary()
         }
     
