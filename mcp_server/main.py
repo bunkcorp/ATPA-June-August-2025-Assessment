@@ -24,6 +24,7 @@ from professional_resources import ProfessionalResources
 from practical_examples import PracticalExamples
 from classification_metrics import ClassificationMetrics
 from task_implementation import ATPATaskImplementation
+from task2_specialized import Task2SpecializedSearch
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -55,6 +56,7 @@ try:
     practical_examples = PracticalExamples()
     classification_metrics = ClassificationMetrics()
     task_implementation = ATPATaskImplementation(loader, protocol)
+    task2_specialized = Task2SpecializedSearch()
     logger.info("MCP layers initialized successfully")
 except Exception as e:
     logger.error(f"Error initializing MCP layers: {e}")
@@ -69,6 +71,7 @@ except Exception as e:
     practical_examples = None
     classification_metrics = None
     task_implementation = None
+    task2_specialized = None
 
 # Mount static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -98,6 +101,7 @@ async def root():
         "version": "1.0.0",
         "endpoints": {
             "context": "/fields",
+            "task2_specialized": "/task2",
             "model": "/data",
             "protocol": "/merged",
             "insights": "/eda/summary"
@@ -484,6 +488,59 @@ async def get_curriculum_summary():
         raise HTTPException(status_code=500, detail="Curriculum layer not initialized")
     
     return curriculum.get_curriculum_summary()
+
+# ============================================================================
+# TASK 2 SPECIALIZED ENDPOINTS
+# ============================================================================
+
+@app.get("/task2/demographic-benefits-risks")
+async def get_demographic_benefits_risks():
+    """Get content about benefits and risks of demographic data in criminal justice"""
+    if not task2_specialized:
+        raise HTTPException(status_code=500, detail="Task 2 specialized layer not initialized")
+    
+    return task2_specialized.search_demographic_data_benefits_risks()
+
+@app.get("/task2/professional-standards-misuse")
+async def get_professional_standards_misuse():
+    """Get content about professional standards and misuse prevention"""
+    if not task2_specialized:
+        raise HTTPException(status_code=500, detail="Task 2 specialized layer not initialized")
+    
+    return task2_specialized.search_professional_standards_misuse_prevention()
+
+@app.get("/task2/criminal-justice-context")
+async def get_criminal_justice_context():
+    """Get criminal justice specific content"""
+    if not task2_specialized:
+        raise HTTPException(status_code=500, detail="Task 2 specialized layer not initialized")
+    
+    return task2_specialized.search_criminal_justice_specific()
+
+@app.get("/task2/structured-content")
+async def get_task2_structured_content():
+    """Get all Task 2 structured content organized by requirements"""
+    if not task2_specialized:
+        raise HTTPException(status_code=500, detail="Task 2 specialized layer not initialized")
+    
+    return task2_specialized.get_task2_structured_content()
+
+@app.get("/task2/demographic-terms")
+async def search_specific_demographic_terms(terms: str = Query(..., description="Comma-separated demographic terms")):
+    """Search for specific demographic terms"""
+    if not task2_specialized:
+        raise HTTPException(status_code=500, detail="Task 2 specialized layer not initialized")
+    
+    term_list = [term.strip() for term in terms.split(",")]
+    return task2_specialized.search_specific_demographic_terms(term_list)
+
+@app.get("/task2/nminsights-guidance")
+async def get_nminsights_guidance():
+    """Get guidance specific to NMInsights as a trusted research organization"""
+    if not task2_specialized:
+        raise HTTPException(status_code=500, detail="Task 2 specialized layer not initialized")
+    
+    return task2_specialized.get_nminsights_specific_guidance()
 
 # ============================================================================
 # EXAM ANALYSIS LAYER ENDPOINTS
