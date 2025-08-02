@@ -78,7 +78,28 @@ class Task2SpecializedSearch:
             "compliance requirements",
             "data governance",
             "privacy protection",
-            "insurance compliance"
+            "insurance compliance",
+            "algorithmic fairness",
+            "fairness in analytics",
+            "disparate treatment",
+            "disparate impact",
+            "direct discrimination",
+            "indirect discrimination",
+            "unawareness",
+            "demographic parity",
+            "predictive parity",
+            "proxy discrimination",
+            "orthogonal variables",
+            "pope sydnor model",
+            "fairness metrics",
+            "group fairness",
+            "individual fairness",
+            "bias after model build",
+            "ethics in modeling",
+            "missing data ethics",
+            "fairness summary",
+            "COMPAS example",
+            "concepts of algorithmic fairness"
         ]
         
         results = {}
@@ -195,6 +216,7 @@ class Task2SpecializedSearch:
             'task_2b_professional_standards': self.search_professional_standards_misuse_prevention(),
             'criminal_justice_context': self.search_criminal_justice_specific(),
             'insurance_regulatory_content': self.search_insurance_regulatory_content(),
+            'algorithmic_fairness_content': self.search_algorithmic_fairness_content(),
             'nminsights_guidance': self.get_nminsights_specific_guidance(),
             'ethical_framework': self.curriculum.get_ethical_framework_details(),
             'data_quality_guidelines': self.curriculum.get_data_quality_guidelines()
@@ -282,6 +304,76 @@ class Task2SpecializedSearch:
             'search_terms': search_terms,
             'results': results,
             'summary': f"Found relevant content for {len([r for r in results.values() if r])} insurance regulatory terms"
+        }
+    
+    def search_algorithmic_fairness_content(self) -> Dict:
+        """
+        Search for content specifically about algorithmic fairness and ethics in modeling
+        """
+        search_terms = [
+            "algorithmic fairness",
+            "fairness in analytics",
+            "disparate treatment",
+            "disparate impact",
+            "direct discrimination",
+            "indirect discrimination",
+            "unawareness",
+            "demographic parity",
+            "predictive parity",
+            "proxy discrimination",
+            "orthogonal variables",
+            "pope sydnor model",
+            "fairness metrics",
+            "group fairness",
+            "individual fairness",
+            "bias after model build",
+            "ethics in modeling",
+            "missing data ethics",
+            "fairness summary",
+            "COMPAS example",
+            "concepts of algorithmic fairness",
+            "large p small n",
+            "naive models",
+            "feature selection engineering",
+            "dimension reduction",
+            "regularization",
+            "how many data sets",
+            "missing data predictions",
+            "combined imputation",
+            "stored imputation scheme",
+            "hold-out approaches",
+            "missing data ethics",
+            "ethics modeling",
+            "fairness analytics",
+            "algorithmic fairness concepts",
+            "disparate treatment impact",
+            "direct indirect discrimination",
+            "unawareness demographic parity",
+            "predictive parity regression",
+            "group individual fairness metrics",
+            "fairness metrics examples",
+            "other fairness metrics",
+            "demographic parity",
+            "predictive parity",
+            "proxy discrimination types",
+            "addressing proxy discrimination",
+            "framework fairness",
+            "orthogonal variables",
+            "pope sydnor model",
+            "biases introduced after model build",
+            "fairness summary"
+        ]
+        
+        results = {}
+        for term in search_terms:
+            search_result = self.curriculum.search_curriculum(term)
+            if search_result['results']:
+                results[term] = search_result['results'][:3]  # Top 3 results
+        
+        return {
+            'search_terms': search_terms,
+            'results': results,
+            'summary': f"Found relevant content for {len([r for r in results.values() if r])} algorithmic fairness terms"
         }
 
 # Test function

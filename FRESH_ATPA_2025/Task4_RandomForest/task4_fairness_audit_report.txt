@@ -1,0 +1,203 @@
+
+ATPA TASK 4: FAIRNESS AUDIT WITH SHAP ANALYSIS REPORT
+
+1. DEMOGRAPHIC SUBGROUPS ANALYZED:
+----------------------------------------
+
+Large_Agencies:
+   Sample Size: 25,234 records
+   Arrest Rate: 0.187 (18.7%)
+   Performance Metrics:
+      - Accuracy: 0.7772
+      - Precision: 0.4462
+      - Recall: 0.7979
+      - F1-Score: 0.5723
+      - AUC-ROC: 0.8643
+      - Specificity: 0.7724
+   
+   Top 3 SHAP Features:
+      - offense_code_encoded: 0.1051
+      - ct_flag_encoded: 0.0838
+      - offense_category_name_encoded: 0.0691
+
+Small_Agencies:
+   Sample Size: 3,838 records
+   Arrest Rate: 0.213 (21.3%)
+   Performance Metrics:
+      - Accuracy: 0.7350
+      - Precision: 0.4333
+      - Recall: 0.7956
+      - F1-Score: 0.5611
+      - AUC-ROC: 0.8240
+      - Specificity: 0.7186
+   
+   Top 3 SHAP Features:
+      - offense_code_encoded: 0.0983
+      - ct_flag_encoded: 0.0811
+      - offense_category_name_encoded: 0.0623
+
+High_Severity_Crimes:
+   Sample Size: 14,592 records
+   Arrest Rate: 0.082 (8.2%)
+   Performance Metrics:
+      - Accuracy: 0.8619
+      - Precision: 0.3162
+      - Recall: 0.5828
+      - F1-Score: 0.4100
+      - AUC-ROC: 0.8395
+      - Specificity: 0.8869
+   
+   Top 3 SHAP Features:
+      - offense_code_encoded: 0.1169
+      - ct_flag_encoded: 0.1053
+      - offense_category_name_encoded: 0.0667
+
+Low_Severity_Crimes:
+   Sample Size: 14,480 records
+   Arrest Rate: 0.299 (29.9%)
+   Performance Metrics:
+      - Accuracy: 0.6806
+      - Precision: 0.4810
+      - Recall: 0.8571
+      - F1-Score: 0.6162
+      - AUC-ROC: 0.8156
+      - Specificity: 0.6053
+   
+   Top 3 SHAP Features:
+      - offense_code_encoded: 0.0914
+      - offense_category_name_encoded: 0.0698
+      - ct_flag_encoded: 0.0615
+
+Day_Time:
+   Sample Size: 18,303 records
+   Arrest Rate: 0.179 (17.9%)
+   Performance Metrics:
+      - Accuracy: 0.7734
+      - Precision: 0.4281
+      - Recall: 0.7877
+      - F1-Score: 0.5547
+      - AUC-ROC: 0.8580
+      - Specificity: 0.7703
+   
+   Top 3 SHAP Features:
+      - offense_code_encoded: 0.1041
+      - ct_flag_encoded: 0.0862
+      - offense_category_name_encoded: 0.0659
+
+Night_Time:
+   Sample Size: 10,769 records
+   Arrest Rate: 0.209 (20.9%)
+   Performance Metrics:
+      - Accuracy: 0.7685
+      - Precision: 0.4692
+      - Recall: 0.8118
+      - F1-Score: 0.5947
+      - AUC-ROC: 0.8598
+      - Specificity: 0.7570
+   
+   Top 3 SHAP Features:
+      - offense_code_encoded: 0.1044
+      - ct_flag_encoded: 0.0789
+      - offense_category_name_encoded: 0.0722
+
+CT_Flag_True:
+   Sample Size: 10,272 records
+   Arrest Rate: 0.031 (3.1%)
+   Performance Metrics:
+      - Accuracy: 0.9681
+      - Precision: 0.2727
+      - Recall: 0.0093
+      - F1-Score: 0.0180
+      - AUC-ROC: 0.7020
+      - Specificity: 0.9992
+   
+   Top 3 SHAP Features:
+      - offense_code_encoded: 0.1354
+      - ct_flag_encoded: 0.1211
+      - offense_category_name_encoded: 0.0600
+
+CT_Flag_False:
+   Sample Size: 18,800 records
+   Arrest Rate: 0.277 (27.7%)
+   Performance Metrics:
+      - Accuracy: 0.6643
+      - Precision: 0.4444
+      - Recall: 0.8464
+      - F1-Score: 0.5828
+      - AUC-ROC: 0.8107
+      - Specificity: 0.5944
+   
+   Top 3 SHAP Features:
+      - offense_code_encoded: 0.0872
+      - offense_category_name_encoded: 0.0728
+      - ct_flag_encoded: 0.0629
+
+High_Crime_Against:
+   Sample Size: 2,737 records
+   Arrest Rate: 0.365 (36.5%)
+   Performance Metrics:
+      - Accuracy: 0.7304
+      - Precision: 0.5805
+      - Recall: 0.9419
+      - F1-Score: 0.7183
+      - AUC-ROC: 0.8649
+      - Specificity: 0.6087
+   
+   Top 3 SHAP Features:
+      - offense_code_encoded: 0.0826
+      - crime_against_encoded: 0.0818
+      - offense_category_name_encoded: 0.0803
+
+Low_Crime_Against:
+   Sample Size: 26,335 records
+   Arrest Rate: 0.172 (17.2%)
+   Performance Metrics:
+      - Accuracy: 0.7759
+      - Precision: 0.4176
+      - Recall: 0.7657
+      - F1-Score: 0.5405
+      - AUC-ROC: 0.8512
+      - Specificity: 0.7780
+   
+   Top 3 SHAP Features:
+      - offense_code_encoded: 0.1065
+      - ct_flag_encoded: 0.0849
+      - offense_category_name_encoded: 0.0670
+
+2. FAIRNESS ASSESSMENT:
+-------------------------
+
+Demographic Parity:
+   - Maximum Arrest Rate: 0.365 (36.5%)
+   - Minimum Arrest Rate: 0.031 (3.1%)
+   - Parity Gap: 0.334 (33.4%)
+   - Assessment: POTENTIAL BIAS DETECTED
+
+Performance Fairness:
+   - Average Accuracy Gap: 0.097
+   - Average Precision Gap: 0.094
+   - Average Recall Gap: 0.240
+   - Overall Fairness Score: 0.856
+   - Assessment: REQUIRES ATTENTION
+
+3. RECOMMENDATIONS:
+--------------------
+
+   ⚠️  DEMOGRAPHIC PARITY ISSUES:
+      - Significant differences in arrest rates across groups
+      - Consider investigating underlying causes
+      - Review data collection and processing procedures
+      - Implement bias mitigation techniques if necessary
+
+   ⚠️  PERFORMANCE FAIRNESS ISSUES:
+      - Model performance varies significantly across groups
+      - Consider group-specific model tuning
+      - Implement fairness-aware training methods
+      - Monitor performance by demographic subgroups
+
+   ✅ RECOMMENDED ACTIONS:
+      - Regular fairness audits on new data
+      - Continuous monitoring of demographic parity
+      - Transparent reporting of fairness metrics
+      - Stakeholder communication about fairness findings
+      - Integration of fairness metrics into model selection

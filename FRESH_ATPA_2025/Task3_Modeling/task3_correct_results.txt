@@ -1,0 +1,45 @@
+
+TASK 3: GENERALIZED LINEAR MODELS & MIXED MODELS RESULTS (COMPREHENSIVE)
+
+3a) Data Splitting:
+- Training: 67,832 records (70%)
+- Testing: 29,072 records (30%)
+- Arrest rates maintained: ~19%
+
+3b) Performance Metrics:
+- Accuracy: Overall correct predictions
+- AUC: Discriminative ability (robust to imbalance)
+- Precision: Accuracy of positive predictions
+- Recall/Sensitivity: Ability to identify arrests
+- Specificity: Ability to identify non-arrests
+- F1-Score: Harmonic mean of precision and recall
+- Confusion Matrix: Detailed breakdown of predictions
+
+3c) GLM Results:
+- Training Accuracy: 0.6146
+- Testing Accuracy: 0.6141
+- Training AUC: 0.7981
+- Testing AUC: 0.7982
+- Precision: 0.3135
+- Recall/Sensitivity: 0.8639
+- Specificity: 0.5554
+- F1-Score: 0.4600
+
+3d) Mixed Model Results:
+- Training Accuracy: 0.7761
+- Testing Accuracy: 0.7716
+- Training AUC: 0.8727
+- Testing AUC: 0.8591
+- Precision: 0.4442
+- Recall/Sensitivity: 0.7975
+- Specificity: 0.7655
+- F1-Score: 0.5706
+
+3e) Recommendation: Mixed Model (Random Forest)
+
+Key Insights:
+- Realistic 19% arrest rate enables proper model evaluation
+- ct_flag_encoded is the most important predictor
+- Both models show good discrimination ability with AUC > 0.7
+- No severe overfitting detected (training vs testing performance)
+- Comprehensive metrics provide complete evaluation for imbalanced data

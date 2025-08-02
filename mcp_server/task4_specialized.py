@@ -30,7 +30,89 @@ class Task4SpecializedSearch:
             "significant predictors",
             "feature importance",
             "out of bag",
-            "bootstrap sampling"
+            "bootstrap sampling",
+            "explainability",
+            "model explainability",
+            "transparency",
+            "opaque models",
+            "variable importance",
+            "partial dependence plot",
+            "PDP",
+            "global surrogate models",
+            "local interpretability",
+            "individual conditional expectation",
+            "shapley values",
+            "SHAP",
+            "lift charts",
+            "gain charts",
+            "ROC curve",
+            "model interpretation",
+            "model explanation",
+            "communication",
+            "audience",
+            "technical report",
+            "executive summary",
+            "model selection",
+            "accuracy",
+            "stability",
+            "analytical effort",
+            "computational efficiency",
+            "explanation versus interpretation",
+            "characteristics of good explanations",
+            "know your audience",
+            "write to communicate",
+            "explainability ethics",
+            "transparency importance",
+            "model explainability importance",
+            "techniques opaque models",
+            "partial dependence plot PDP",
+            "PDP ordinary regression",
+            "PDP GLM",
+            "PDP random forest",
+            "two-dimensional PDPs",
+            "issues with PDP",
+            "global surrogate models",
+            "local interpretability",
+            "individual conditional expectation",
+            "shapley values",
+            "SHAP OLS",
+            "SHAP random forest",
+            "SHAP global explanation",
+            "lift gain charts",
+            "lift charts",
+            "gain charts",
+            "difference gain chart ROC curve",
+            "justification discussion",
+            "data dictionaries summaries",
+            "summary statistics",
+            "written reports",
+            "technical report",
+            "data models sections",
+            "memo",
+            "executive summary",
+            "final recommendation",
+            "report writing audience",
+            "technical peer",
+            "partially technical supervisor",
+            "non-technical executive",
+            "model selection case study",
+            "evaluating modeling method",
+            "accuracy",
+            "explainability",
+            "stability",
+            "analytical effort",
+            "computational efficiency",
+            "case study description data",
+            "exploratory data analysis continuous predictors",
+            "exploratory data analysis factor predictor",
+            "exploratory data analysis target variable",
+            "models",
+            "accuracy",
+            "comments remaining dimensions",
+            "explainability",
+            "stability",
+            "analytical effort",
+            "computational efficiency"
         ]
         
         results = {}
@@ -59,7 +141,20 @@ class Task4SpecializedSearch:
             "global interpretability",
             "additive explanations",
             "force plots",
-            "summary plots"
+            "summary plots",
+            "shapley values calculation",
+            "individual observation analysis",
+            "prediction explanation",
+            "feature attribution",
+            "local explanations",
+            "instance-specific explanations",
+            "shapley values interpretation",
+            "individual case analysis",
+            "prediction breakdown",
+            "feature contribution analysis",
+            "observation-specific importance",
+            "case-by-case analysis",
+            "individual prediction analysis"
         ]
         
         results = {}
@@ -88,7 +183,20 @@ class Task4SpecializedSearch:
             "ICE plots",
             "individual conditional expectation",
             "feature effects",
-            "variable effects"
+            "variable effects",
+            "partial dependence interpretation",
+            "predictor effect analysis",
+            "magnitude and direction",
+            "variable impact analysis",
+            "feature effect visualization",
+            "predictor influence analysis",
+            "marginal effect interpretation",
+            "variable effect magnitude",
+            "predictor direction analysis",
+            "feature impact assessment",
+            "variable effect interpretation",
+            "predictor effect visualization",
+            "magnitude direction interpretation"
         ]
         
         results = {}
@@ -161,6 +269,121 @@ class Task4SpecializedSearch:
             'summary': f"Found relevant content for {len([r for r in results.values() if r])} interpretability terms"
         }
     
+    def search_criminal_incident_analysis_content(self) -> Dict:
+        """
+        Search for content specifically about criminal incident analysis and SHAP visualization
+        """
+        search_terms = [
+            "criminal incidents",
+            "arrest analysis",
+            "incident analysis",
+            "case analysis",
+            "individual case study",
+            "specific observations",
+            "observation analysis",
+            "case-by-case analysis",
+            "individual incident analysis",
+            "criminal case analysis",
+            "arrest prediction",
+            "incident prediction",
+            "individual prediction analysis",
+            "case-specific analysis",
+            "observation-specific analysis",
+            "individual record analysis",
+            "specific case analysis",
+            "incident-specific analysis",
+            "arrest-specific analysis",
+            "criminal incident prediction",
+            "individual arrest analysis",
+            "case study analysis",
+            "specific incident analysis"
+        ]
+        
+        results = {}
+        for term in search_terms:
+            search_result = self.curriculum.search_curriculum(term)
+            if search_result['results']:
+                results[term] = search_result['results'][:3]  # Top 3 results
+        
+        return {
+            'search_terms': search_terms,
+            'results': results,
+            'summary': f"Found relevant content for {len([r for r in results.values() if r])} criminal incident analysis terms"
+        }
+    
+    def search_explainability_communication_content(self) -> Dict:
+        """
+        Search for content specifically about explainability, communication, and Module 4 topics
+        """
+        search_terms = [
+            "explainability",
+            "model explainability",
+            "transparency",
+            "opaque models",
+            "explanation versus interpretation",
+            "characteristics of good explanations",
+            "know your audience",
+            "write to communicate",
+            "explainability ethics",
+            "transparency importance",
+            "model explainability importance",
+            "techniques opaque models",
+            "variable importance",
+            "partial dependence plot",
+            "PDP",
+            "global surrogate models",
+            "local interpretability",
+            "individual conditional expectation",
+            "shapley values",
+            "SHAP",
+            "lift charts",
+            "gain charts",
+            "ROC curve",
+            "model interpretation",
+            "model explanation",
+            "communication",
+            "audience",
+            "technical report",
+            "executive summary",
+            "model selection",
+            "accuracy",
+            "stability",
+            "analytical effort",
+            "computational efficiency",
+            "justification discussion",
+            "data dictionaries summaries",
+            "summary statistics",
+            "written reports",
+            "technical report",
+            "data models sections",
+            "memo",
+            "executive summary",
+            "final recommendation",
+            "report writing audience",
+            "technical peer",
+            "partially technical supervisor",
+            "non-technical executive",
+            "model selection case study",
+            "evaluating modeling method",
+            "case study description data",
+            "exploratory data analysis continuous predictors",
+            "exploratory data analysis factor predictor",
+            "exploratory data analysis target variable",
+            "comments remaining dimensions"
+        ]
+        
+        results = {}
+        for term in search_terms:
+            search_result = self.curriculum.search_curriculum(term)
+            if search_result['results']:
+                results[term] = search_result['results'][:3]  # Top 3 results
+        
+        return {
+            'search_terms': search_terms,
+            'results': results,
+            'summary': f"Found relevant content for {len([r for r in results.values() if r])} explainability and communication terms"
+        }
+    
     def get_task4_structured_content(self) -> Dict:
         """
         Get structured content specifically organized for Task 4 requirements
@@ -169,8 +392,10 @@ class Task4SpecializedSearch:
             'random_forest_content': self.search_random_forest_content(),
             'shapley_values_content': self.search_shapley_values_content(),
             'partial_dependence_content': self.search_partial_dependence_content(),
+            'criminal_incident_analysis_content': self.search_criminal_incident_analysis_content(),
             'ensemble_methods_content': self.search_ensemble_methods_content(),
             'model_interpretability_content': self.search_model_interpretability_content(),
+            'explainability_communication_content': self.search_explainability_communication_content(),
             'explainability_techniques': self.curriculum.get_explainability_techniques(),
             'curriculum_summary': self.curriculum.get_curriculum_summary()
         }
@@ -194,16 +419,16 @@ class Task4SpecializedSearch:
         """
         requirements = {
             '4a_random_forest': {
-                'search_terms': ['random forest', 'ensemble methods', 'hyperparameters', 'model tuning'],
-                'description': 'Random Forest model fitting and tuning'
+                'search_terms': ['random forest', 'ensemble methods', 'hyperparameters', 'model tuning', 'significant predictors'],
+                'description': 'Random Forest model fitting, tuning, and significant predictor identification'
             },
-            '4b_shapley_values': {
-                'search_terms': ['shapley values', 'SHAP', 'individual predictions', 'model interpretability'],
-                'description': 'SHAP values calculation and interpretation'
+            '4b_criminal_incidents_shap': {
+                'search_terms': ['shapley values', 'SHAP', 'individual predictions', 'criminal incidents', 'arrest analysis', 'individual case analysis'],
+                'description': 'SHAP values for specific criminal incidents (3 arrested, 3 not arrested)'
             },
-            '4c_partial_dependence': {
-                'search_terms': ['partial dependence plots', 'PDP', 'predictor effects', 'magnitude direction'],
-                'description': 'Partial dependence plots and predictor effects'
+            '4c_partial_dependence_significant': {
+                'search_terms': ['partial dependence plots', 'PDP', 'predictor effects', 'magnitude direction', 'significant predictors', 'variable impact analysis'],
+                'description': 'Partial dependence plots for most significant predictors identified by SHAP'
             }
         }
         

@@ -45,7 +45,35 @@ class Task3SpecializedSearch:
             "model evaluation",
             "visualizing smooths",
             "multiple explanatory variables",
-            "GAMs in GLMs"
+            "GAMs in GLMs",
+            "binary classification",
+            "neural networks",
+            "overfitting",
+            "predictions comparison",
+            "one-hot encoding",
+            "categorical variables binary classification",
+            "cross-validation hyperparameters",
+            "model comparison",
+            "bayesian models",
+            "bayesian analysis",
+            "bayes rule",
+            "poisson gamma",
+            "markov chain monte carlo",
+            "MCMC",
+            "gibbs sampler",
+            "metropolis hastings",
+            "hamiltonian monte carlo",
+            "stan",
+            "model diagnostics",
+            "prior sensitivity",
+            "bayesian linear regression",
+            "brms",
+            "horseshoe prior",
+            "generalized linear models bayesian",
+            "count data",
+            "model selection",
+            "model evaluation",
+            "stacking"
         ]
         
         results = {}
@@ -175,7 +203,37 @@ class Task3SpecializedSearch:
             "feature selection criteria",
             "variable selection criteria",
             "model parsimony",
-            "variable screening methods"
+            "variable screening methods",
+            "large p small n",
+            "naive models",
+            "feature selection engineering",
+            "dimension reduction",
+            "regularization",
+            "how many data sets",
+            "missing data predictions",
+            "combined imputation",
+            "stored imputation scheme",
+            "hold-out approaches",
+            "missing data ethics",
+            "ethics modeling",
+            "fairness analytics",
+            "algorithmic fairness concepts",
+            "disparate treatment impact",
+            "direct indirect discrimination",
+            "unawareness demographic parity",
+            "predictive parity regression",
+            "group individual fairness metrics",
+            "fairness metrics examples",
+            "other fairness metrics",
+            "demographic parity",
+            "predictive parity",
+            "proxy discrimination types",
+            "addressing proxy discrimination",
+            "framework fairness",
+            "orthogonal variables",
+            "pope sydnor model",
+            "biases introduced after model build",
+            "fairness summary"
         ]
         
         results = {}
@@ -230,6 +288,7 @@ class Task3SpecializedSearch:
             'model_validation_content': self.search_model_validation_content(),
             'variable_selection_content': self.search_variable_selection_content(),
             'performance_metrics_content': self.search_performance_metrics_content(),
+            'advanced_modeling_content': self.search_advanced_modeling_content(),
             'modeling_techniques': self.curriculum.get_modeling_techniques(),
             'curriculum_summary': self.curriculum.get_curriculum_summary()
         }
@@ -282,6 +341,61 @@ class Task3SpecializedSearch:
             'search_terms': search_terms,
             'results': results,
             'summary': f"Found relevant content for {len([r for r in results.values() if r])} data splitting terms"
+        }
+    
+    def search_advanced_modeling_content(self) -> Dict:
+        """
+        Search for content about advanced modeling techniques including neural networks and Bayesian models
+        """
+        search_terms = [
+            "binary classification",
+            "neural networks",
+            "overfitting",
+            "predictions comparison",
+            "one-hot encoding",
+            "categorical variables binary classification",
+            "cross-validation hyperparameters",
+            "model comparison",
+            "bayesian models",
+            "bayesian analysis",
+            "bayes rule",
+            "poisson gamma",
+            "markov chain monte carlo",
+            "MCMC",
+            "gibbs sampler",
+            "metropolis hastings",
+            "hamiltonian monte carlo",
+            "stan",
+            "model diagnostics",
+            "prior sensitivity",
+            "bayesian linear regression",
+            "brms",
+            "horseshoe prior",
+            "generalized linear models bayesian",
+            "count data",
+            "model selection",
+            "model evaluation",
+            "stacking",
+            "artificial neural networks",
+            "deep learning",
+            "model complexity",
+            "hyperparameter tuning",
+            "model optimization",
+            "advanced model comparison",
+            "ensemble methods",
+            "model stacking"
+        ]
+        
+        results = {}
+        for term in search_terms:
+            search_result = self.curriculum.search_curriculum(term)
+            if search_result['results']:
+                results[term] = search_result['results'][:3]  # Top 3 results
+        
+        return {
+            'search_terms': search_terms,
+            'results': results,
+            'summary': f"Found relevant content for {len([r for r in results.values() if r])} advanced modeling terms"
         }
     
     def get_task3_requirements_content(self) -> Dict:
