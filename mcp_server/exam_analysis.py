@@ -604,10 +604,17 @@ class ExamAnalysis:
         
         for doc_key, doc_content in self.document_content.items():
             if 'tasks' in doc_content:
+                # Calculate total points safely, handling None values
+                total_points = 0
+                for task in doc_content['tasks']:
+                    points = task.get('points')
+                    if points is not None:
+                        total_points += points
+                
                 comparison[doc_key] = {
                     'task_count': len(doc_content['tasks']),
-                    'total_points': sum(task.get('points', 0) for task in doc_content['tasks']),
-                    'task_types': [task.get('task_number') for task in doc_content['tasks']]
+                    'total_points': total_points,
+                    'task_types': [task.get('task_number') for task in doc_content['tasks'] if task.get('task_number') is not None]
                 }
         
         return comparison

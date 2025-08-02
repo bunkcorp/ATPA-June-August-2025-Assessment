@@ -29,6 +29,8 @@ from task3_specialized import Task3SpecializedSearch
 from task4_specialized import Task4SpecializedSearch
 from task5_specialized import Task5SpecializedSearch
 from task1_specialized import Task1SpecializedSearch
+from task6_specialized import Task6ExecutiveSummary
+from model_solution_insights import ModelSolutionAnalyzer
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -65,6 +67,8 @@ try:
     task4_specialized = Task4SpecializedSearch()
     task5_specialized = Task5SpecializedSearch()
     task1_specialized = Task1SpecializedSearch()
+    task6_executive_summary = Task6ExecutiveSummary()
+    model_solution_analyzer = ModelSolutionAnalyzer()
     logger.info("MCP layers initialized successfully")
 except Exception as e:
     logger.error(f"Error initializing MCP layers: {e}")
@@ -84,6 +88,8 @@ except Exception as e:
     task4_specialized = None
     task5_specialized = None
     task1_specialized = None
+    task6_executive_summary = None
+    model_solution_analyzer = None
 
 # Mount static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -883,6 +889,154 @@ async def get_task5_requirements_content():
     return task5_specialized.get_task5_requirements_content()
 
 # ============================================================================
+# TASK 6 EXECUTIVE SUMMARY ENDPOINTS
+# ============================================================================
+
+@app.get("/task6/overview")
+async def get_task6_overview():
+    """Get Task 6 executive summary overview"""
+    if task6_executive_summary is None:
+        raise HTTPException(status_code=500, detail="Task 6 executive summary module not initialized")
+    
+    try:
+        return {
+            "title": "Task 6: Executive Summary Generation",
+            "description": "Comprehensive overview of Task 6 requirements and guidance",
+            "content": task6_executive_summary.get_task6_overview()
+        }
+    except Exception as e:
+        logger.error(f"Error getting Task 6 overview: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving Task 6 overview: {str(e)}")
+
+@app.get("/task6/executive-summary-template")
+async def get_executive_summary_template():
+    """Get executive summary template and structure"""
+    if task6_executive_summary is None:
+        raise HTTPException(status_code=500, detail="Task 6 executive summary module not initialized")
+    
+    try:
+        return {
+            "title": "Executive Summary Template",
+            "description": "Comprehensive template for Task 6 executive summary",
+            "content": task6_executive_summary.get_executive_summary_template()
+        }
+    except Exception as e:
+        logger.error(f"Error getting executive summary template: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving executive summary template: {str(e)}")
+
+@app.get("/task6/business-problem-guidance")
+async def get_business_problem_guidance():
+    """Get guidance for business problem statement"""
+    if task6_executive_summary is None:
+        raise HTTPException(status_code=500, detail="Task 6 executive summary module not initialized")
+    
+    try:
+        return {
+            "title": "Business Problem Statement Guidance",
+            "description": "Framework for writing the business problem section",
+            "content": task6_executive_summary.get_business_problem_guidance()
+        }
+    except Exception as e:
+        logger.error(f"Error getting business problem guidance: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving business problem guidance: {str(e)}")
+
+@app.get("/task6/key-findings-guidance")
+async def get_key_findings_guidance():
+    """Get guidance for key findings section"""
+    if task6_executive_summary is None:
+        raise HTTPException(status_code=500, detail="Task 6 executive summary module not initialized")
+    
+    try:
+        return {
+            "title": "Key Findings Section Guidance",
+            "description": "Framework for developing the key findings section",
+            "content": task6_executive_summary.get_key_findings_guidance()
+        }
+    except Exception as e:
+        logger.error(f"Error getting key findings guidance: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving key findings guidance: {str(e)}")
+
+@app.get("/task6/recommendations-guidance")
+async def get_recommendations_guidance():
+    """Get guidance for recommendations section"""
+    if task6_executive_summary is None:
+        raise HTTPException(status_code=500, detail="Task 6 executive summary module not initialized")
+    
+    try:
+        return {
+            "title": "Recommendations Section Guidance",
+            "description": "Framework for developing actionable recommendations",
+            "content": task6_executive_summary.get_recommendations_guidance()
+        }
+    except Exception as e:
+        logger.error(f"Error getting recommendations guidance: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving recommendations guidance: {str(e)}")
+
+@app.get("/task6/limitations-guidance")
+async def get_limitations_guidance():
+    """Get guidance for limitations section"""
+    if task6_executive_summary is None:
+        raise HTTPException(status_code=500, detail="Task 6 executive summary module not initialized")
+    
+    try:
+        return {
+            "title": "Limitations Section Guidance",
+            "description": "Framework for addressing analysis limitations",
+            "content": task6_executive_summary.get_limitations_guidance()
+        }
+    except Exception as e:
+        logger.error(f"Error getting limitations guidance: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving limitations guidance: {str(e)}")
+
+@app.get("/task6/writing-style-guidance")
+async def get_writing_style_guidance():
+    """Get guidance for executive summary writing style"""
+    if task6_executive_summary is None:
+        raise HTTPException(status_code=500, detail="Task 6 executive summary module not initialized")
+    
+    try:
+        return {
+            "title": "Executive Summary Writing Style Guide",
+            "description": "Guidelines for clear, non-technical writing",
+            "content": task6_executive_summary.get_writing_style_guidance()
+        }
+    except Exception as e:
+        logger.error(f"Error getting writing style guidance: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving writing style guidance: {str(e)}")
+
+@app.get("/task6/integration-guidance")
+async def get_integration_guidance():
+    """Get guidance for integrating findings from all tasks"""
+    if task6_executive_summary is None:
+        raise HTTPException(status_code=500, detail="Task 6 executive summary module not initialized")
+    
+    try:
+        return {
+            "title": "Task Integration Guidance",
+            "description": "How to integrate findings from Tasks 1-5 into the executive summary",
+            "content": task6_executive_summary.get_integration_guidance()
+        }
+    except Exception as e:
+        logger.error(f"Error getting integration guidance: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving integration guidance: {str(e)}")
+
+@app.get("/task6/comprehensive-guidance")
+async def get_comprehensive_task6_guidance():
+    """Get comprehensive guidance for Task 6"""
+    if task6_executive_summary is None:
+        raise HTTPException(status_code=500, detail="Task 6 executive summary module not initialized")
+    
+    try:
+        return {
+            "title": "Comprehensive Task 6 Guidance",
+            "description": "Complete guidance for executive summary creation",
+            "content": task6_executive_summary.get_comprehensive_guidance()
+        }
+    except Exception as e:
+        logger.error(f"Error getting comprehensive Task 6 guidance: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving comprehensive Task 6 guidance: {str(e)}")
+
+# ============================================================================
 # EXAM ANALYSIS LAYER ENDPOINTS
 # ============================================================================
 
@@ -1469,6 +1623,280 @@ async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "timestamp": "2024-01-01T00:00:00Z"}
 
+# Model Solution Analysis Endpoints
+@app.get("/model-solution/overview")
+async def get_model_solution_overview():
+    """Get comprehensive overview of model solution analysis"""
+    if model_solution_analyzer is None:
+        raise HTTPException(status_code=500, detail="Model solution analyzer not initialized")
+    
+    try:
+        analysis = model_solution_analyzer.get_comprehensive_analysis()
+        return {
+            "title": "ATPA Model Solution Analysis Overview",
+            "description": "Comprehensive analysis of ATPA model solution patterns and structure",
+            "summary": analysis['summary'],
+            "sections": {
+                "header_patterns": "Executive summary structure and document organization",
+                "metrics_and_functions": "Performance metrics and statistical functions used",
+                "modeling_concepts": "Advanced modeling terminology and concepts",
+                "bayesian_content": "Bayesian modeling specific content and terminology",
+                "model_comparisons": "Model comparison frameworks and distinctions",
+                "executive_summary_structure": "Executive summary organization patterns"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error in model solution overview: {e}")
+        raise HTTPException(status_code=500, detail=f"Error analyzing model solution: {str(e)}")
+
+@app.get("/model-solution/header-patterns")
+async def get_header_patterns():
+    """Get header and subheader patterns from model solution"""
+    if model_solution_analyzer is None:
+        raise HTTPException(status_code=500, detail="Model solution analyzer not initialized")
+    
+    try:
+        patterns = model_solution_analyzer.extract_header_patterns()
+        return {
+            "title": "Model Solution Header Patterns",
+            "description": "Header and subheader patterns extracted from ATPA model solution",
+            "patterns": patterns,
+            "insights": {
+                "main_sections": "Primary document sections (Business Problem, Data Overview, etc.)",
+                "subsections": "Secondary and tertiary headers",
+                "task_headers": "Task-specific section headers",
+                "executive_summary_sections": "Executive summary organization structure"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error extracting header patterns: {e}")
+        raise HTTPException(status_code=500, detail=f"Error extracting header patterns: {str(e)}")
+
+@app.get("/model-solution/metrics-functions")
+async def get_metrics_and_functions():
+    """Get metrics, functions, and test results from model solution"""
+    if model_solution_analyzer is None:
+        raise HTTPException(status_code=500, detail="Model solution analyzer not initialized")
+    
+    try:
+        metrics = model_solution_analyzer.extract_metrics_and_functions()
+        return {
+            "title": "Model Solution Metrics and Functions",
+            "description": "Performance metrics, statistical functions, and test results",
+            "metrics": metrics,
+            "insights": {
+                "performance_metrics": "Model evaluation metrics (RMSE, accuracy, etc.)",
+                "functions_used": "Statistical functions and R/Python packages",
+                "test_results": "Validation and testing approaches",
+                "comparisons": "Model comparison language and frameworks"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error extracting metrics and functions: {e}")
+        raise HTTPException(status_code=500, detail=f"Error extracting metrics and functions: {str(e)}")
+
+@app.get("/model-solution/modeling-concepts")
+async def get_modeling_concepts():
+    """Get modeling concepts and terminology from model solution"""
+    if model_solution_analyzer is None:
+        raise HTTPException(status_code=500, detail="Model solution analyzer not initialized")
+    
+    try:
+        concepts = model_solution_analyzer.extract_modeling_concepts()
+        return {
+            "title": "Model Solution Modeling Concepts",
+            "description": "Advanced modeling terminology and concepts",
+            "concepts": concepts,
+            "insights": {
+                "shapes_theorems": "Statistical distributions and theoretical foundations",
+                "fitting_transforming": "Model fitting and variable transformation approaches",
+                "weighting": "Weighting and importance methodologies",
+                "predictor_commentary": "Variable importance and predictor analysis",
+                "residual_plots": "Model diagnostics and residual analysis",
+                "starting_final_models": "Model development progression",
+                "effects": "Fixed and random effects terminology",
+                "random_intercepts": "Mixed effects and hierarchical modeling",
+                "benefits_factor_levels": "Model benefits and categorical variable handling",
+                "impacts_comparables": "Impact analysis and comparative frameworks"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error extracting modeling concepts: {e}")
+        raise HTTPException(status_code=500, detail=f"Error extracting modeling concepts: {str(e)}")
+
+@app.get("/model-solution/bayesian-content")
+async def get_bayesian_content():
+    """Get Bayesian modeling content from model solution"""
+    if model_solution_analyzer is None:
+        raise HTTPException(status_code=500, detail="Model solution analyzer not initialized")
+    
+    try:
+        bayesian = model_solution_analyzer.extract_bayesian_content()
+        return {
+            "title": "Model Solution Bayesian Content",
+            "description": "Bayesian modeling specific content and terminology",
+            "bayesian": bayesian,
+            "insights": {
+                "bayesian_models": "Bayesian modeling frameworks and approaches",
+                "brm_function": "BRMS package and brm() function usage",
+                "sampling_chains": "MCMC sampling and chain management",
+                "parameter_distributions": "Prior and posterior distributions",
+                "uncertainty": "Uncertainty quantification and credible intervals",
+                "family_parameters": "Distribution family specific parameters",
+                "nuts_algorithm": "NUTS sampling algorithm details",
+                "standard_deviation": "Standard deviation and variance terminology",
+                "bayesian_point_estimates": "Bayesian point estimation methods"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error extracting Bayesian content: {e}")
+        raise HTTPException(status_code=500, detail=f"Error extracting Bayesian content: {str(e)}")
+
+@app.get("/model-solution/model-comparisons")
+async def get_model_comparisons():
+    """Get model comparison content from model solution"""
+    if model_solution_analyzer is None:
+        raise HTTPException(status_code=500, detail="Model solution analyzer not initialized")
+    
+    try:
+        comparisons = model_solution_analyzer.extract_model_comparisons()
+        return {
+            "title": "Model Solution Model Comparisons",
+            "description": "Model comparison frameworks and distinctions",
+            "comparisons": comparisons,
+            "insights": {
+                "random_forest_vs_glm": "Distinctions between random forest and GLM approaches",
+                "stacked_model_challenges": "Stacked model implementation challenges",
+                "training_test_sets": "Training and test set management strategies",
+                "partial_dependence_plots": "Partial dependence plot analysis",
+                "variable_importance": "Variable importance methodologies"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error extracting model comparisons: {e}")
+        raise HTTPException(status_code=500, detail=f"Error extracting model comparisons: {str(e)}")
+
+@app.get("/model-solution/executive-summary")
+async def get_executive_summary_structure():
+    """Get executive summary structure from model solution"""
+    if model_solution_analyzer is None:
+        raise HTTPException(status_code=500, detail="Model solution analyzer not initialized")
+    
+    try:
+        executive = model_solution_analyzer.extract_executive_summary_structure()
+        return {
+            "title": "Model Solution Executive Summary Structure",
+            "description": "Executive summary organization and content patterns",
+            "executive": executive,
+            "insights": {
+                "business_problem": "Business problem statement patterns",
+                "data_overview": "Data overview and description approaches",
+                "modeling_overview": "Modeling methodology presentation",
+                "model_results": "Results presentation and interpretation",
+                "next_steps": "Recommendations and next steps frameworks",
+                "titles_and_headers": "Executive summary header organization"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error extracting executive summary structure: {e}")
+        raise HTTPException(status_code=500, detail=f"Error extracting executive summary structure: {str(e)}")
+
+@app.get("/model-solution/search")
+async def search_model_solution_content(query: str = Query(..., description="Search query for model solution content")):
+    """Search across all model solution content"""
+    if model_solution_analyzer is None:
+        raise HTTPException(status_code=500, detail="Model solution analyzer not initialized")
+    
+    try:
+        # Get comprehensive analysis
+        analysis = model_solution_analyzer.get_comprehensive_analysis()
+        
+        # Search across all content
+        results = {
+            "query": query,
+            "matches": [],
+            "categories": {}
+        }
+        
+        query_lower = query.lower()
+        
+        # Search in header patterns
+        for section, patterns in analysis['header_patterns'].items():
+            for pattern in patterns:
+                if query_lower in pattern.lower():
+                    results['matches'].append({
+                        "category": "header_patterns",
+                        "section": section,
+                        "match": pattern
+                    })
+        
+        # Search in metrics and functions
+        for section, items in analysis['metrics_and_functions'].items():
+            for item in items:
+                if query_lower in item.lower():
+                    results['matches'].append({
+                        "category": "metrics_and_functions",
+                        "section": section,
+                        "match": item
+                    })
+        
+        # Search in modeling concepts
+        for section, items in analysis['modeling_concepts'].items():
+            for item in items:
+                if query_lower in item.lower():
+                    results['matches'].append({
+                        "category": "modeling_concepts",
+                        "section": section,
+                        "match": item
+                    })
+        
+        # Search in Bayesian content
+        for section, items in analysis['bayesian_content'].items():
+            for item in items:
+                if query_lower in item.lower():
+                    results['matches'].append({
+                        "category": "bayesian_content",
+                        "section": section,
+                        "match": item
+                    })
+        
+        # Search in model comparisons
+        for section, items in analysis['model_comparisons'].items():
+            for item in items:
+                if query_lower in item.lower():
+                    results['matches'].append({
+                        "category": "model_comparisons",
+                        "section": section,
+                        "match": item
+                    })
+        
+        # Search in executive summary structure
+        for section, items in analysis['executive_summary_structure'].items():
+            for item in items:
+                if query_lower in item.lower():
+                    results['matches'].append({
+                        "category": "executive_summary_structure",
+                        "section": section,
+                        "match": item
+                    })
+        
+        # Count matches by category
+        for match in results['matches']:
+            category = match['category']
+            if category not in results['categories']:
+                results['categories'][category] = 0
+            results['categories'][category] += 1
+        
+        return {
+            "title": "Model Solution Content Search",
+            "description": f"Search results for '{query}' across model solution content",
+            "total_matches": len(results['matches']),
+            "results": results
+        }
+    except Exception as e:
+        logger.error(f"Error searching model solution content: {e}")
+        raise HTTPException(status_code=500, detail=f"Error searching model solution content: {str(e)}")
+
 @app.get("/docs")
 async def get_documentation():
     """Get API documentation"""
@@ -1560,6 +1988,27 @@ async def get_documentation():
                 "GET /metrics/summary-table": "Get summary table of all metrics for all models",
                 "GET /metrics/task-guidance/{task_number}": "Get ATPA task-specific guidance for classification metrics",
                 "GET /metrics/essential-metrics": "Get explanation of essential classification metrics for arrest prediction"
+            },
+            "model_solution_analysis": {
+                "GET /model-solution/overview": "Get comprehensive overview of model solution analysis",
+                "GET /model-solution/header-patterns": "Get header and subheader patterns from model solution",
+                "GET /model-solution/metrics-functions": "Get metrics, functions, and test results from model solution",
+                "GET /model-solution/modeling-concepts": "Get modeling concepts and terminology from model solution",
+                "GET /model-solution/bayesian-content": "Get Bayesian modeling content from model solution",
+                "GET /model-solution/model-comparisons": "Get model comparison content from model solution",
+                "GET /model-solution/executive-summary": "Get executive summary structure from model solution",
+                "GET /model-solution/search": "Search across all model solution content"
+            },
+            "task6_executive_summary": {
+                "GET /task6/overview": "Get Task 6 executive summary overview",
+                "GET /task6/executive-summary-template": "Get executive summary template and structure",
+                "GET /task6/business-problem-guidance": "Get guidance for business problem statement",
+                "GET /task6/key-findings-guidance": "Get guidance for key findings section",
+                "GET /task6/recommendations-guidance": "Get guidance for recommendations section",
+                "GET /task6/limitations-guidance": "Get guidance for limitations section",
+                "GET /task6/writing-style-guidance": "Get guidance for executive summary writing style",
+                "GET /task6/integration-guidance": "Get guidance for integrating findings from all tasks",
+                "GET /task6/comprehensive-guidance": "Get comprehensive guidance for Task 6"
             }
         }
     }
