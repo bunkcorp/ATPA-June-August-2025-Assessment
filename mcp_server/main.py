@@ -1,7 +1,7 @@
 """
 Main FastAPI application for ATPA MCP Server
 """
-from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi import FastAPI, HTTPException, Query, Body, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -31,6 +31,8 @@ from task5_specialized import Task5SpecializedSearch
 from task1_specialized import Task1SpecializedSearch
 from task6_specialized import Task6ExecutiveSummary
 from model_solution_insights import ModelSolutionAnalyzer
+from word_content_generator import WordContentGenerator
+from enhanced_word_manager import EnhancedWordManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -69,6 +71,8 @@ try:
     task1_specialized = Task1SpecializedSearch()
     task6_executive_summary = Task6ExecutiveSummary()
     model_solution_analyzer = ModelSolutionAnalyzer()
+    word_content_generator = WordContentGenerator()
+    enhanced_word_manager = EnhancedWordManager()
     logger.info("MCP layers initialized successfully")
 except Exception as e:
     logger.error(f"Error initializing MCP layers: {e}")
@@ -90,6 +94,8 @@ except Exception as e:
     task1_specialized = None
     task6_executive_summary = None
     model_solution_analyzer = None
+    word_content_generator = None
+    enhanced_word_manager = None
 
 # Mount static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -2013,6 +2019,267 @@ async def get_executive_summary_structure():
     except Exception as e:
         logger.error(f"Error extracting executive summary structure: {e}")
         raise HTTPException(status_code=500, detail=f"Error extracting executive summary structure: {str(e)}")
+
+# Enhanced Word Document Management Endpoints
+@app.post("/enhanced-word/create-professional-document")
+async def create_professional_atpa_document():
+    """Create a professionally formatted ATPA document with advanced features"""
+    if enhanced_word_manager is None:
+        raise HTTPException(status_code=500, detail="Enhanced word manager not initialized")
+    
+    try:
+        filename = enhanced_word_manager.create_professional_atpa_document()
+        
+        return {
+            "status": "success",
+            "filename": filename,
+            "message": "Professional ATPA document created successfully",
+            "features": [
+                "Professional formatting and styling",
+                "Advanced document structure",
+                "Proper heading hierarchy",
+                "Professional table formatting",
+                "Clean bullet points and lists"
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating professional document: {str(e)}")
+
+@app.post("/enhanced-word/update-template-enhanced")
+async def update_template_enhanced():
+    """Update the Word template with enhanced formatting and professional features"""
+    if enhanced_word_manager is None:
+        raise HTTPException(status_code=500, detail="Enhanced word manager not initialized")
+    
+    try:
+        template_path = "ATPA_June-August_2025_-_Template_(docx).docx"
+        enhanced_filename = enhanced_word_manager.update_existing_template(template_path)
+        
+        return {
+            "status": "success",
+            "original_template": template_path,
+            "enhanced_filename": enhanced_filename,
+            "message": "Template updated with enhanced formatting",
+            "features": [
+                "Professional document structure",
+                "Enhanced formatting and styling",
+                "Proper heading hierarchy",
+                "Clean content organization"
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating template: {str(e)}")
+
+@app.post("/enhanced-word/add-table")
+async def add_table_to_document(
+    filename: str = Query(..., description="Document filename"),
+    table_title: str = Query("", description="Title for the table"),
+    table_data: List[List[str]] = Body(..., description="Table data as list of lists")
+):
+    """Add a professionally formatted table to the document"""
+    if enhanced_word_manager is None:
+        raise HTTPException(status_code=500, detail="Enhanced word manager not initialized")
+    
+    try:
+        success = enhanced_word_manager.add_table_to_document(filename, table_data, table_title)
+        
+        if success:
+            return {
+                "status": "success",
+                "filename": filename,
+                "table_title": table_title,
+                "message": "Table added successfully",
+                "features": [
+                    "Professional table formatting",
+                    "Proper borders and styling",
+                    "Header row formatting",
+                    "Clean data presentation"
+                ]
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to add table to document")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error adding table: {str(e)}")
+
+@app.post("/enhanced-word/format-text")
+async def format_text_in_document(
+    filename: str = Query(..., description="Document filename"),
+    paragraph_index: int = Query(..., description="Paragraph index"),
+    start_pos: int = Query(..., description="Start position in text"),
+    end_pos: int = Query(..., description="End position in text"),
+    bold: bool = Query(None, description="Make text bold"),
+    italic: bool = Query(None, description="Make text italic"),
+    color: str = Query(None, description="Text color")
+):
+    """Format specific text in the document"""
+    if enhanced_word_manager is None:
+        raise HTTPException(status_code=500, detail="Enhanced word manager not initialized")
+    
+    try:
+        success = enhanced_word_manager.format_text_in_document(
+            filename, paragraph_index, start_pos, end_pos, bold, italic, color
+        )
+        
+        if success:
+            return {
+                "status": "success",
+                "filename": filename,
+                "message": "Text formatted successfully",
+                "formatting": {
+                    "bold": bold,
+                    "italic": italic,
+                    "color": color
+                }
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to format text")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error formatting text: {str(e)}")
+
+@app.post("/enhanced-word/convert-to-pdf")
+async def convert_document_to_pdf(
+    filename: str = Query(..., description="Word document filename")
+):
+    """Convert Word document to PDF format"""
+    if enhanced_word_manager is None:
+        raise HTTPException(status_code=500, detail="Enhanced word manager not initialized")
+    
+    try:
+        pdf_filename = enhanced_word_manager.convert_to_pdf(filename)
+        
+        return {
+            "status": "success",
+            "original_filename": filename,
+            "pdf_filename": pdf_filename,
+            "message": "Document converted to PDF successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error converting to PDF: {str(e)}")
+
+@app.get("/enhanced-word/capabilities")
+async def get_enhanced_word_capabilities():
+    """Get information about enhanced Word document capabilities"""
+    capabilities = {
+        "professional_document_creation": True,
+        "advanced_formatting": True,
+        "table_creation_and_formatting": True,
+        "text_formatting": True,
+        "pdf_conversion": True,
+        "template_enhancement": True,
+        "office_word_mcp_server_available": enhanced_word_manager.word_server is not None if enhanced_word_manager else False,
+        "features": [
+            "Create professionally formatted ATPA documents",
+            "Add and format tables with borders and styling",
+            "Format text with bold, italic, and color options",
+            "Convert documents to PDF format",
+            "Enhance existing templates with professional formatting",
+            "Proper heading hierarchy and document structure",
+            "Clean bullet points and numbered lists",
+            "Professional document metadata and properties"
+        ]
+    }
+    
+    return capabilities
+
+# Word Content Generation Endpoints
+@app.get("/word/task/{task_number}/content")
+async def get_word_task_content(task_number: int):
+    """Get Word-compatible content for a specific task without markdown formatting"""
+    if word_content_generator is None:
+        raise HTTPException(status_code=500, detail="Word content generator not initialized")
+    
+    task_content_map = {
+        1: word_content_generator.generate_task1_content(),
+        2: word_content_generator.generate_task2_content(),
+        3: word_content_generator.generate_task3_content(),
+        4: word_content_generator.generate_task4_content(),
+        5: word_content_generator.generate_task5_content(),
+        6: word_content_generator.generate_task6_content()
+    }
+    
+    if task_number not in task_content_map:
+        raise HTTPException(status_code=400, detail=f"Task {task_number} not found")
+    
+    return {
+        "task_number": task_number,
+        "content": task_content_map[task_number],
+        "format": "word_compatible",
+        "note": "This content is formatted for Word documents without markdown syntax"
+    }
+
+@app.get("/word/all-tasks/content")
+async def get_all_word_task_content():
+    """Get Word-compatible content for all tasks"""
+    if word_content_generator is None:
+        raise HTTPException(status_code=500, detail="Word content generator not initialized")
+    
+    content = word_content_generator.generate_complete_template_content()
+    
+    return {
+        "all_tasks_content": content,
+        "format": "word_compatible",
+        "note": "All content formatted for Word documents without markdown syntax",
+        "table_instructions": "Includes proper table insertion instructions for Word/Excel"
+    }
+
+@app.get("/word/table-instructions")
+async def get_table_instructions():
+    """Get detailed table insertion instructions for Word documents"""
+    instructions = {
+        "important_notes": "Important Notes about Inserting Tables",
+        "do_instructions": [
+            "Ensure your table fits in the page margins by:",
+            "  • Selecting the table",
+            "  • Right-clicking on the table to view the pop-up menu",
+            "  • Hover your mouse over \"Auto Fit\"",
+            "  • Click \"AutoFit to Window\"."
+        ],
+        "do_not_instructions": [
+            "Paste as Picture",
+            "Insert Object",
+            "Use Word's \"Insert, Table, Excel Spreadsheet\" function"
+        ],
+        "warning": "Pasting a table as a picture or as an object will result in an automatic disqualification of your submission. Graphs pasted as pictures are not affected by this requirement.",
+        "windows_steps": [
+            "Copy the cells from your Excel spreadsheet. If you use the Copy command on the Home tab, do not select the option to \"copy as picture\".",
+            "In your Word document, turn on the \"Show/Hide Paragraph Marks\" feature.",
+            "In your Word document, right-click where you want to insert your table.",
+            "In the menu that pops up, under Paste Options, select any of the first four options:",
+            "  a. \"Keep Source Formatting\"",
+            "  b. \"Use Destination Styles\"",
+            "  c. \"Link & Keep Source Formatting\"",
+            "  d. \"Link & Use Destination Styles\"",
+            "If you have \"Show/Hide Paragraph Marks\" turned on, you should see small circles at the end of each cell in your table. This is how you can know whether or not you have pasted your table correctly."
+        ],
+        "mac_steps": [
+            "Copy the cells from your Excel spreadsheet. If you use the Copy command on the Home tab, do not select the option to \"copy as picture\".",
+            "In your Word document, turn on the \"Show All Nonprinting Characters\" feature.",
+            "In your Word document, right-click where you want to insert your table.",
+            "In the menu that pops up, click Paste (not Paste Special).",
+            "If you have \"Show All Nonprinting Characters\" turned on, you should see small circles at the end of each cell in your table. This is how you can know whether or not you have pasted your table correctly."
+        ]
+    }
+    
+    return instructions
+
+@app.get("/word/template-update")
+async def update_word_template():
+    """Update the Word template with all task content"""
+    if word_content_generator is None:
+        raise HTTPException(status_code=500, detail="Word content generator not initialized")
+    
+    try:
+        # Update the template file
+        template_path = "ATPA_June-August_2025_-_Template_(docx).docx"
+        word_content_generator.update_template_with_content(template_path)
+        
+        return {
+            "status": "success",
+            "message": f"Template updated successfully: {template_path}",
+            "note": "Template now contains Word-compatible content for all 6 tasks"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating template: {str(e)}")
 
 @app.get("/model-solution/search")
 async def search_model_solution_content(query: str = Query(..., description="Search query for model solution content")):
