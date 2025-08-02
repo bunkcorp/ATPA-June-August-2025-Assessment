@@ -253,8 +253,30 @@ class DataLoader:
         # Get page data
         page_data = df.iloc[start_idx:end_idx]
         
+        # Convert DataFrame to JSON-safe format
+        def safe_json_convert(obj):
+            if pd.isna(obj) or pd.isnull(obj) or obj is None:
+                return None
+            if isinstance(obj, (float, int)):
+                if np.isnan(obj) or np.isinf(obj):
+                    return None
+                return obj
+            if isinstance(obj, np.integer):
+                return int(obj)
+            if isinstance(obj, np.floating):
+                return float(obj)
+            return str(obj)
+        
+        # Convert records to JSON-safe format
+        safe_records = []
+        for record in page_data.to_dict('records'):
+            safe_record = {}
+            for key, value in record.items():
+                safe_record[key] = safe_json_convert(value)
+            safe_records.append(safe_record)
+        
         return {
-            'data': page_data.to_dict('records'),
+            'data': safe_records,
             'total': total_records,
             'page': page,
             'page_size': page_size,

@@ -44,8 +44,8 @@ app = FastAPI(
 )
 
 # Data paths
-DATA_DIR = "../Task1_DataPrep"
-DATA_DICT_PATH = os.path.join(DATA_DIR, "Data_Dictionary.xlsx")
+DATA_DIR = "data"
+DATA_DICT_PATH = os.path.join("../Task1_DataPrep", "Data_Dictionary.xlsx")
 INCIDENTS_PATH = os.path.join(DATA_DIR, "incidents.csv")
 ARRESTEE_PATH = os.path.join(DATA_DIR, "arrestee.csv")
 
@@ -1776,6 +1776,32 @@ async def get_status():
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "timestamp": "2024-01-01T00:00:00Z"}
+
+@app.get("/data/test")
+async def test_data_loading():
+    """Test data loading without JSON serialization issues"""
+    if not loader:
+        raise HTTPException(status_code=500, detail="Loader layer not initialized")
+    
+    try:
+        # Load a small sample of incidents data
+        if loader.incidents_df is None:
+            loader.load_incidents(100)
+        
+        # Return basic info without the problematic data
+        return {
+            "message": "Data loaded successfully",
+            "incidents_loaded": loader.incidents_df is not None,
+            "incidents_records": len(loader.incidents_df) if loader.incidents_df is not None else 0,
+            "incidents_columns": len(loader.incidents_df.columns) if loader.incidents_df is not None else 0,
+            "arrestee_loaded": loader.arrestee_df is not None,
+            "arrestee_records": len(loader.arrestee_df) if loader.arrestee_df is not None else 0,
+            "arrestee_columns": len(loader.arrestee_df.columns) if loader.arrestee_df is not None else 0
+        }
+    
+    except Exception as e:
+        logger.error(f"Error testing data loading: {e}")
+        return {"error": str(e)}
 
 # Model Solution Analysis Endpoints
 @app.get("/model-solution/overview")

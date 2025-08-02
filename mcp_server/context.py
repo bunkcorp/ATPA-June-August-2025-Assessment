@@ -30,13 +30,13 @@ class DataContext:
             # Process each row to extract field metadata
             for _, row in df.iterrows():
                 field_info = {
-                    'variable_name': str(row.get('Variable Name', '')).strip(),
-                    'data_type': str(row.get('Data Type', '')).strip(),
-                    'description': str(row.get('Description', '')).strip(),
-                    'source_file': str(row.get('Source File', '')).strip(),
-                    'valid_values': str(row.get('Valid Values', '')).strip(),
-                    'missing_values': str(row.get('Missing Values', '')).strip(),
-                    'notes': str(row.get('Notes', '')).strip()
+                    'variable_name': str(row.get('Variable', '')).strip(),
+                    'data_type': str(row.get('Type', '')).strip(),
+                    'description': str(row.get('Description and Labels', '')).strip(),
+                    'source_file': 'incidents' if 'incident' in str(row.get('Variable', '')).lower() else 'arrestee',
+                    'valid_values': str(row.get('Response Codes', '')).strip(),
+                    'missing_values': '',
+                    'notes': ''
                 }
                 
                 # Clean up the field name
@@ -46,9 +46,9 @@ class DataContext:
                     
                     # Categorize by source file
                     source_file = field_info['source_file'].lower()
-                    if 'incident' in source_file:
+                    if source_file == 'incidents':
                         self.incident_fields.append(field_name)
-                    elif 'arrestee' in source_file:
+                    elif source_file == 'arrestee':
                         self.arrestee_fields.append(field_name)
             
             logger.info(f"Loaded {len(self.field_metadata)} fields from data dictionary")
