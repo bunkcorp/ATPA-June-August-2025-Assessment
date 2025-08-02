@@ -1257,6 +1257,160 @@ async def search_practical_content(query: str = Query(..., description="Search q
     return practical_examples.search_practical_content(query)
 
 # ============================================================================
+# ENHANCED PRACTICAL EXAMPLES ENDPOINTS
+# ============================================================================
+
+@app.get("/examples/comprehensive-analysis")
+async def get_comprehensive_analysis():
+    """Get comprehensive analysis of all practical examples"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_comprehensive_analysis()
+
+@app.get("/examples/code-chunk/{module}/{file}/{chunk_number}")
+async def get_code_chunk_by_id(module: str, file: str, chunk_number: str):
+    """Get a specific code chunk by its identifier"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_code_chunk_by_id(module, file, chunk_number)
+
+@app.get("/examples/file-content/{module}/{file}")
+async def get_file_content(module: str, file: str):
+    """Get complete content of a specific file"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    return practical_examples.get_file_content(module, file)
+
+@app.get("/examples/module/{module_key}")
+async def get_module_examples(module_key: str):
+    """Get all examples from a specific module"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    if module_key not in practical_examples.examples:
+        raise HTTPException(status_code=404, detail=f"Module {module_key} not found")
+    
+    module_info = practical_examples.examples[module_key]
+    module_chunks = practical_examples.code_chunks.get(module_key, {})
+    
+    return {
+        'module_info': module_info,
+        'files': list(module_chunks.keys()),
+        'total_chunks': sum(len(chunks) for chunks in module_chunks.values())
+    }
+
+@app.get("/examples/task/{task_number}/code-chunks")
+async def get_task_code_chunks(task_number: int):
+    """Get all code chunks relevant to a specific ATPA task"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    task_examples = practical_examples.get_task_specific_examples(task_number)
+    if 'error' in task_examples:
+        raise HTTPException(status_code=404, detail=task_examples['error'])
+    
+    code_chunks = []
+    for file_info in task_examples['files']:
+        module_key, file_key = file_info['key'].split('_', 1)
+        if module_key in practical_examples.code_chunks and file_key in practical_examples.code_chunks[module_key]:
+            chunks = practical_examples.code_chunks[module_key][file_key]
+            for chunk in chunks:
+                code_chunks.append({
+                    'module': module_key,
+                    'file': file_key,
+                    'chunk_number': chunk['chunk_number'],
+                    'title': chunk['title'],
+                    'language': chunk['language'],
+                    'code_preview': chunk['code'][:200] + "..." if len(chunk['code']) > 200 else chunk['code']
+                })
+    
+    return {
+        'task_number': task_number,
+        'focus': task_examples['focus'],
+        'total_chunks': len(code_chunks),
+        'code_chunks': code_chunks
+    }
+
+@app.get("/examples/topic/{topic}/detailed")
+async def get_topic_detailed_analysis(topic: str):
+    """Get detailed analysis of code chunks for a specific topic"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    topic_chunks = practical_examples.get_code_chunks_by_topic(topic)
+    
+    # Add language distribution
+    language_dist = {}
+    for chunk in topic_chunks['chunks']:
+        lang = chunk['language']
+        language_dist[lang] = language_dist.get(lang, 0) + 1
+    
+    return {
+        'topic': topic,
+        'total_chunks': len(topic_chunks['chunks']),
+        'language_distribution': language_dist,
+        'chunks': topic_chunks['chunks']
+    }
+
+@app.get("/examples/language/{language}/detailed")
+async def get_language_detailed_analysis(language: str):
+    """Get detailed analysis of examples for a specific programming language"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    lang_examples = practical_examples.get_example_by_language(language)
+    
+    # Get code chunks for this language
+    code_chunks = []
+    for example in lang_examples['examples']:
+        module_key, file_key = example['key'].split('_', 1)
+        if module_key in practical_examples.code_chunks and file_key in practical_examples.code_chunks[module_key]:
+            chunks = practical_examples.code_chunks[module_key][file_key]
+            code_chunks.extend(chunks)
+    
+    return {
+        'language': language,
+        'total_examples': len(lang_examples['examples']),
+        'total_chunks': len(code_chunks),
+        'examples': lang_examples['examples'],
+        'sample_chunks': code_chunks[:5] if code_chunks else []
+    }
+
+@app.get("/examples/statistics/detailed")
+async def get_detailed_statistics():
+    """Get detailed statistics about all practical examples"""
+    if not practical_examples:
+        raise HTTPException(status_code=500, detail="Practical examples layer not initialized")
+    
+    stats = practical_examples.get_code_statistics()
+    overview = practical_examples.get_examples_overview()
+    
+    # Calculate additional statistics
+    total_files = overview['total_files']
+    total_modules = overview['total_modules']
+    
+    # Average chunks per file
+    avg_chunks_per_file = stats['total_chunks'] / total_files if total_files > 0 else 0
+    
+    # Most common topics
+    topic_stats = stats['topic_distribution']
+    top_topics = sorted(topic_stats.items(), key=lambda x: x[1], reverse=True)[:10]
+    
+    return {
+        'basic_stats': stats,
+        'overview': overview,
+        'detailed_stats': {
+            'average_chunks_per_file': round(avg_chunks_per_file, 2),
+            'files_per_module': round(total_files / total_modules, 2) if total_modules > 0 else 0,
+            'top_topics': top_topics,
+            'language_breakdown': stats['language_distribution']
+        }
+    }
+
+# ============================================================================
 # CLASSIFICATION METRICS LAYER ENDPOINTS
 # ============================================================================
 
@@ -1978,7 +2132,15 @@ async def get_documentation():
                 "GET /examples/language/{language}": "Get examples by programming language",
                 "GET /examples/topic/{topic}": "Get code chunks related to a specific topic",
                 "GET /examples/task/{task_number}": "Get examples relevant to specific ATPA tasks",
-                "GET /examples/search": "Search across all practical examples"
+                "GET /examples/search": "Search across all practical examples",
+                "GET /examples/comprehensive-analysis": "Get comprehensive analysis of all practical examples",
+                "GET /examples/code-chunk/{module}/{file}/{chunk_number}": "Get a specific code chunk by its identifier",
+                "GET /examples/file-content/{module}/{file}": "Get complete content of a specific file",
+                "GET /examples/module/{module_key}": "Get all examples from a specific module",
+                "GET /examples/task/{task_number}/code-chunks": "Get all code chunks relevant to a specific ATPA task",
+                "GET /examples/topic/{topic}/detailed": "Get detailed analysis of code chunks for a specific topic",
+                "GET /examples/language/{language}/detailed": "Get detailed analysis of examples for a specific programming language",
+                "GET /examples/statistics/detailed": "Get detailed statistics about all practical examples"
             },
             "classification_metrics": {
                 "POST /metrics/calculate": "Calculate comprehensive classification metrics",
