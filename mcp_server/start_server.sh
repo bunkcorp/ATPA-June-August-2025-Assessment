@@ -16,6 +16,7 @@ cd "$SCRIPT_DIR"
 # Check if we're in the right directory
 if [ ! -f "main.py" ]; then
     echo "❌ Error: main.py not found in current directory"
+    echo "   Current directory: $(pwd)"
     echo "   Make sure you're running this script from the mcp_server directory"
     exit 1
 fi

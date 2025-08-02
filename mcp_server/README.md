@@ -26,31 +26,37 @@ python3 main.py
 
 ### Alternative Startup Methods
 
-#### Method 1: Direct Python execution (Recommended)
+#### Method 1: Universal startup script (Easiest - can run from anywhere)
+```bash
+# From any directory in the ATPA project
+./start_atpa_server.sh
+```
+
+#### Method 2: Universal test script (Test curriculum from anywhere)
+```bash
+# From any directory in the ATPA project
+./test_atpa_curriculum.sh
+```
+
+#### Method 3: Direct Python execution (from mcp_server directory)
 ```bash
 cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
 python3 main.py
 ```
 
-#### Method 2: Using uvicorn directly
+#### Method 4: Using uvicorn directly (from mcp_server directory)
 ```bash
 cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
 python3 -m uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
-#### Method 3: Simple curriculum test server
+#### Method 5: Simple curriculum test server (from mcp_server directory)
 ```bash
 cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
 python3 simple_curriculum_server.py
 ```
 
-#### Method 4: Using the startup script (Easiest)
-```bash
-cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
-./start_server.sh
-```
-
-#### Method 5: Test the server functionality
+#### Method 6: Test the server functionality (from mcp_server directory)
 ```bash
 cd "/Users/kevinwoods/Desktop/ActuarialExams/ATPA/ATPA August/ATPA_June_August_2025/mcp_server"
 python3 test_server.py
