@@ -1,0 +1,29 @@
+{
+  "total_endpoints_called": 22,
+  "endpoints_called": [
+    "_data_summary",
+    "_merged_summary",
+    "_merged_arrest_analysis",
+    "_merged_demographic_analysis",
+    "_eda_summary",
+    "_eda_feature_importance",
+    "_eda_correlation_analysis",
+    "_eda_distribution_analysis",
+    "_task6_structured_content",
+    "_task6_executive_summary",
+    "_task6_business_recommendations",
+    "_task6_policy_implications",
+    "_task6_stakeholder_communication",
+    "_task6_implementation_roadmap",
+    "_tasks_run_task6",
+    "_models_summary",
+    "_models_performance",
+    "_models_comparison",
+    "_executive_summary",
+    "_executive_recommendations",
+    "_executive_implementation",
+    "_executive_stakeholders"
+  ],
+  "timestamp": "20250802_193510",
+  "analysis_complete": true
+}

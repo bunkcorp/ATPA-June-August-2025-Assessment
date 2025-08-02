@@ -21,6 +21,14 @@ import os
 from datetime import datetime
 import pickle
 
+# Import specialized curriculum search classes
+from task1_specialized import Task1SpecializedSearch
+from task2_specialized import Task2SpecializedSearch
+from task3_specialized import Task3SpecializedSearch
+from task4_specialized import Task4SpecializedSearch
+from task5_specialized import Task5SpecializedSearch
+from task6_specialized import Task6ExecutiveSummary
+
 # Suppress warnings for cleaner output
 warnings.filterwarnings('ignore')
 
@@ -28,12 +36,12 @@ logger = logging.getLogger(__name__)
 
 class ATPATaskImplementation:
     """
-    Comprehensive implementation of all ATPA tasks
+    Comprehensive implementation of all ATPA tasks with integrated curriculum guidance
     """
     
     def __init__(self, data_loader, protocol_layer):
         """
-        Initialize task implementation with data layers
+        Initialize task implementation with data layers and curriculum guidance
         
         Args:
             data_loader: DataLoader instance
@@ -46,6 +54,16 @@ class ATPATaskImplementation:
         self.scalers = {}
         self.encoders = {}
         
+        # Initialize specialized curriculum search classes
+        self.task1_search = Task1SpecializedSearch()
+        self.task2_search = Task2SpecializedSearch()
+        self.task3_search = Task3SpecializedSearch()
+        self.task4_search = Task4SpecializedSearch()
+        self.task5_search = Task5SpecializedSearch()
+        self.task6_search = Task6ExecutiveSummary()
+        
+        logger.info("Task implementation initialized with curriculum guidance")
+    
     def task1_data_preparation(self, sample_size: Optional[int] = None) -> Dict:
         """
         Task 1: Data Preparation and Quality Analysis
@@ -54,8 +72,9 @@ class ATPATaskImplementation:
         - Missing value analysis and KNN imputation
         - Data quality assessment
         - Data merging and target variable creation
+        - Curriculum guidance integration
         """
-        logger.info("Starting Task 1: Data Preparation")
+        logger.info("Starting Task 1: Data Preparation with curriculum guidance")
         
         try:
             # Load and clean data
@@ -79,7 +98,18 @@ class ATPATaskImplementation:
             # Task 1d: Data Quality Assessment
             quality_report = self._assess_data_quality(merged_df)
             
-            # Store results
+            # INTEGRATED CURRICULUM GUIDANCE
+            curriculum_guidance = {
+                'data_preparation_content': self.task1_search.search_data_preparation_content(),
+                'data_joins_content': self.task1_search.search_data_joins_content(),
+                'eda_content': self.task1_search.search_eda_content(),
+                'data_validation_content': self.task1_search.search_data_validation_content(),
+                'variable_analysis_content': self.task1_search.search_variable_analysis_content(),
+                'requirements_content': self.task1_search.get_task1_requirements_content(),
+                'structured_content': self.task1_search.get_task1_structured_content()
+            }
+            
+            # Store results with curriculum guidance
             self.results['task1'] = {
                 'missing_analysis': missing_analysis,
                 'imputation_summary': {
@@ -89,10 +119,11 @@ class ATPATaskImplementation:
                 },
                 'quality_report': quality_report,
                 'merged_data': merged_df,
+                'curriculum_guidance': curriculum_guidance,
                 'timestamp': datetime.now().isoformat()
             }
             
-            logger.info("Task 1 completed successfully")
+            logger.info("Task 1 completed successfully with curriculum guidance")
             return self.results['task1']
             
         except Exception as e:
@@ -107,8 +138,9 @@ class ATPATaskImplementation:
         - Protected variable identification
         - Bias assessment
         - Fairness metrics
+        - Curriculum guidance integration
         """
-        logger.info("Starting Task 2: Privacy and Ethics Analysis")
+        logger.info("Starting Task 2: Privacy and Ethics Analysis with curriculum guidance")
         
         if 'task1' not in self.results:
             raise ValueError("Task 1 must be completed before Task 2")
@@ -149,6 +181,17 @@ class ATPATaskImplementation:
                 ]
             }
             
+            # INTEGRATED CURRICULUM GUIDANCE
+            curriculum_guidance = {
+                'demographic_benefits_risks': self.task2_search.search_demographic_data_benefits_risks(),
+                'professional_standards_misuse': self.task2_search.search_professional_standards_misuse_prevention(),
+                'criminal_justice_context': self.task2_search.search_criminal_justice_specific(),
+                'algorithmic_fairness': self.task2_search.search_algorithmic_fairness_content(),
+                'insurance_regulatory': self.task2_search.search_insurance_regulatory_content(),
+                'nminsights_guidance': self.task2_search.get_nminsights_specific_guidance(),
+                'structured_content': self.task2_search.get_task2_structured_content()
+            }
+            
             self.results['task2'] = {
                 'protected_variables': protected_vars,
                 'demographic_analysis': demographic_analysis,
@@ -157,10 +200,11 @@ class ATPATaskImplementation:
                 'ethics_recommendations': ethics_recommendations,
                 'detailed_bias_analysis': detailed_bias_analysis,
                 'risk_assessment': risk_assessment,
+                'curriculum_guidance': curriculum_guidance,
                 'timestamp': datetime.now().isoformat()
             }
             
-            logger.info("Task 2 completed successfully")
+            logger.info("Task 2 completed successfully with curriculum guidance")
             return self.results['task2']
             
         except Exception as e:
@@ -175,8 +219,9 @@ class ATPATaskImplementation:
         - Logistic regression models
         - Model comparison and selection
         - Cross-validation
+        - Curriculum guidance integration
         """
-        logger.info("Starting Task 3: Generalized Linear Models")
+        logger.info("Starting Task 3: Generalized Linear Models with curriculum guidance")
         
         if 'task1' not in self.results:
             raise ValueError("Task 1 must be completed before Task 3")
@@ -215,6 +260,19 @@ class ATPATaskImplementation:
             # Coefficient analysis
             coefficient_analysis = self._analyze_model_coefficients(models, feature_names)
             
+            # INTEGRATED CURRICULUM GUIDANCE
+            curriculum_guidance = {
+                'data_splitting_content': self.task3_search.search_data_splitting_content(),
+                'glm_content': self.task3_search.search_glm_content(),
+                'mixed_models_content': self.task3_search.search_mixed_models_content(),
+                'model_validation_content': self.task3_search.search_model_validation_content(),
+                'variable_selection_content': self.task3_search.search_variable_selection_content(),
+                'performance_metrics_content': self.task3_search.search_performance_metrics_content(),
+                'advanced_modeling_content': self.task3_search.search_advanced_modeling_content(),
+                'requirements_content': self.task3_search.get_task3_requirements_content(),
+                'structured_content': self.task3_search.get_task3_structured_content()
+            }
+            
             self.results['task3'] = {
                 'models': models,
                 'cross_validation': cv_results,
@@ -223,10 +281,11 @@ class ATPATaskImplementation:
                 'feature_names': feature_names,
                 'data_shape': X.shape,
                 'coefficient_analysis': coefficient_analysis,
+                'curriculum_guidance': curriculum_guidance,
                 'timestamp': datetime.now().isoformat()
             }
             
-            logger.info("Task 3 completed successfully")
+            logger.info("Task 3 completed successfully with curriculum guidance")
             return self.results['task3']
             
         except Exception as e:
@@ -241,8 +300,9 @@ class ATPATaskImplementation:
         - Random Forest model training
         - SHAP value analysis
         - Feature importance visualization
+        - Curriculum guidance integration
         """
-        logger.info("Starting Task 4: Random Forest with SHAP Analysis")
+        logger.info("Starting Task 4: Random Forest with SHAP Analysis with curriculum guidance")
         
         if 'task1' not in self.results:
             raise ValueError("Task 1 must be completed before Task 4")
@@ -273,16 +333,30 @@ class ATPATaskImplementation:
             # Store model
             self.models['random_forest'] = rf_model['model']
             
+            # INTEGRATED CURRICULUM GUIDANCE
+            curriculum_guidance = {
+                'random_forest_content': self.task4_search.search_random_forest_content(),
+                'shapley_values_content': self.task4_search.search_shapley_values_content(),
+                'partial_dependence_content': self.task4_search.search_partial_dependence_content(),
+                'criminal_incident_analysis': self.task4_search.search_criminal_incident_analysis_content(),
+                'ensemble_methods_content': self.task4_search.search_ensemble_methods_content(),
+                'model_interpretability_content': self.task4_search.search_model_interpretability_content(),
+                'explainability_communication': self.task4_search.search_explainability_communication_content(),
+                'requirements_content': self.task4_search.get_task4_requirements_content(),
+                'structured_content': self.task4_search.get_task4_structured_content()
+            }
+            
             self.results['task4'] = {
                 'random_forest': rf_model,
                 'shap_analysis': shap_analysis,
                 'feature_importance': feature_importance,
                 'detailed_shap_analysis': detailed_shap_analysis,
                 'feature_names': feature_names,
+                'curriculum_guidance': curriculum_guidance,
                 'timestamp': datetime.now().isoformat()
             }
             
-            logger.info("Task 4 completed successfully")
+            logger.info("Task 4 completed successfully with curriculum guidance")
             return self.results['task4']
             
         except Exception as e:
@@ -297,8 +371,9 @@ class ATPATaskImplementation:
         - Bayesian logistic regression
         - Posterior analysis
         - Uncertainty quantification
+        - Curriculum guidance integration
         """
-        logger.info("Starting Task 5: Bayesian Analysis")
+        logger.info("Starting Task 5: Bayesian Analysis with curriculum guidance")
         
         if 'task1' not in self.results:
             raise ValueError("Task 1 must be completed before Task 5")
@@ -327,14 +402,26 @@ class ATPATaskImplementation:
             # Detailed uncertainty analysis
             uncertainty_analysis = self._analyze_bayesian_uncertainty(bayesian_results, feature_names)
             
+            # INTEGRATED CURRICULUM GUIDANCE
+            curriculum_guidance = {
+                'bayesian_analysis_content': self.task5_search.search_bayesian_analysis_content(),
+                'arrest_rates_criminal_categories': self.task5_search.search_arrest_rates_criminal_categories_content(),
+                'conjugate_methods_content': self.task5_search.search_conjugate_methods_content(),
+                'credible_intervals_content': self.task5_search.search_credible_intervals_content(),
+                'business_problem_analysis': self.task5_search.search_business_problem_analysis_content(),
+                'requirements_content': self.task5_search.get_task5_requirements_content(),
+                'structured_content': self.task5_search.get_task5_structured_content()
+            }
+            
             self.results['task5'] = {
-                'bayesian_analysis': bayesian_results,
+                'bayesian_results': bayesian_results,
                 'uncertainty_analysis': uncertainty_analysis,
                 'feature_names': feature_names,
+                'curriculum_guidance': curriculum_guidance,
                 'timestamp': datetime.now().isoformat()
             }
             
-            logger.info("Task 5 completed successfully")
+            logger.info("Task 5 completed successfully with curriculum guidance")
             return self.results['task5']
             
         except Exception as e:
@@ -349,8 +436,9 @@ class ATPATaskImplementation:
         - Comprehensive results summary
         - Key insights and recommendations
         - Professional presentation
+        - Curriculum guidance integration
         """
-        logger.info("Starting Task 6: Executive Summary")
+        logger.info("Starting Task 6: Executive Summary with curriculum guidance")
         
         # Check if all previous tasks are completed
         required_tasks = ['task1', 'task2', 'task3', 'task4', 'task5']
@@ -374,16 +462,30 @@ class ATPATaskImplementation:
             # Action items
             action_items = self._generate_action_items()
             
+            # INTEGRATED CURRICULUM GUIDANCE
+            curriculum_guidance = {
+                'overview': self.task6_search.get_task6_overview(),
+                'executive_summary_template': self.task6_search.get_executive_summary_template(),
+                'business_problem_guidance': self.task6_search.get_business_problem_guidance(),
+                'key_findings_guidance': self.task6_search.get_key_findings_guidance(),
+                'recommendations_guidance': self.task6_search.get_recommendations_guidance(),
+                'limitations_guidance': self.task6_search.get_limitations_guidance(),
+                'writing_style_guidance': self.task6_search.get_writing_style_guidance(),
+                'integration_guidance': self.task6_search.get_integration_guidance(),
+                'comprehensive_guidance': self.task6_search.get_comprehensive_task6_guidance()
+            }
+            
             self.results['task6'] = {
                 'executive_summary': executive_summary,
                 'visualizations': visualizations,
                 'recommendations': recommendations,
                 'risk_assessment': risk_assessment,
                 'action_items': action_items,
+                'curriculum_guidance': curriculum_guidance,
                 'timestamp': datetime.now().isoformat()
             }
             
-            logger.info("Task 6 completed successfully")
+            logger.info("Task 6 completed successfully with curriculum guidance")
             return self.results['task6']
             
         except Exception as e:
@@ -925,7 +1027,7 @@ class ATPATaskImplementation:
                 'best_logistic_model': self.results['task3']['best_model'],
                 'logistic_auc': self.results['task3']['model_comparison']['models'][self.results['task3']['best_model']]['auc'],
                 'random_forest_auc': self.results['task4']['random_forest']['metrics']['auc'],
-                'bayesian_auc': self.results['task5']['bayesian_analysis']['metrics']['auc']
+                'bayesian_auc': self.results['task5']['bayesian_results']['metrics']['auc']
             },
             'key_insights': [
                 f"Arrest rate: {self.results['task1']['quality_report']['arrest_statistics']['arrest_rate']:.1%}",
