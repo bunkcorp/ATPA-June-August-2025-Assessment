@@ -4,6 +4,100 @@
 
 This task addresses the critical ethical and privacy considerations associated with using demographic data in predictive modeling for criminal justice policy. As a trusted research organization, NMInsights must balance the potential benefits of demographic analysis with the risks of perpetuating bias and discrimination. This analysis provides guidance on responsible use of demographic data while ensuring compliance with professional standards and ethical principles.
 
+## 📊 **Demographic Data Analysis Results**
+
+### **Available Demographic Variables**
+
+The analysis identified the following demographic variables in the dataset:
+
+- **avg_arrestee_age**: Average age of arrestees
+- **sex_code**: Gender (M/F)
+- **race_desc**: Race description
+- **ethnicity_name**: Ethnicity classification
+- **hc_code**: Home county code
+- **offense_category_name**: Type of offense
+- **crime_against**: Category of crime (Person/Property/Society)
+- **weapon_name**: Weapon involved in incident
+
+### **Demographic Distributions**
+
+#### Age Distribution
+| Age | Count | Percentage |
+|-----|-------|------------|
+| 32.0 | 1,055 | 3.9% |
+| 33.0 | 1,012 | 3.8% |
+| 31.0 | 993 | 3.7% |
+| 34.0 | 960 | 3.6% |
+| 29.0 | 943 | 3.5% |
+
+**Key Finding**: Average arrestee age is approximately 32 years, with a wide distribution across age groups.
+
+#### Gender Distribution
+| Gender | Count | Percentage |
+|--------|-------|------------|
+| Male (M) | 19,077 | 70.8% |
+| Female (F) | 7,878 | 29.2% |
+
+**Key Finding**: Males represent 70.8% of all arrestees, indicating significant gender disparity.
+
+#### Race Distribution
+| Race | Count | Percentage |
+|------|-------|------------|
+| White | 19,568 | 72.6% |
+| American Indian or Alaska Native | 3,973 | 14.7% |
+| Black or African American | 1,670 | 6.2% |
+| Unknown | 1,609 | 6.0% |
+| Asian | 104 | 0.4% |
+
+**Key Finding**: White individuals represent the majority (72.6%), followed by American Indian/Alaska Native (14.7%).
+
+#### Ethnicity Distribution
+| Ethnicity | Count | Percentage |
+|-----------|-------|------------|
+| Hispanic or Latino | 12,279 | 45.6% |
+| Not Hispanic or Latino | 10,495 | 38.9% |
+| Unknown | 3,619 | 13.4% |
+| Not Specified | 562 | 2.1% |
+
+**Key Finding**: Hispanic or Latino individuals represent 45.6% of arrestees, reflecting New Mexico's demographic composition.
+
+### **Bias Pattern Analysis**
+
+#### Multiple Arrests Rate by Gender
+| Gender | Multiple Arrests Rate | Risk Ratio |
+|--------|----------------------|------------|
+| Female (F) | 11.36% | 3.80 |
+| Male (M) | 2.99% | 1.00 |
+
+**Critical Finding**: Females have a 3.8 times higher rate of multiple arrests than males, indicating significant gender bias.
+
+#### Multiple Arrests Rate by Race
+| Race | Multiple Arrests Rate | Risk Level |
+|------|----------------------|------------|
+| Asian | 8.65% | High |
+| Unknown | 6.84% | Medium |
+| Black or African American | 6.77% | Medium |
+| White | 5.27% | Low |
+| American Indian or Alaska Native | 5.03% | Low |
+
+**Key Finding**: Asian individuals show the highest multiple arrests rate (8.65%), while American Indian/Alaska Native individuals show the lowest (5.03%).
+
+#### Multiple Arrests Rate by Age Group
+| Age Group | Multiple Arrests Rate | Risk Level |
+|-----------|----------------------|------------|
+| Under 18 | 10.55% | High |
+| 18-25 | 4.55% | Low |
+| 26-35 | 5.84% | Medium |
+| 36-50 | 5.25% | Low |
+| Over 50 | 2.54% | Low |
+
+**Key Finding**: Individuals under 18 have the highest multiple arrests rate (10.55%), indicating age-related bias.
+
+### **Demographic Visualizations**
+
+![Demographic Analysis](task2_demographic_analysis.png)
+*Figure: Comprehensive demographic analysis showing age, gender, race, and ethnicity distributions.*
+
 ## a) Benefits and Risks of Using Demographic Data
 
 ### Benefits of Using Demographic Data
@@ -134,4 +228,30 @@ The analysis of demographic data in criminal justice contexts requires careful c
 
 ## Conclusion
 
-The responsible use of demographic data in criminal justice research requires a balanced approach that acknowledges both the potential benefits and significant risks. While demographic analysis can provide valuable insights for policy development and resource allocation, it must be conducted with appropriate safeguards to prevent bias, discrimination, and misuse. The approach outlined in this analysis emphasizes transparency, bias detection and mitigation, robust validation, and clear communication. By following these principles and implementing appropriate safeguards, NMInsights can conduct valuable research while maintaining the trust and confidence of stakeholders and ensuring compliance with professional standards and ethical principles. 
+The responsible use of demographic data in criminal justice research requires a balanced approach that acknowledges both the potential benefits and significant risks. While demographic analysis can provide valuable insights for policy development and resource allocation, it must be conducted with appropriate safeguards to prevent bias, discrimination, and misuse. The approach outlined in this analysis emphasizes transparency, bias detection and mitigation, robust validation, and clear communication. By following these principles and implementing appropriate safeguards, NMInsights can conduct valuable research while maintaining the trust and confidence of stakeholders and ensuring compliance with professional standards and ethical principles.
+
+## 📊 **Key Findings Summary**
+
+### **1. Demographic Patterns**
+- **Gender Disparity**: Females show 3.8x higher multiple arrests rate (11.36% vs 2.99%)
+- **Age Bias**: Individuals under 18 have highest risk (10.55% multiple arrests rate)
+- **Racial Variation**: Asian individuals show highest risk (8.65%), American Indian/Alaska Native lowest (5.03%)
+- **Ethnicity Distribution**: Hispanic or Latino individuals represent 45.6% of arrestees
+
+### **2. Bias Detection Results**
+- **Gender Bias**: Significant disparity in multiple arrests rates between males and females
+- **Age Bias**: Clear age-related patterns in arrest outcomes
+- **Racial Bias**: Variation in arrest rates across different racial groups
+- **Risk Factors**: Age and gender emerge as significant predictors of multiple arrests
+
+### **3. Model Implications**
+- **Bias Detection**: Clear evidence of demographic bias in arrest patterns
+- **Risk Factors**: Age and gender are significant predictors of arrest outcomes
+- **Policy Impact**: Need for targeted interventions for high-risk demographic groups
+- **Fairness Concerns**: Multiple arrests rates vary significantly across demographic categories
+
+### **4. Professional Recommendations**
+- **Bias Monitoring**: Implement regular bias assessment protocols for demographic variables
+- **Transparency**: Clear communication of model limitations and potential biases
+- **Continuous Improvement**: Ongoing model refinement and validation across demographic groups
+- **Fairness Metrics**: Establish fairness benchmarks for different demographic categories 
