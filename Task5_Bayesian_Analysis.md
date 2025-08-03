@@ -134,6 +134,8 @@ This task implements Bayesian analysis to explore arrest rates across different 
 
 ### Visualization of Results
 
+**Note**: Comprehensive visualizations are provided in the dedicated visualization section below.
+
 **Posterior Distribution Plots:**
 - **Individual Plots**: Show posterior Beta distributions for each category
 - **Comparison Plot**: Overlay all posterior distributions for easy comparison
@@ -205,6 +207,32 @@ The Bayesian analysis provides a comprehensive probabilistic framework for under
 ## Conclusion
 
 The Bayesian analysis successfully provides probabilistic estimates of arrest rates across different crime categories, offering insights that complement the predictive modeling approaches from previous tasks. The analysis reveals clear patterns in arrest rates, with violent crimes consistently showing higher rates than property crimes and other offenses. The credible intervals provide valuable uncertainty quantification, helping to identify categories where estimates are more or less precise. The Bayesian approach offers a robust framework for understanding arrest patterns while accounting for uncertainty, providing valuable insights for law enforcement policy development and resource allocation decisions. The results demonstrate the utility of Bayesian methods for criminal justice research and highlight the importance of uncertainty quantification in policy-relevant analyses.
+
+## 📊 **Bayesian Analysis Visualizations**
+
+**Key Visualizations:**
+
+![Improved Bayesian Analysis](task5_improved_bayesian_analysis.png)
+*Figure: Improved Bayesian analysis with better scaled posterior distributions for top 5 crime categories, featuring enhanced credible intervals, effect size comparisons, and precision analysis.*
+
+![Focused Posterior Distributions](task5_focused_posterior_distributions.png)
+*Figure: Focused posterior distributions for top 5 crime categories with optimal scaling, clear visual separation, and comparison with prior distribution.*
+
+![Bayesian Analysis Dashboard](task5_correct_bayesian_analysis.png)
+*Figure: Comprehensive Bayesian analysis dashboard showing posterior distributions, credible intervals, and arrest rate comparisons across all crime categories with clear uncertainty quantification.*
+
+![Bayesian Model Results](task5_bayesian_analysis.png)
+*Figure: Detailed Bayesian model results showing posterior distributions and credible intervals for arrest rates by crime category with statistical significance indicators.*
+
+**Visualization Highlights:**
+- **Improved Posterior Distributions**: Better scaled visualizations for top 5 categories with clear separation and optimal readability
+- **Enhanced Credible Intervals**: 95% credible intervals with improved formatting and value labels
+- **Effect Size Analysis**: Clear comparison of effect sizes relative to prior expectations
+- **Precision Analysis**: Visual representation of uncertainty vs sample size relationships
+- **Focused Analysis**: Dedicated plot showing posterior distributions with prior comparison
+- **Category Comparisons**: Easy identification of significant differences between crime categories
+- **Uncertainty Quantification**: Visual representation of statistical uncertainty
+- **Prior-Posterior Analysis**: Comparison showing data influence on prior beliefs
 
 ## 🔍 **Prior Sensitivity Analysis and Model Validation**
 
@@ -284,8 +312,7 @@ The Bayesian analysis successfully provides probabilistic estimates of arrest ra
 
 **Comprehensive Bayesian Dashboard:**
 
-![Bayesian Analysis Dashboard](task5_correct_bayesian_analysis.png)
-*Figure: Comprehensive Bayesian analysis showing posterior distributions, credible intervals, and sensitivity analysis results.*
+**Note**: The key visualizations are provided in the main visualization section above. This section focuses on advanced analytical features and implementation details.
 
 **Advanced Visualization Features:**
 - **Prior-Posterior Comparison**: Side-by-side comparison of prior and posterior distributions

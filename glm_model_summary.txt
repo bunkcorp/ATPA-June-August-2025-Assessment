@@ -1,0 +1,295 @@
+
+Call:
+glm(formula = ARREST ~ crime_against + weapon_name + victim_injury_name + 
+    incident_hour + offender_age_group + victim_age_group + agency_name_reduced + 
+    county_name, family = binomial(link = "logit"), data = train_set)
+
+Coefficients: (5 not defined because of singularities)
+                                                             Estimate
+(Intercept)                                                 2.342e-01
+crime_againstProperty                                      -1.323e+00
+crime_againstSociety                                        1.316e+00
+weapon_nameAsphyxiation                                    -8.796e-01
+weapon_nameBlunt Object                                    -5.673e-01
+weapon_nameDrugs/Narcotics/Sleeping Pills                  -1.548e+00
+weapon_nameExplosives                                      -4.502e-01
+weapon_nameFire/Incendiary Device                          -8.404e-01
+weapon_nameFirearm                                         -3.691e+00
+weapon_nameFirearm (Automatic)                             -3.904e+00
+weapon_nameHandgun                                         -2.059e+00
+weapon_nameHandgun (Automatic)                             -2.803e+00
+weapon_nameKnife/Cutting Instrument                        -6.190e-01
+weapon_nameMotor Vehicle/Vessel                            -1.264e+00
+weapon_nameNone                                            -7.545e-01
+weapon_nameOther                                           -5.178e-01
+weapon_nameOther Firearm                                   -2.913e+00
+weapon_namePersonal Weapons                                -3.389e-01
+weapon_namePoison                                          -5.802e-01
+weapon_nameRifle                                           -1.175e+00
+weapon_nameRifle (Automatic)                               -2.220e+00
+weapon_nameShotgun                                         -1.581e+00
+weapon_nameShotgun (Automatic)                             -1.699e+01
+weapon_nameUnknown                                         -1.809e+00
+victim_injury_nameApparent Broken Bones                     1.057e+00
+victim_injury_nameLoss of Teeth                             2.661e+00
+victim_injury_nameMinor Injury                              1.810e+00
+victim_injury_nameNone                                      1.442e+00
+victim_injury_nameOther Major Injury                        1.254e+00
+victim_injury_namePossible Internal Injury                  7.335e-01
+victim_injury_nameSevere Laceration                         1.351e+00
+victim_injury_nameUnconscious                               9.280e-01
+incident_hour                                               8.809e-03
+offender_age_group36-50                                    -7.461e-01
+offender_age_groupOver 50                                  -1.314e+00
+offender_age_groupUnder 18                                 -1.688e+00
+victim_age_group36-50                                       2.253e-01
+victim_age_groupOver 50                                     6.355e-01
+victim_age_groupUnder 18                                   -4.378e-01
+agency_name_reducedALBUQUERQUE PD                          -1.156e+00
+agency_name_reducedBERNALILLO CO SO ALBUQUERQUE            -5.190e-01
+agency_name_reducedCARLSBAD PD                             -2.621e-01
+agency_name_reducedCLOVIS PD                               -9.420e-01
+agency_name_reducedDONA ANA CO SO LAS CRUCES               -1.546e+00
+agency_name_reducedFARMINGTON PD                           -2.074e-01
+agency_name_reducedGALLUP PD                                4.488e-01
+agency_name_reducedHOBBS PD                                -6.673e-01
+agency_name_reducedLAS CRUCES PD                           -7.261e-01
+agency_name_reducedLEA CO SO LOVINGTON                     -8.823e-01
+agency_name_reducedLOS LUNAS PD                            -7.122e-01
+agency_name_reducedNMSP HQ SANTA FE                        -1.720e+01
+agency_name_reducedRIO RANCHO PD                           -6.954e-01
+agency_name_reducedROSWELL PD                              -9.578e-01
+agency_name_reducedSAN JUAN CO SO AZTEC                    -3.229e-01
+agency_name_reducedSANTA FE CO SO SANTA FE                 -1.438e+00
+agency_name_reducedSANTA FE POLICE DEPARTMENT              -1.818e+00
+agency_name_reducedUNIVERSITY OF NEW MEXICO PD ALBUQUERQUE -2.800e+00
+agency_name_reducedVALENCIA CO SO LOS LUNAS                -6.066e-01
+agency_name_reducedOther                                   -7.062e-01
+county_nameBERNALILLO, SANDOVAL                                    NA
+county_nameBERNALILLO, SANTA FE                            -2.419e-01
+county_nameCHAVES                                          -2.188e-01
+county_nameCIBOLA                                           5.821e-01
+county_nameCOLFAX                                           2.160e-01
+county_nameCURRY                                           -6.292e-01
+county_nameDE BACA                                         -1.569e+01
+county_nameDONA ANA                                        -9.500e-01
+county_nameEDDY                                            -9.630e-01
+county_nameGRANT                                           -1.668e-02
+county_nameGUADALUPE                                       -9.509e-01
+county_nameHIDALGO                                          1.171e+00
+county_nameLEA                                             -1.100e+00
+county_nameLINCOLN                                         -2.681e+00
+county_nameLOS ALAMOS                                      -2.726e+00
+county_nameMCKINLEY                                        -1.411e+00
+county_nameMORA                                             8.142e-01
+county_nameNOT SPECIFIED                                    3.993e-01
+county_nameOTERO                                                   NA
+county_nameQUAY                                             6.340e-02
+county_nameROOSEVELT                                        1.101e-01
+county_nameSAN JUAN                                        -7.351e-01
+county_nameSAN MIGUEL                                      -1.096e-02
+county_nameSANDOVAL                                        -3.072e+00
+county_nameSANTA FE                                                NA
+county_nameSIERRA                                          -9.236e-01
+county_nameSOCORRO                                         -1.077e+00
+county_nameTAOS                                            -6.980e-01
+county_nameTORRANCE                                        -2.362e+00
+county_nameUNION                                           -1.519e+01
+county_nameUNMAPPED COUNTY                                         NA
+county_nameVALENCIA                                                NA
+                                                           Std. Error z value
+(Intercept)                                                 1.031e-01   2.272
+crime_againstProperty                                       6.808e-02 -19.436
+crime_againstSociety                                        7.814e-02  16.836
+weapon_nameAsphyxiation                                     3.087e-01  -2.849
+weapon_nameBlunt Object                                     1.364e-01  -4.160
+weapon_nameDrugs/Narcotics/Sleeping Pills                   1.146e+00  -1.351
+weapon_nameExplosives                                       6.601e-01  -0.682
+weapon_nameFire/Incendiary Device                           7.636e-01  -1.101
+weapon_nameFirearm                                          1.551e-01 -23.792
+weapon_nameFirearm (Automatic)                              1.016e+00  -3.843
+weapon_nameHandgun                                          7.859e-02 -26.207
+weapon_nameHandgun (Automatic)                              5.333e-01  -5.256
+weapon_nameKnife/Cutting Instrument                         1.202e-01  -5.150
+weapon_nameMotor Vehicle/Vessel                             2.013e-01  -6.279
+weapon_nameNone                                             1.046e-01  -7.213
+weapon_nameOther                                            1.140e-01  -4.544
+weapon_nameOther Firearm                                    3.074e-01  -9.476
+weapon_namePersonal Weapons                                 9.785e-02  -3.463
+weapon_namePoison                                           5.957e-01  -0.974
+weapon_nameRifle                                            2.357e-01  -4.986
+weapon_nameRifle (Automatic)                                7.989e-01  -2.778
+weapon_nameShotgun                                          4.062e-01  -3.892
+weapon_nameShotgun (Automatic)                              2.400e+03  -0.007
+weapon_nameUnknown                                          1.496e-01 -12.092
+victim_injury_nameApparent Broken Bones                     3.171e-01   3.333
+victim_injury_nameLoss of Teeth                             6.876e-01   3.870
+victim_injury_nameMinor Injury                              1.162e-01  15.583
+victim_injury_nameNone                                      1.129e-01  12.766
+victim_injury_nameOther Major Injury                        1.332e-01   9.413
+victim_injury_namePossible Internal Injury                  1.885e-01   3.891
+victim_injury_nameSevere Laceration                         1.745e-01   7.743
+victim_injury_nameUnconscious                               2.386e-01   3.890
+incident_hour                                               1.807e-03   4.875
+offender_age_group36-50                                     2.699e-02 -27.644
+offender_age_groupOver 50                                   3.691e-02 -35.612
+offender_age_groupUnder 18                                  4.967e-02 -33.974
+victim_age_group36-50                                       3.617e-02   6.227
+victim_age_groupOver 50                                     3.386e-02  18.768
+victim_age_groupUnder 18                                    6.141e-02  -7.130
+agency_name_reducedALBUQUERQUE PD                           7.551e-02 -15.309
+agency_name_reducedBERNALILLO CO SO ALBUQUERQUE             9.160e-02  -5.666
+agency_name_reducedCARLSBAD PD                              2.268e-01  -1.156
+agency_name_reducedCLOVIS PD                                2.902e-01  -3.246
+agency_name_reducedDONA ANA CO SO LAS CRUCES                2.179e-01  -7.097
+agency_name_reducedFARMINGTON PD                            2.179e-01  -0.952
+agency_name_reducedGALLUP PD                                2.656e-01   1.690
+agency_name_reducedHOBBS PD                                 4.388e-01  -1.521
+agency_name_reducedLAS CRUCES PD                            2.017e-01  -3.599
+agency_name_reducedLEA CO SO LOVINGTON                      4.622e-01  -1.909
+agency_name_reducedLOS LUNAS PD                             1.369e-01  -5.201
+agency_name_reducedNMSP HQ SANTA FE                         6.321e+01  -0.272
+agency_name_reducedRIO RANCHO PD                            9.163e-02  -7.589
+agency_name_reducedROSWELL PD                               2.201e-01  -4.352
+agency_name_reducedSAN JUAN CO SO AZTEC                     2.226e-01  -1.451
+agency_name_reducedSANTA FE CO SO SANTA FE                  1.494e-01  -9.620
+agency_name_reducedSANTA FE POLICE DEPARTMENT               9.135e-02 -19.900
+agency_name_reducedUNIVERSITY OF NEW MEXICO PD ALBUQUERQUE  2.126e-01 -13.172
+agency_name_reducedVALENCIA CO SO LOS LUNAS                 1.177e-01  -5.153
+agency_name_reducedOther                                    1.482e-01  -4.765
+county_nameBERNALILLO, SANDOVAL                                    NA      NA
+county_nameBERNALILLO, SANTA FE                             2.793e-01  -0.866
+county_nameCHAVES                                           1.994e-01  -1.097
+county_nameCIBOLA                                           4.750e-01   1.225
+county_nameCOLFAX                                           2.668e-01   0.809
+county_nameCURRY                                            2.629e-01  -2.394
+county_nameDE BACA                                          5.140e+02  -0.031
+county_nameDONA ANA                                         1.833e-01  -5.183
+county_nameEDDY                                             1.925e-01  -5.003
+county_nameGRANT                                            4.380e-01  -0.038
+county_nameGUADALUPE                                        3.486e-01  -2.728
+county_nameHIDALGO                                          3.492e-01   3.352
+county_nameLEA                                              4.265e-01  -2.580
+county_nameLINCOLN                                          1.069e+00  -2.509
+county_nameLOS ALAMOS                                       7.387e-01  -3.690
+county_nameMCKINLEY                                         2.464e-01  -5.728
+county_nameMORA                                             8.522e-01   0.955
+county_nameNOT SPECIFIED                                    1.665e-01   2.398
+county_nameOTERO                                                   NA      NA
+county_nameQUAY                                             3.942e-01   0.161
+county_nameROOSEVELT                                        1.957e-01   0.563
+county_nameSAN JUAN                                         1.968e-01  -3.736
+county_nameSAN MIGUEL                                       1.776e-01  -0.062
+county_nameSANDOVAL                                         3.993e-01  -7.695
+county_nameSANTA FE                                                NA      NA
+county_nameSIERRA                                           2.317e-01  -3.986
+county_nameSOCORRO                                          3.210e-01  -3.356
+county_nameTAOS                                             1.971e-01  -3.542
+county_nameTORRANCE                                         3.361e-01  -7.026
+county_nameUNION                                            8.747e+02  -0.017
+county_nameUNMAPPED COUNTY                                         NA      NA
+county_nameVALENCIA                                                NA      NA
+                                                           Pr(>|z|)    
+(Intercept)                                                0.023086 *  
+crime_againstProperty                                       < 2e-16 ***
+crime_againstSociety                                        < 2e-16 ***
+weapon_nameAsphyxiation                                    0.004385 ** 
+weapon_nameBlunt Object                                    3.18e-05 ***
+weapon_nameDrugs/Narcotics/Sleeping Pills                  0.176813    
+weapon_nameExplosives                                      0.495239    
+weapon_nameFire/Incendiary Device                          0.271105    
+weapon_nameFirearm                                          < 2e-16 ***
+weapon_nameFirearm (Automatic)                             0.000122 ***
+weapon_nameHandgun                                          < 2e-16 ***
+weapon_nameHandgun (Automatic)                             1.47e-07 ***
+weapon_nameKnife/Cutting Instrument                        2.61e-07 ***
+weapon_nameMotor Vehicle/Vessel                            3.41e-10 ***
+weapon_nameNone                                            5.48e-13 ***
+weapon_nameOther                                           5.53e-06 ***
+weapon_nameOther Firearm                                    < 2e-16 ***
+weapon_namePersonal Weapons                                0.000534 ***
+weapon_namePoison                                          0.330107    
+weapon_nameRifle                                           6.16e-07 ***
+weapon_nameRifle (Automatic)                               0.005467 ** 
+weapon_nameShotgun                                         9.94e-05 ***
+weapon_nameShotgun (Automatic)                             0.994351    
+weapon_nameUnknown                                          < 2e-16 ***
+victim_injury_nameApparent Broken Bones                    0.000858 ***
+victim_injury_nameLoss of Teeth                            0.000109 ***
+victim_injury_nameMinor Injury                              < 2e-16 ***
+victim_injury_nameNone                                      < 2e-16 ***
+victim_injury_nameOther Major Injury                        < 2e-16 ***
+victim_injury_namePossible Internal Injury                 9.97e-05 ***
+victim_injury_nameSevere Laceration                        9.73e-15 ***
+victim_injury_nameUnconscious                              0.000100 ***
+incident_hour                                              1.09e-06 ***
+offender_age_group36-50                                     < 2e-16 ***
+offender_age_groupOver 50                                   < 2e-16 ***
+offender_age_groupUnder 18                                  < 2e-16 ***
+victim_age_group36-50                                      4.76e-10 ***
+victim_age_groupOver 50                                     < 2e-16 ***
+victim_age_groupUnder 18                                   1.01e-12 ***
+agency_name_reducedALBUQUERQUE PD                           < 2e-16 ***
+agency_name_reducedBERNALILLO CO SO ALBUQUERQUE            1.46e-08 ***
+agency_name_reducedCARLSBAD PD                             0.247710    
+agency_name_reducedCLOVIS PD                               0.001169 ** 
+agency_name_reducedDONA ANA CO SO LAS CRUCES               1.28e-12 ***
+agency_name_reducedFARMINGTON PD                           0.341059    
+agency_name_reducedGALLUP PD                               0.091096 .  
+agency_name_reducedHOBBS PD                                0.128371    
+agency_name_reducedLAS CRUCES PD                           0.000319 ***
+agency_name_reducedLEA CO SO LOVINGTON                     0.056299 .  
+agency_name_reducedLOS LUNAS PD                            1.98e-07 ***
+agency_name_reducedNMSP HQ SANTA FE                        0.785538    
+agency_name_reducedRIO RANCHO PD                           3.23e-14 ***
+agency_name_reducedROSWELL PD                              1.35e-05 ***
+agency_name_reducedSAN JUAN CO SO AZTEC                    0.146876    
+agency_name_reducedSANTA FE CO SO SANTA FE                  < 2e-16 ***
+agency_name_reducedSANTA FE POLICE DEPARTMENT               < 2e-16 ***
+agency_name_reducedUNIVERSITY OF NEW MEXICO PD ALBUQUERQUE  < 2e-16 ***
+agency_name_reducedVALENCIA CO SO LOS LUNAS                2.57e-07 ***
+agency_name_reducedOther                                   1.89e-06 ***
+county_nameBERNALILLO, SANDOVAL                                  NA    
+county_nameBERNALILLO, SANTA FE                            0.386389    
+county_nameCHAVES                                          0.272554    
+county_nameCIBOLA                                          0.220389    
+county_nameCOLFAX                                          0.418278    
+county_nameCURRY                                           0.016676 *  
+county_nameDE BACA                                         0.975648    
+county_nameDONA ANA                                        2.18e-07 ***
+county_nameEDDY                                            5.63e-07 ***
+county_nameGRANT                                           0.969612    
+county_nameGUADALUPE                                       0.006377 ** 
+county_nameHIDALGO                                         0.000801 ***
+county_nameLEA                                             0.009869 ** 
+county_nameLINCOLN                                         0.012110 *  
+county_nameLOS ALAMOS                                      0.000224 ***
+county_nameMCKINLEY                                        1.01e-08 ***
+county_nameMORA                                            0.339370    
+county_nameNOT SPECIFIED                                   0.016482 *  
+county_nameOTERO                                                 NA    
+county_nameQUAY                                            0.872228    
+county_nameROOSEVELT                                       0.573617    
+county_nameSAN JUAN                                        0.000187 ***
+county_nameSAN MIGUEL                                      0.950774    
+county_nameSANDOVAL                                        1.41e-14 ***
+county_nameSANTA FE                                              NA    
+county_nameSIERRA                                          6.71e-05 ***
+county_nameSOCORRO                                         0.000791 ***
+county_nameTAOS                                            0.000398 ***
+county_nameTORRANCE                                        2.12e-12 ***
+county_nameUNION                                           0.986149    
+county_nameUNMAPPED COUNTY                                       NA    
+county_nameVALENCIA                                              NA    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 64584  on 66514  degrees of freedom
+Residual deviance: 47383  on 66429  degrees of freedom
+  (1318 observations deleted due to missingness)
+AIC: 47555
+
+Number of Fisher Scoring iterations: 15
+

@@ -1,0 +1,8 @@
+
+
+Table: Distribution of Target Variable ARREST
+
+|Arrest Status | Count| Percentage|
+|:-------------|-----:|----------:|
+|0             | 78465|      80.97|
+|1             | 18439|      19.03|

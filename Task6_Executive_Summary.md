@@ -12,6 +12,9 @@ This analysis addresses these questions through comprehensive data preparation, 
 
 ## Key Findings
 
+![Executive Summary Visualizations](task6_executive_summary_visualizations.png)
+*Figure: Comprehensive executive summary visualizations showing key findings, model performance comparisons, and arrest rate analysis across all tasks.*
+
 ### Data Preparation and Quality Assessment
 
 **Dataset Characteristics:**
@@ -202,6 +205,21 @@ This analysis addresses these questions through comprehensive data preparation, 
 - **Political Factors**: Implementation may face political or organizational barriers
 - **Recommendation**: Develop phased implementation plans with stakeholder input
 
+## 📊 **Executive Summary Visualizations and Key Metrics**
+
+**Comprehensive Analysis Dashboard:**
+
+![Executive Summary Visualizations](task6_executive_summary_visualizations.png)
+*Figure: Executive summary dashboard showing comprehensive analysis results including data quality metrics, model performance comparisons, arrest rate analysis by crime category, and key predictive factors with statistical significance indicators.*
+
+**Visualization Highlights:**
+- **Data Quality Assessment**: Overview of data completeness and quality metrics
+- **Model Performance Comparison**: Side-by-side comparison of all predictive models
+- **Arrest Rate Analysis**: Visual breakdown of arrest rates by crime category
+- **Key Predictive Factors**: Feature importance and impact analysis
+- **Statistical Significance**: Confidence intervals and uncertainty quantification
+- **Business Impact**: Quantified impact estimates and ROI projections
+
 ## 📊 **Quantitative Impact Estimates and ROI Analysis**
 
 ### **Resource Allocation Impact Estimates**
@@ -364,6 +382,8 @@ This analysis addresses these questions through comprehensive data preparation, 
 ## Conclusion
 
 This comprehensive analysis provides NMInsights with valuable insights into the factors influencing arrest outcomes in New Mexico. The findings reveal clear patterns in arrest rates across different crime categories, with violent crimes showing significantly higher arrest rates than property crimes. The predictive modeling identifies key factors that influence arrest decisions, including crime type, weapon presence, victim injury, and temporal patterns.
+
+The comprehensive visualizations presented in this executive summary provide clear, actionable insights that support evidence-based decision making for policymakers, law enforcement agencies, and community stakeholders.
 
 The recommendations provide actionable guidance for policy development, resource allocation, and community relations. The analysis demonstrates the value of data-driven approaches to criminal justice policy while highlighting the importance of ethical considerations and bias prevention.
 
