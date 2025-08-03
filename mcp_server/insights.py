@@ -25,34 +25,40 @@ class DataInsights:
     
     def get_summary_statistics(self) -> Dict:
         """Get comprehensive summary statistics"""
-        if not self.data_protocol.merged_created:
-            return {'error': 'Merged dataset not created yet'}
-        
-        df = self.data_protocol.merged_df
-        
-        summary = {
-            'dataset_overview': {
-                'total_incidents': len(df),
-                'total_arrests': int(df['ARREST'].sum()),
-                'arrest_rate': float(df['ARREST'].mean()),
-                'unique_agencies': int(df['agency_id'].nunique()),
-                'date_range': {
-                    'start': str(df['incident_date'].min()) if 'incident_date' in df.columns else None,
-                    'end': str(df['incident_date'].max()) if 'incident_date' in df.columns else None
-                }
-            },
-            'arrest_distribution': {
-                'arrests': int(df['ARREST'].sum()),
-                'no_arrests': int((df['ARREST'] == 0).sum()),
-                'multiple_arrests': int((df['arrest_count'] > 1).sum()) if 'arrest_count' in df.columns else 0
-            },
-            'crime_categories': self._get_crime_category_summary(df),
-            'temporal_patterns': self._get_temporal_patterns(df),
-            'geographic_patterns': self._get_geographic_patterns(df),
-            'data_quality': self._get_data_quality_summary(df)
-        }
-        
-        return summary
+        try:
+            if not self.data_protocol.merged_created:
+                return {'error': 'Merged dataset not created yet'}
+            
+            df = self.data_protocol.merged_df
+            
+            if df is None or len(df) == 0:
+                return {'error': 'No data available for analysis'}
+            
+            summary = {
+                'dataset_overview': {
+                    'total_incidents': len(df),
+                    'total_arrests': int(df['ARREST'].sum()) if 'ARREST' in df.columns else 0,
+                    'arrest_rate': float(df['ARREST'].mean()) if 'ARREST' in df.columns else 0.0,
+                    'unique_agencies': int(df['agency_id'].nunique()) if 'agency_id' in df.columns else 0,
+                    'date_range': {
+                        'start': str(df['incident_date'].min()) if 'incident_date' in df.columns else None,
+                        'end': str(df['incident_date'].max()) if 'incident_date' in df.columns else None
+                    }
+                },
+                'arrest_distribution': {
+                    'arrests': int(df['ARREST'].sum()) if 'ARREST' in df.columns else 0,
+                    'no_arrests': int((df['ARREST'] == 0).sum()) if 'ARREST' in df.columns else 0,
+                    'multiple_arrests': int((df['arrest_count'] > 1).sum()) if 'arrest_count' in df.columns else 0
+                },
+                'crime_categories': self._get_crime_category_summary(df),
+                'temporal_patterns': self._get_temporal_patterns(df),
+                'geographic_patterns': self._get_geographic_patterns(df),
+                'data_quality': self._get_data_quality_summary(df)
+            }
+            
+            return summary
+        except Exception as e:
+            return {'error': f'Error in summary statistics: {str(e)}'}
     
     def _get_crime_category_summary(self, df: pd.DataFrame) -> Dict:
         """Get summary by crime categories"""
@@ -261,8 +267,8 @@ class DataInsights:
         )
         
         # Get top correlations with arrest
-        if 'arrest' in corr_matrix.columns:
-            arrest_correlations = corr_matrix['arrest'].abs().sort_values(ascending=False)
+        if 'ARREST' in corr_matrix.columns:
+            arrest_correlations = corr_matrix['ARREST'].abs().sort_values(ascending=False)
             top_correlations = arrest_correlations.head(10).to_dict()
         else:
             top_correlations = {}
@@ -285,7 +291,7 @@ class DataInsights:
         
         # Numerical features
         numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-        numerical_cols = [col for col in numerical_cols if col not in ['incident_id', 'arrestee_id', 'arrest', 'arrest_count']]
+        numerical_cols = [col for col in numerical_cols if col not in ['incident_id', 'arrestee_id', 'ARREST', 'arrest_count']]
         feature_cols.extend(numerical_cols)
         
         # Categorical features (one-hot encode)
@@ -297,13 +303,13 @@ class DataInsights:
                 feature_cols.extend(dummies.columns.tolist())
         
         # Remove rows with missing values
-        df_clean = df[feature_cols + ['arrest']].dropna()
+        df_clean = df[feature_cols + ['ARREST']].dropna()
         
         if len(df_clean) < 100:
             return {'error': 'Insufficient data after cleaning for feature importance analysis'}
         
         # Calculate correlation with arrest
-        correlations = df_clean[feature_cols].corrwith(df_clean['arrest']).abs().sort_values(ascending=False)
+        correlations = df_clean[feature_cols].corrwith(df_clean['ARREST']).abs().sort_values(ascending=False)
         
         # Create bar chart of feature importance
         fig = go.Figure()

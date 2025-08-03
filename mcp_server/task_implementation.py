@@ -128,7 +128,16 @@ class ATPATaskImplementation:
             
         except Exception as e:
             logger.error(f"Error in Task 1: {e}")
-            raise
+            # Return a simplified response instead of raising
+            return {
+                'error': f'Task 1 failed: {str(e)}',
+                'status': 'failed',
+                'timestamp': datetime.now().isoformat(),
+                'curriculum_guidance': {
+                    'data_preparation_content': self.task1_search.search_data_preparation_content(),
+                    'structured_content': self.task1_search.get_task1_structured_content()
+                }
+            }
     
     def task2_privacy_ethics_analysis(self) -> Dict:
         """

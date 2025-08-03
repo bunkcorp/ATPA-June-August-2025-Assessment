@@ -157,31 +157,37 @@ class DataProtocol:
     
     def get_merged_summary(self) -> Dict:
         """Get summary statistics for the merged dataset"""
-        if not self.merged_created:
-            return {'error': 'Merged dataset not created yet'}
-        
-        df = self.merged_df
-        
-        summary = {
-            'total_records': len(df),
-            'total_columns': len(df.columns),
-            'arrest_statistics': {
-                'total_arrests': int(df['ARREST'].sum()),
-                'arrest_rate': float(df['ARREST'].mean()),
-                'no_arrest_count': int((df['ARREST'] == 0).sum()),
-                'arrest_count_distribution': df['arrest_count'].value_counts().to_dict()
-            },
-            'data_quality': {
-                'missing_values': self._get_missing_summary(df),
-                'duplicate_incidents': int(df['incident_id'].duplicated().sum())
-            },
-            'feature_summary': {
-                'categorical_features': self._get_categorical_summary(df),
-                'numerical_features': self._get_numerical_summary(df)
+        try:
+            if not self.merged_created:
+                return {'error': 'Merged dataset not created yet'}
+            
+            df = self.merged_df
+            
+            if df is None or len(df) == 0:
+                return {'error': 'No merged data available'}
+            
+            summary = {
+                'total_records': len(df),
+                'total_columns': len(df.columns),
+                'arrest_statistics': {
+                    'total_arrests': int(df['ARREST'].sum()) if 'ARREST' in df.columns else 0,
+                    'arrest_rate': float(df['ARREST'].mean()) if 'ARREST' in df.columns else 0.0,
+                    'no_arrest_count': int((df['ARREST'] == 0).sum()) if 'ARREST' in df.columns else 0,
+                    'arrest_count_distribution': df['arrest_count'].value_counts().to_dict() if 'arrest_count' in df.columns else {}
+                },
+                'data_quality': {
+                    'missing_values': self._get_missing_summary(df),
+                    'duplicate_incidents': int(df['incident_id'].duplicated().sum()) if 'incident_id' in df.columns else 0
+                },
+                'feature_summary': {
+                    'categorical_features': self._get_categorical_summary(df),
+                    'numerical_features': self._get_numerical_summary(df)
+                }
             }
-        }
-        
-        return summary
+            
+            return summary
+        except Exception as e:
+            return {'error': f'Error in merged summary: {str(e)}'}
     
     def _get_missing_summary(self, df: pd.DataFrame) -> Dict:
         """Get missing value summary for merged dataset"""
