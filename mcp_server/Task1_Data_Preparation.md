@@ -13,45 +13,71 @@ This task focuses on comprehensive data preparation and exploratory data analysi
 - **Arrestee Dataset**: 7 columns have missing values out of 21 total columns
 - **Total Missing Values**: 1,348,876 in incidents dataset, 152,201 in arrestee dataset
 
-**Key Missing Value Patterns:**
-- **High Missing Rates (>90%)**: cleared_except_date (99.5%), num_premises_entered (99.7%), method_entry_code (100%), assignment_type_name (99.3%), activity_type_id (99.3%), outside_agency_id (100%), stolen_count (94.0%), recovered_count (98.4%)
-- **Moderate Missing Rates (40-90%)**: offense_code (66.1%), hc_code (46.7%), offender_age_num (43.5%), victim_age_num (31.6%), victim_resident_status_code (43.9%), victim_injury_code (75.4%), weapon_name (75.4%), relationship_name (62.0%)
-- **Low Missing Rates (<5%)**: agency_name (0.09%), incident_hour (2.0%), male_officer (1.8%), male_civilian (1.8%), female_officer (1.8%), female_civilian (1.8%)
+#### **Incidents Dataset Missing Values**
+
+| Variable                 | Missing Count | Missing % | Handling Strategy                  |
+| ------------------------ | ------------- | --------- | ---------------------------------- |
+| `outside_agency_id`    | 96,881        | 99.98%    | Excluded (not relevant)            |
+| `num_premises_entered` | 96,573        | 99.66%    | Excluded (not relevant)            |
+| `cleared_except_date`  | 96,444        | 99.53%    | Excluded (not relevant)            |
+| `recovered_count`      | 95,346        | 98.39%    | KNN imputation                     |
+| `stolen_count`         | 91,116        | 94.03%    | KNN imputation                     |
+| `victim_injury_name`   | 84,872        | 87.58%    | KNN imputation                     |
+| `victim_injury_code`   | 73,060        | 75.39%    | KNN imputation                     |
+| `weapon_name`          | 73,036        | 75.37%    | KNN imputation                     |
+
+#### **Arrestee Dataset Missing Values**
+
+| Variable                      | Missing Count | Missing % | Handling Strategy        |
+| ----------------------------- | ------------- | --------- | ------------------------ |
+| `under_18_disposition_code` | 26,947        | 93.95%    | KNN imputation           |
+| `hc_code`                   | 11,918        | 41.55%    | KNN imputation           |
+| `resident_code`             | 3,723         | 12.98%    | KNN imputation           |
 
 **Missing Values Handling Strategy:**
-1. **Complete Case Analysis**: For variables with >90% missing values, these will be excluded from analysis as they provide minimal predictive value
-2. **Imputation Strategy**: For moderate missing rates (40-90%), implement multiple imputation techniques:
-   - **Numeric Variables**: Use median imputation for age variables and mean imputation for count variables
-   - **Categorical Variables**: Use mode imputation for categorical variables with moderate missing rates
-3. **Missing Indicator Variables**: Create binary indicators for variables with significant missing patterns to capture potential systematic differences
+
+**Single Approach: K-Nearest Neighbors (KNN) Imputation**
+
+- **Justification**: KNN imputation preserves variable relationships and provides more realistic imputed values
+- **Consistency**: One approach applied consistently across all variable types
+- **ATPA Compliance**: Follows Module 2.6 best practices for advanced imputation techniques
+- **Implementation**: 
+  - Convert categorical variables to numeric codes
+  - Apply KNN imputation with k=5 neighbors and uniform weights
+  - Convert categorical variables back to original categories
+- **Parameters**: n_neighbors=5, weights='uniform'
+- **Examples**: `weapon_name`, `incident_hour`, `offender_age_num`, `stolen_count`
 
 **Justification**: This approach balances data completeness with analytical validity, ensuring we retain the most informative variables while accounting for missing data patterns that may be meaningful.
 
 ### Dimension Reduction Analysis
 
-**Variables Identified for Dimension Reduction:**
-1. **Demographic Variables**: Multiple age, race, and ethnicity variables can be consolidated
-2. **Location Variables**: Agency and county information can be reduced to key geographic indicators
-3. **Temporal Variables**: Date and time variables can be transformed into meaningful temporal features
-4. **Property Variables**: Multiple property-related variables can be consolidated into key property indicators
+**High Cardinality Variables Identified and Reduced**:
 
-**Dimension Reduction Strategy:**
-1. **Feature Engineering**: Create composite variables that capture key relationships
-2. **Categorical Consolidation**: Combine related categorical variables into broader categories
-3. **Principal Component Analysis**: Apply PCA to highly correlated numeric variables
-4. **Variable Selection**: Remove variables with minimal variance or predictive power
+- `submission_date` (359 → 21 categories)
+- `incident_date` (365 → 21 categories)
+- `cleared_except_date` (269 → 21 categories)
+- `offender_age_code` (97 → 21 categories)
+- `offender_age_name` (97 → 21 categories)
+- `victim_age_num` (102 → 21 categories)
+- `agency_name` (89 → 21 categories)
 
-**Justification**: Dimension reduction will improve model performance, reduce multicollinearity, and enhance interpretability while maintaining the essential information needed for predictive modeling.
+**Strategy**: Keep top 20 categories, group remainder as 'Other'
+**Justification**: Reduces sparsity while preserving most common categories
 
 ### Numeric to Factor Variable Conversion
 
-**Variables Recommended for Conversion:**
-1. **Age Variables**: Convert continuous age to age groups (0-17, 18-25, 26-35, 36-50, 51+)
-2. **Hour Variables**: Convert incident_hour to time periods (Early Morning: 0-6, Morning: 7-11, Afternoon: 12-17, Evening: 18-23)
-3. **Population Variables**: Convert population to population size categories
-4. **Count Variables**: Convert stolen_count and recovered_count to categorical indicators
+**Age Variables**:
 
-**Justification**: These conversions will improve model interpretability and capture non-linear relationships that may exist in the data.
+- `victim_age_num` → `victim_age_group` (Under 18, 18-25, 26-35, 36-50, 51-65, 65+)
+- `offender_age_num` → `offender_age_group` (same bins)
+- `age_num` (arrestee) → `age_group` (same bins)
+
+**Population Variable**:
+
+- `population` → `population_group` (Under 10K, 10K-50K, 50K-100K, 100K-500K, 500K+)
+
+**Justification**: Age groups provide meaningful categories for analysis; population groups reflect jurisdiction size differences
 
 ### Working File Section: Data Cleaning and Preparation
 
@@ -123,6 +149,21 @@ The data merging process addressed the challenge of imperfect matching between i
 - **No Arrests**: 78,465 (81.0%)
 - **Arrest Rate**: 19.0%
 
+### **Target Variable Distribution**
+
+| Category                | Count  | Percentage |
+| ----------------------- | ------ | ---------- |
+| **No Arrest (0)** | 78,465 | 80.97%     |
+| **Arrest (1)**    | 18,439 | 19.03%     |
+| **Total**         | 96,904 | 100.00%    |
+
+### **Validation**
+
+- **Total Incidents**: 96,904
+- **Incidents with Arrests**: 18,439
+- **Incidents without Arrests**: 78,465
+- **Validation**: ✅ Sum equals total (18,439 + 78,465 = 96,904)
+
 **Key Observations:**
 - Significant class imbalance with only 19% of incidents resulting in arrests
 - This imbalance will require special consideration in model development and evaluation
@@ -142,13 +183,30 @@ The data merging process addressed the challenge of imperfect matching between i
 
 ### Reasonability Checks and Outlier Analysis
 
-**Outlier Analysis Results:**
-- **ARREST Variable**: 18,439 outliers detected (19.0% of data)
-- **Age Variables**: Several extreme age values identified and corrected
-- **Temporal Variables**: Validated date ranges and time periods
-- **Geographic Variables**: Confirmed agency and county consistency
+#### **Outlier Analysis**
 
-**Internal Consistency Checks:**
+| Variable             | Outliers | Percentage | Assessment                 |
+| -------------------- | -------- | ---------- | -------------------------- |
+| `agency_id`        | 342      | 0.35%      | Acceptable                 |
+| `location_id`      | 4,754    | 4.91%      | Acceptable                 |
+| `offender_age_num` | 33,683   | 34.76%     | High - needs investigation |
+| `stolen_count`     | 68       | 0.07%      | Acceptable                 |
+| `recovered_count`  | 4        | 0.00%      | Acceptable                 |
+
+#### **Internal Consistency Checks**
+
+- ✅ **Incident Hours**: All values within valid range (0-23)
+- ✅ **Victim Ages**: All values within reasonable range (0-120)
+- ✅ **Offender Ages**: All values within reasonable range (0-120)
+
+#### **Data Type Consistency**
+
+- **Total Variables**: 70
+- **Numeric Variables**: 32
+- **Categorical Variables**: 35
+
+#### **Additional Consistency Checks**
+
 - **Date Logic**: Incident dates precede arrest dates where arrests occurred
 - **Age Logic**: Victim and offender ages are within reasonable ranges
 - **Geographic Logic**: Agency assignments match county locations
@@ -162,6 +220,60 @@ The data merging process addressed the challenge of imperfect matching between i
 ### Working File Section: Exploratory Data Analysis
 
 The exploratory data analysis revealed important patterns in the arrest data. The target variable shows significant class imbalance with only 19% of incidents resulting in arrests. Visualizations demonstrate clear relationships between arrest outcomes and crime categories, with violent crimes showing higher arrest rates than property crimes. Temporal analysis reveals patterns in arrest rates by time of day, suggesting opportunities for resource optimization. Reasonability checks identified and corrected several data quality issues, including extreme age values and temporal inconsistencies. The overall data quality is acceptable for modeling, with 66.7% completeness and high quality in critical predictive variables. The analysis provides a solid foundation for predictive modeling while highlighting the challenges of class imbalance and the need for appropriate evaluation metrics.
+
+## 📊 **Final Dataset Characteristics**
+
+### **Dataset Summary**
+
+| Metric                     | Value                         |
+| -------------------------- | ----------------------------- |
+| **Original Records** | 96,904                        |
+| **Final Records**    | 24,951                        |
+| **Retention Rate**   | 25.75%                        |
+| **Features**         | 14 (13 predictors + 1 target) |
+| **Arrest Rate**      | 22.60%                        |
+
+### **Features Included**
+
+**Predictor Variables**:
+
+1. `incident_hour` - Time of incident
+2. `offense_category_name` - Type of crime
+3. `crime_against` - Crime target (Person/Property/Society)
+4. `victim_type_name` - Type of victim
+5. `weapon_name` - Weapon used
+6. `agency_type_name` - Type of law enforcement agency
+7. `population_group` - Jurisdiction size
+8. `victim_age_group` - Victim age category
+9. `offender_age_group` - Offender age category
+10. `stolen_count` - Number of items stolen
+11. `recovered_count` - Number of items recovered
+12. `suburban_area` - Urban/suburban indicator
+
+**Target Variable**:
+
+- `ARREST` - Binary arrest outcome
+
+## 🎯 **Key Findings and Insights**
+
+### **Data Quality Insights**
+
+1. **Missing Data Patterns**: Weapon information and injury details frequently missing (75%+ missing rates)
+2. **Age Data Issues**: Significant missing offender age data (34.76% outliers)
+3. **Property Crime Focus**: High missing rates for property-specific variables suggest many incidents are non-property crimes
+
+### **Arrest Patterns**
+
+1. **Low Overall Arrest Rate**: Only 19.03% of incidents result in arrests
+2. **Temporal Patterns**: Arrest rates vary by time of day
+3. **Offense Type Variation**: Different crime categories show varying arrest likelihoods
+4. **Class Imbalance**: Significant imbalance requiring special handling in modeling
+
+### **Operational Implications**
+
+1. **Resource Allocation**: Findings can inform law enforcement resource distribution
+2. **Policy Development**: Evidence-based decision making for crime prevention
+3. **Public Safety**: Improved understanding of factors affecting arrest rates
 
 ## Conclusion
 
