@@ -51,6 +51,26 @@ def load_and_examine_data():
     
     return arrestee_df, data_dict
 
+def analyze_data_structure(arrestee_df):
+    """
+    Analyze the data structure to understand what we have
+    """
+    print("\n=== DATA STRUCTURE ANALYSIS ===")
+    
+    # Check unique incidents
+    unique_incidents = arrestee_df['incident_id'].nunique()
+    total_records = len(arrestee_df)
+    print(f"Total arrestee records: {total_records}")
+    print(f"Unique incidents: {unique_incidents}")
+    print(f"Average arrests per incident: {total_records / unique_incidents:.2f}")
+    
+    # Check if we have incidents without arrests (we don't, based on the data)
+    print("\nIMPORTANT INSIGHT: This dataset contains ONLY incidents that resulted in arrests.")
+    print("We do not have data on incidents that did NOT result in arrests.")
+    print("This means we need to approach the analysis differently.")
+    
+    return unique_incidents
+
 def create_incidents_data(arrestee_df):
     """
     Create incidents data from arrestee data by aggregating at incident level
@@ -69,13 +89,18 @@ def create_incidents_data(arrestee_df):
         'weapon_name': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown',
         'arrestee_id': 'count',  # Number of arrests per incident
         'arrest_date': 'first',
-        'arrest_type_name': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown'
+        'arrest_type_name': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown',
+        'age_num': 'mean',  # Average age of arrestees
+        'sex_code': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown',
+        'race_desc': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown',
+        'ethnicity_name': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown'
     }).reset_index()
     
     # Rename columns for clarity
     incidents_df = incidents_df.rename(columns={
         'arrestee_id': 'num_arrests',
-        'arrest_date': 'incident_date'
+        'arrest_date': 'incident_date',
+        'age_num': 'avg_arrestee_age'
     })
     
     print(f"Incidents data shape: {incidents_df.shape}")
@@ -99,7 +124,7 @@ def handle_missing_values(arrestee_df, incidents_df):
     arrestee_clean = arrestee_df.copy()
     
     # For categorical variables, use mode imputation
-    categorical_cols = ['weapon_name', 'under_18_disposition_code']
+    categorical_cols = ['weapon_name', 'under_18_disposition_code', 'resident_code']
     for col in categorical_cols:
         if arrestee_clean[col].isnull().sum() > 0:
             mode_val = arrestee_clean[col].mode().iloc[0] if len(arrestee_clean[col].mode()) > 0 else 'Unknown'
@@ -116,7 +141,7 @@ def handle_missing_values(arrestee_df, incidents_df):
     incidents_clean = incidents_df.copy()
     
     # For categorical variables in incidents
-    incidents_categorical = ['weapon_name', 'arrest_type_name']
+    incidents_categorical = ['weapon_name', 'arrest_type_name', 'sex_code', 'race_desc', 'ethnicity_name']
     for col in incidents_categorical:
         if incidents_clean[col].isnull().sum() > 0:
             mode_val = incidents_clean[col].mode().iloc[0] if len(incidents_clean[col].mode()) > 0 else 'Unknown'
@@ -128,19 +153,24 @@ def handle_missing_values(arrestee_df, incidents_df):
 
 def create_target_variable(arrestee_clean, incidents_clean):
     """
-    Create ARREST target variable
+    Create ARREST target variable - since all incidents resulted in arrests, 
+    we'll create a different target variable for analysis
     """
     print("\n=== CREATING TARGET VARIABLE ===")
     
-    # Create incidents with arrest information
+    # Since all incidents resulted in arrests, let's create a different target
+    # We could analyze factors that lead to multiple arrests vs single arrests
     incidents_with_arrest = incidents_clean.copy()
     
-    # ARREST = 1 if num_arrests > 0, 0 otherwise
-    incidents_with_arrest['ARREST'] = (incidents_with_arrest['num_arrests'] > 0).astype(int)
+    # Create a binary target: Multiple arrests (1) vs Single arrest (0)
+    incidents_with_arrest['MULTIPLE_ARRESTS'] = (incidents_with_arrest['num_arrests'] > 1).astype(int)
     
-    print(f"Target variable distribution:")
-    print(incidents_with_arrest['ARREST'].value_counts())
-    print(f"Arrest rate: {incidents_with_arrest['ARREST'].mean():.3f}")
+    # Also keep the original ARREST variable (all 1s)
+    incidents_with_arrest['ARREST'] = 1
+    
+    print(f"Target variable distribution (MULTIPLE_ARRESTS):")
+    print(incidents_with_arrest['MULTIPLE_ARRESTS'].value_counts())
+    print(f"Multiple arrests rate: {incidents_with_arrest['MULTIPLE_ARRESTS'].mean():.3f}")
     
     return incidents_with_arrest
 
@@ -151,32 +181,32 @@ def perform_eda(incidents_with_arrest):
     print("\n=== EXPLORATORY DATA ANALYSIS ===")
     
     # Set up plotting style
-    plt.style.use('seaborn-v0_8')
+    plt.style.use('default')
     fig, axes = plt.subplots(2, 2, figsize=(15, 12))
     
-    # 1. ARREST distribution
-    arrest_counts = incidents_with_arrest['ARREST'].value_counts()
-    axes[0, 0].pie(arrest_counts.values, labels=['No Arrest', 'Arrest'], autopct='%1.1f%%')
-    axes[0, 0].set_title('Distribution of ARREST Target Variable')
+    # 1. MULTIPLE_ARRESTS distribution
+    multiple_arrests_counts = incidents_with_arrest['MULTIPLE_ARRESTS'].value_counts()
+    axes[0, 0].pie(multiple_arrests_counts.values, labels=['Single Arrest', 'Multiple Arrests'], autopct='%1.1f%%')
+    axes[0, 0].set_title('Distribution of Multiple Arrests')
     
-    # 2. Arrest rate by crime category
-    crime_arrest_rate = incidents_with_arrest.groupby('offense_category_name')['ARREST'].mean().sort_values(ascending=False)
-    crime_arrest_rate.plot(kind='bar', ax=axes[0, 1])
-    axes[0, 1].set_title('Arrest Rate by Crime Category')
-    axes[0, 1].set_ylabel('Arrest Rate')
+    # 2. Multiple arrests rate by crime category
+    crime_multiple_rate = incidents_with_arrest.groupby('offense_category_name')['MULTIPLE_ARRESTS'].mean().sort_values(ascending=False)
+    crime_multiple_rate.plot(kind='bar', ax=axes[0, 1])
+    axes[0, 1].set_title('Multiple Arrests Rate by Crime Category')
+    axes[0, 1].set_ylabel('Multiple Arrests Rate')
     axes[0, 1].tick_params(axis='x', rotation=45)
     
-    # 3. Arrest rate by crime against
-    crime_against_arrest_rate = incidents_with_arrest.groupby('crime_against')['ARREST'].mean()
-    crime_against_arrest_rate.plot(kind='bar', ax=axes[1, 0])
-    axes[1, 0].set_title('Arrest Rate by Crime Against')
-    axes[1, 0].set_ylabel('Arrest Rate')
+    # 3. Multiple arrests rate by crime against
+    crime_against_multiple_rate = incidents_with_arrest.groupby('crime_against')['MULTIPLE_ARRESTS'].mean()
+    crime_against_multiple_rate.plot(kind='bar', ax=axes[1, 0])
+    axes[1, 0].set_title('Multiple Arrests Rate by Crime Against')
+    axes[1, 0].set_ylabel('Multiple Arrests Rate')
     
-    # 4. Arrest rate by weapon presence
-    weapon_arrest_rate = incidents_with_arrest.groupby('weapon_name')['ARREST'].mean().sort_values(ascending=False)
-    weapon_arrest_rate.head(10).plot(kind='bar', ax=axes[1, 1])
-    axes[1, 1].set_title('Arrest Rate by Weapon (Top 10)')
-    axes[1, 1].set_ylabel('Arrest Rate')
+    # 4. Multiple arrests rate by weapon presence
+    weapon_multiple_rate = incidents_with_arrest.groupby('weapon_name')['MULTIPLE_ARRESTS'].mean().sort_values(ascending=False)
+    weapon_multiple_rate.head(10).plot(kind='bar', ax=axes[1, 1])
+    axes[1, 1].set_title('Multiple Arrests Rate by Weapon (Top 10)')
+    axes[1, 1].set_ylabel('Multiple Arrests Rate')
     axes[1, 1].tick_params(axis='x', rotation=45)
     
     plt.tight_layout()
@@ -185,15 +215,15 @@ def perform_eda(incidents_with_arrest):
     
     # Print key insights
     print("\n=== KEY INSIGHTS ===")
-    print(f"Overall arrest rate: {incidents_with_arrest['ARREST'].mean():.3f}")
+    print(f"Overall multiple arrests rate: {incidents_with_arrest['MULTIPLE_ARRESTS'].mean():.3f}")
     print(f"Total incidents: {len(incidents_with_arrest)}")
-    print(f"Incidents with arrests: {incidents_with_arrest['ARREST'].sum()}")
+    print(f"Incidents with multiple arrests: {incidents_with_arrest['MULTIPLE_ARRESTS'].sum()}")
     
-    print("\nTop 5 crime categories by arrest rate:")
-    print(crime_arrest_rate.head())
+    print("\nTop 5 crime categories by multiple arrests rate:")
+    print(crime_multiple_rate.head())
     
-    print("\nArrest rate by crime against:")
-    print(crime_against_arrest_rate)
+    print("\nMultiple arrests rate by crime against:")
+    print(crime_against_multiple_rate)
 
 def prepare_final_dataset(incidents_with_arrest):
     """
@@ -204,25 +234,29 @@ def prepare_final_dataset(incidents_with_arrest):
     # Select relevant features for modeling
     feature_cols = [
         'offense_code', 'offense_category_name', 'crime_against',
-        'ct_flag', 'hc_flag', 'weapon_name', 'arrest_type_name'
+        'ct_flag', 'hc_flag', 'weapon_name', 'arrest_type_name',
+        'avg_arrestee_age', 'sex_code', 'race_desc', 'ethnicity_name'
     ]
     
     # Create final dataset
-    final_df = incidents_with_arrest[feature_cols + ['ARREST']].copy()
+    final_df = incidents_with_arrest[feature_cols + ['MULTIPLE_ARRESTS', 'ARREST']].copy()
     
-    # Encode categorical variables
+    # Encode categorical variables (excluding numeric ones)
     le = LabelEncoder()
-    for col in feature_cols:
-        if final_df[col].dtype == 'object':
-            final_df[col + '_encoded'] = le.fit_transform(final_df[col].astype(str))
+    categorical_cols = [col for col in feature_cols if final_df[col].dtype == 'object']
+    numeric_cols = [col for col in feature_cols if final_df[col].dtype != 'object']
+    
+    for col in categorical_cols:
+        final_df[col + '_encoded'] = le.fit_transform(final_df[col].astype(str))
     
     # Create encoded feature columns
-    encoded_cols = [col + '_encoded' for col in feature_cols]
-    final_df_encoded = final_df[encoded_cols + ['ARREST']].copy()
+    encoded_cols = [col + '_encoded' for col in categorical_cols] + numeric_cols
+    final_df_encoded = final_df[encoded_cols + ['MULTIPLE_ARRESTS', 'ARREST']].copy()
     
     print(f"Final dataset shape: {final_df_encoded.shape}")
-    print(f"Features: {encoded_cols}")
-    print(f"Target: ARREST")
+    print(f"Categorical features encoded: {[col + '_encoded' for col in categorical_cols]}")
+    print(f"Numeric features: {numeric_cols}")
+    print(f"Targets: MULTIPLE_ARRESTS, ARREST")
     
     # Save prepared data
     final_df_encoded.to_csv('prepared_data.csv', index=False)
@@ -242,24 +276,31 @@ def main():
     # Step 1: Load and examine data
     arrestee_df, data_dict = load_and_examine_data()
     
-    # Step 2: Create incidents data
+    # Step 2: Analyze data structure
+    unique_incidents = analyze_data_structure(arrestee_df)
+    
+    # Step 3: Create incidents data
     incidents_df = create_incidents_data(arrestee_df)
     
-    # Step 3: Handle missing values
+    # Step 4: Handle missing values
     arrestee_clean, incidents_clean = handle_missing_values(arrestee_df, incidents_df)
     
-    # Step 4: Create target variable
+    # Step 5: Create target variable
     incidents_with_arrest = create_target_variable(arrestee_clean, incidents_clean)
     
-    # Step 5: Perform EDA
+    # Step 6: Perform EDA
     perform_eda(incidents_with_arrest)
     
-    # Step 6: Prepare final dataset
+    # Step 7: Prepare final dataset
     final_df_encoded, final_df = prepare_final_dataset(incidents_with_arrest)
     
     print("\n" + "=" * 50)
     print("TASK 1 COMPLETED SUCCESSFULLY!")
     print("=" * 50)
+    print("\nIMPORTANT NOTE: This dataset contains only incidents that resulted in arrests.")
+    print("For a complete arrest prediction model, we would need data on incidents")
+    print("that did NOT result in arrests. This analysis focuses on factors")
+    print("associated with multiple arrests vs single arrests within arrested incidents.")
 
 if __name__ == "__main__":
     main() 

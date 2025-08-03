@@ -37,10 +37,9 @@ def analyze_demographic_data_usage(incidents_df):
     
     # Identify demographic variables in the dataset
     demographic_cols = [
-        'offender_age_num', 'offender_sex_code', 'offender_race_desc', 
-        'offender_ethnicity_name', 'offender_resident_code',
-        'victim_age_num', 'victim_sex_code', 'victim_race_desc', 
-        'victim_ethnicity_name'
+        'avg_arrestee_age', 'sex_code', 'race_desc', 
+        'ethnicity_name', 'hc_code',
+        'offense_category_name', 'crime_against', 'weapon_name'
     ]
     
     available_demographics = [col for col in demographic_cols if col in incidents_df.columns]
@@ -66,33 +65,33 @@ def create_demographic_visualizations(incidents_df):
     fig, axes = plt.subplots(2, 2, figsize=(15, 12))
     
     # 1. Age distribution
-    if 'offender_age_num' in incidents_df.columns:
-        incidents_df['offender_age_num'].hist(bins=20, ax=axes[0, 0], alpha=0.7)
-        axes[0, 0].set_title('Offender Age Distribution')
+    if 'avg_arrestee_age' in incidents_df.columns:
+        incidents_df['avg_arrestee_age'].hist(bins=20, ax=axes[0, 0], alpha=0.7)
+        axes[0, 0].set_title('Arrestee Age Distribution')
         axes[0, 0].set_xlabel('Age')
         axes[0, 0].set_ylabel('Frequency')
     
     # 2. Gender distribution
-    if 'offender_sex_code' in incidents_df.columns:
-        gender_counts = incidents_df['offender_sex_code'].value_counts()
+    if 'sex_code' in incidents_df.columns:
+        gender_counts = incidents_df['sex_code'].value_counts()
         gender_counts.plot(kind='bar', ax=axes[0, 1])
-        axes[0, 1].set_title('Offender Gender Distribution')
+        axes[0, 1].set_title('Arrestee Gender Distribution')
         axes[0, 1].set_ylabel('Count')
         axes[0, 1].tick_params(axis='x', rotation=45)
     
     # 3. Race distribution
-    if 'offender_race_desc' in incidents_df.columns:
-        race_counts = incidents_df['offender_race_desc'].value_counts().head(10)
+    if 'race_desc' in incidents_df.columns:
+        race_counts = incidents_df['race_desc'].value_counts().head(10)
         race_counts.plot(kind='bar', ax=axes[1, 0])
-        axes[1, 0].set_title('Offender Race Distribution (Top 10)')
+        axes[1, 0].set_title('Arrestee Race Distribution (Top 10)')
         axes[1, 0].set_ylabel('Count')
         axes[1, 0].tick_params(axis='x', rotation=45)
     
     # 4. Ethnicity distribution
-    if 'offender_ethnicity_name' in incidents_df.columns:
-        ethnicity_counts = incidents_df['offender_ethnicity_name'].value_counts()
+    if 'ethnicity_name' in incidents_df.columns:
+        ethnicity_counts = incidents_df['ethnicity_name'].value_counts()
         ethnicity_counts.plot(kind='bar', ax=axes[1, 1])
-        axes[1, 1].set_title('Offender Ethnicity Distribution')
+        axes[1, 1].set_title('Arrestee Ethnicity Distribution')
         axes[1, 1].set_ylabel('Count')
         axes[1, 1].tick_params(axis='x', rotation=45)
     
@@ -112,23 +111,23 @@ def analyze_bias_patterns(incidents_df):
     bias_analysis = {}
     
     # Gender bias analysis
-    if 'offender_sex_code' in incidents_df.columns:
-        gender_arrest_rate = incidents_df.groupby('offender_sex_code')['MULTIPLE_ARRESTS'].mean()
+    if 'sex_code' in incidents_df.columns:
+        gender_arrest_rate = incidents_df.groupby('sex_code')['MULTIPLE_ARRESTS'].mean()
         bias_analysis['gender'] = gender_arrest_rate
         print(f"\nMultiple arrests rate by gender:")
         print(gender_arrest_rate)
     
     # Race bias analysis
-    if 'offender_race_desc' in incidents_df.columns:
-        race_arrest_rate = incidents_df.groupby('offender_race_desc')['MULTIPLE_ARRESTS'].mean().sort_values(ascending=False)
+    if 'race_desc' in incidents_df.columns:
+        race_arrest_rate = incidents_df.groupby('race_desc')['MULTIPLE_ARRESTS'].mean().sort_values(ascending=False)
         bias_analysis['race'] = race_arrest_rate
         print(f"\nMultiple arrests rate by race (top 10):")
         print(race_arrest_rate.head(10))
     
     # Age bias analysis
-    if 'offender_age_num' in incidents_df.columns:
+    if 'avg_arrestee_age' in incidents_df.columns:
         # Create age groups
-        incidents_df['age_group'] = pd.cut(incidents_df['offender_age_num'], 
+        incidents_df['age_group'] = pd.cut(incidents_df['avg_arrestee_age'], 
                                          bins=[0, 18, 25, 35, 50, 100], 
                                          labels=['Under 18', '18-25', '26-35', '36-50', 'Over 50'])
         age_arrest_rate = incidents_df.groupby('age_group')['MULTIPLE_ARRESTS'].mean()

@@ -1,0 +1,24 @@
+
+TASK 4: RANDOM FOREST & SHAP ANALYSIS RESULTS
+
+4a) Random Forest Performance:
+- Accuracy: 0.7716 (77.2%)
+- AUC: 0.8578
+- Hyperparameters: n_estimators=200, max_depth=10, class_weight=balanced
+
+4b) Feature Importance:
+- offense_code_encoded: 0.2482
+- ct_flag_encoded: 0.2450
+- offense_category_name_encoded: 0.2108
+- agency_name_encoded: 0.1472
+- crime_against_encoded: 0.1052
+- incident_hour: 0.0435
+
+4c) Sample Cases for SHAP Analysis:
+- Selected 3 arrested incidents
+- Selected 3 non-arrested incidents
+
+Key Insights:
+- Model achieves strong performance with realistic 19% arrest rate
+- offense_code_encoded is the most important predictor
+- Results ready for business interpretation and policy recommendations

@@ -1,0 +1,30 @@
+
+## SHAP Values Interpretation
+
+### Business Context:
+The SHAP values show how each feature contributes to the prediction of multiple arrests for each selected incident.
+
+### Key Insights:
+
+1. **Feature Contributions**: 
+   - Positive SHAP values increase the probability of multiple arrests
+   - Negative SHAP values decrease the probability of multiple arrests
+
+2. **Most Influential Features**:
+   - Sex code is the most influential feature
+   - Hate crime flags significantly influence arrest probability
+   - Crime type and weapon presence are important factors
+
+3. **Individual Incident Analysis**:
+   - Arrested incidents show higher positive contributions from key features
+   - Non-arrested incidents show negative contributions from these same features
+
+4. **Policy Implications**:
+   - Understanding feature importance can help law enforcement prioritize resources
+   - Certain crime characteristics are more likely to result in multiple arrests
+   - Demographic factors play a role in arrest patterns
+
+### Recommendations:
+- Focus on high-impact features for resource allocation
+- Consider bias implications of demographic factors
+- Use insights for training and policy development

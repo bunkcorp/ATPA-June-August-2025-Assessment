@@ -1,0 +1,15 @@
+{
+  "total_endpoints_called": 25,
+  "successful_endpoints": 18,
+  "failed_endpoints": 7,
+  "success_rate": "72.0%",
+  "endpoints_by_category": {
+    "data_endpoints": 4,
+    "eda_endpoints": 6,
+    "task1_specialized_endpoints": 8,
+    "curriculum_endpoints": 4,
+    "implementation_endpoints": 1,
+    "fallback_endpoints": 2
+  },
+  "timestamp": "2025-08-02T19:53:50.662022"
+}

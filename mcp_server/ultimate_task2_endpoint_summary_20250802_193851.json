@@ -1,0 +1,26 @@
+{
+  "total_endpoints_called": 19,
+  "endpoints_called": [
+    "_data_summary",
+    "_merged_summary",
+    "_merged_arrest_analysis",
+    "_merged_demographic_analysis",
+    "_ethics_framework",
+    "_ethics_demographic_analysis",
+    "_ethics_bias_assessment",
+    "_ethics_fairness_metrics",
+    "_ethics_recommendations",
+    "_task2_structured_content",
+    "_task2_demographic_benefits_risks",
+    "_task2_professional_standards",
+    "_task2_criminal_justice_context",
+    "_task2_algorithmic_fairness",
+    "_task2_nminsights_guidance",
+    "_tasks_run_task2",
+    "_eda_summary",
+    "_eda_feature_importance",
+    "_eda_correlation_analysis"
+  ],
+  "timestamp": "20250802_193851",
+  "analysis_complete": true
+}

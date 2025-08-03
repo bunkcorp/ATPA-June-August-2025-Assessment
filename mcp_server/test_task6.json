@@ -1,0 +1,39 @@
+{
+  "executive_summary": {
+    "overview": {
+      "total_incidents": 96904,
+      "arrest_rate": 0.19028110294724676,
+      "data_quality_score": 98.46153846153847
+    },
+    "model_performance": {
+      "best_logistic_model": "l1_regularized",
+      "logistic_auc": 0.9113723798540683,
+      "random_forest_auc": 0.9502582634560941,
+      "bayesian_auc": 0.9113698053749042
+    },
+    "key_insights": [
+      "Arrest rate: 19.0%",
+      "Best performing model: l1_regularized (AUC: 0.911)",
+      "Data quality: 98.5% complete"
+    ],
+    "ethical_considerations": [
+      "Protected variables identified. Consider excluding these from model training to prevent bias.",
+      "Ensure model predictions are not used to perpetuate existing biases in the criminal justice system.",
+      "Regularly monitor model performance across demographic groups."
+    ]
+  },
+  "visualizations": {
+    "model_comparison_plot": "Model performance comparison visualization",
+    "feature_importance_plot": "Top 10 most important features",
+    "arrest_rate_analysis": "Arrest rate by demographic groups",
+    "data_quality_plot": "Missing values analysis"
+  },
+  "recommendations": [
+    "Use l1_regularized model for arrest prediction (AUC: 0.911)",
+    "Focus on top 5 features: ['offender_race_id', 'offender_age_code', 'offender_age_name', 'offender_ethnicity_id', 'offender_age_num']",
+    "Protected variables identified. Consider excluding these from model training to prevent bias.",
+    "Ensure model predictions are not used to perpetuate existing biases in the criminal justice system.",
+    "Regularly monitor model performance across demographic groups."
+  ],
+  "timestamp": "2025-08-01T23:30:47.895909"
+}

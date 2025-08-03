@@ -1,0 +1,351 @@
+{
+  "_data_summary": {
+    "incidents": {
+      "loaded": true,
+      "cleaned": true,
+      "records": 96904,
+      "columns": 58,
+      "missing_values": {
+        "columns_with_missing": 25,
+        "total_missing_values": 1348876,
+        "missing_by_column": {
+          "incident_hour": 1900,
+          "cleared_except_date": 96444,
+          "offense_code": 64078,
+          "num_premises_entered": 96573,
+          "method_entry_code": 96904,
+          "hc_code": 45269,
+          "offender_age_num": 42124,
+          "assignment_type_name": 96181,
+          "activity_type_id": 96181,
+          "outside_agency_id": 96881,
+          "victim_age_num": 30589,
+          "victim_resident_status_code": 42550,
+          "victim_injury_code": 73060,
+          "victim_injury_name": 84872,
+          "relationship_name": 60076,
+          "weapon_name": 73036,
+          "property_id": 29309,
+          "property_loss_id": 29309,
+          "stolen_count": 91116,
+          "recovered_count": 95346,
+          "agency_name": 90,
+          "male_officer": 1747,
+          "male_civilian": 1747,
+          "female_officer": 1747,
+          "female_civilian": 1747
+        },
+        "missing_pct_by_column": {
+          "incident_hour": 1.9607033765376043,
+          "cleared_except_date": 99.52530339304879,
+          "offense_code": 66.12523734830347,
+          "num_premises_entered": 99.65842483282424,
+          "method_entry_code": 100.0,
+          "hc_code": 46.71530586972674,
+          "offender_age_num": 43.46982580698423,
+          "assignment_type_name": 99.25390076777016,
+          "activity_type_id": 99.25390076777016,
+          "outside_agency_id": 99.97626516965244,
+          "victim_age_num": 31.56629241310988,
+          "victim_resident_status_code": 43.90943614298688,
+          "victim_injury_code": 75.39420457359861,
+          "victim_injury_name": 87.58358788078924,
+          "relationship_name": 61.99537686782796,
+          "weapon_name": 75.36943779410551,
+          "property_id": 30.24539750681086,
+          "property_loss_id": 30.24539750681086,
+          "stolen_count": 94.02707834557913,
+          "recovered_count": 98.39222323123916,
+          "agency_name": 0.09287542309914967,
+          "male_officer": 1.8028151572690498,
+          "male_civilian": 1.8028151572690498,
+          "female_officer": 1.8028151572690498,
+          "female_civilian": 1.8028151572690498
+        }
+      }
+    },
+    "arrestee": {
+      "loaded": true,
+      "cleaned": true,
+      "records": 28682,
+      "columns": 21,
+      "missing_values": {
+        "columns_with_missing": 7,
+        "total_missing_values": 152201,
+        "missing_by_column": {
+          "offense_code": 23567,
+          "hc_code": 11918,
+          "sex_code": 28682,
+          "race_desc": 28682,
+          "ethnicity_name": 28682,
+          "resident_code": 3723,
+          "under_18_disposition_code": 26947
+        },
+        "missing_pct_by_column": {
+          "offense_code": 82.16651558468726,
+          "hc_code": 41.552193013039535,
+          "sex_code": 100.0,
+          "race_desc": 100.0,
+          "ethnicity_name": 100.0,
+          "resident_code": 12.980266369151384,
+          "under_18_disposition_code": 93.95090997838366
+        }
+      }
+    }
+  },
+  "_merged_summary": {
+    "error": "HTTP 500: Internal Server Error"
+  },
+  "_merged_arrest_analysis": {
+    "overall_arrest_rate": 0.19028110294724676,
+    "arrest_by_crime_type": {
+      "Animal Cruelty": {
+        "count": 88,
+        "sum": 25,
+        "mean": 0.2840909090909091
+      },
+      "Arson": {
+        "count": 226,
+        "sum": 23,
+        "mean": 0.10176991150442478
+      },
+      "Assault Offenses": {
+        "count": 23550,
+        "sum": 9721,
+        "mean": 0.4127813163481953
+      },
+      "Bribery": {
+        "count": 16,
+        "sum": 4,
+        "mean": 0.25
+      },
+      "Burglary/Breaking & Entering": {
+        "count": 4985,
+        "sum": 304,
+        "mean": 0.06098294884653962
+      },
+      "Counterfeiting/Forgery": {
+        "count": 480,
+        "sum": 17,
+        "mean": 0.035416666666666666
+      },
+      "Destruction/Damage/Vandalism of Property": {
+        "count": 13335,
+        "sum": 1319,
+        "mean": 0.09891263592050993
+      },
+      "Drug/Narcotic Offenses": {
+        "count": 5149,
+        "sum": 2924,
+        "mean": 0.5678772577199456
+      },
+      "Embezzlement": {
+        "count": 665,
+        "sum": 85,
+        "mean": 0.12781954887218044
+      },
+      "Extortion/Blackmail": {
+        "count": 213,
+        "sum": 2,
+        "mean": 0.009389671361502348
+      },
+      "Fraud Offenses": {
+        "count": 6104,
+        "sum": 130,
+        "mean": 0.02129750982961992
+      },
+      "Gambling Offenses": {
+        "count": 1,
+        "sum": 0,
+        "mean": 0.0
+      },
+      "Homicide Offenses": {
+        "count": 150,
+        "sum": 33,
+        "mean": 0.22
+      },
+      "Kidnapping/Abduction": {
+        "count": 123,
+        "sum": 44,
+        "mean": 0.35772357723577236
+      },
+      "Larceny/Theft Offenses": {
+        "count": 27614,
+        "sum": 2646,
+        "mean": 0.09582096038241472
+      },
+      "Motor Vehicle Theft": {
+        "count": 7482,
+        "sum": 198,
+        "mean": 0.026463512429831595
+      },
+      "Other Offenses": {
+        "count": 13,
+        "sum": 7,
+        "mean": 0.5384615384615384
+      },
+      "Pornography/Obscene Material": {
+        "count": 180,
+        "sum": 15,
+        "mean": 0.08333333333333333
+      },
+      "Prostitution Offenses": {
+        "count": 16,
+        "sum": 2,
+        "mean": 0.125
+      },
+      "Robbery": {
+        "count": 495,
+        "sum": 40,
+        "mean": 0.08080808080808081
+      },
+      "Sex Offences Non-forcible": {
+        "count": 50,
+        "sum": 4,
+        "mean": 0.08
+      },
+      "Sex Offenses": {
+        "count": 1432,
+        "sum": 78,
+        "mean": 0.05446927374301676
+      },
+      "Stolen Property Offenses": {
+        "count": 707,
+        "sum": 329,
+        "mean": 0.46534653465346537
+      },
+      "Weapon Law Violations": {
+        "count": 3830,
+        "sum": 489,
+        "mean": 0.12767624020887727
+      }
+    },
+    "arrest_by_crime_against": {
+      "Person": {
+        "count": 25305,
+        "sum": 9880,
+        "mean": 0.39043667259434894
+      },
+      "Property": {
+        "count": 62322,
+        "sum": 5097,
+        "mean": 0.08178492346201983
+      },
+      "Society": {
+        "count": 9277,
+        "sum": 3462,
+        "mean": 0.3731809852322949
+      }
+    },
+    "arrest_by_agency_size": {
+      "Small (<10K)": {
+        "count": 8252,
+        "sum": 1712,
+        "mean": 0.20746485700436257
+      },
+      "Medium (10K-50K)": {
+        "count": 21671,
+        "sum": 4865,
+        "mean": 0.22449356282589636
+      },
+      "Large (50K-100K)": {
+        "count": 10523,
+        "sum": 1616,
+        "mean": 0.15356837403782192
+      },
+      "Very Large (100K-500K)": {
+        "count": 16780,
+        "sum": 3070,
+        "mean": 0.18295589988081049
+      },
+      "Major (>500K)": {
+        "count": 39678,
+        "sum": 7176,
+        "mean": 0.18085588991380613
+      }
+    },
+    "arrest_by_hour": {
+      "Night (0-6)": {
+        "count": 16828,
+        "sum": 3108,
+        "mean": 0.18469217970049917
+      },
+      "Morning (6-12)": {
+        "count": 26294,
+        "sum": 4393,
+        "mean": 0.16707233589412032
+      },
+      "Afternoon (12-18)": {
+        "count": 31161,
+        "sum": 6003,
+        "mean": 0.19264465196880717
+      },
+      "Evening (18-24)": {
+        "count": 20721,
+        "sum": 4482,
+        "mean": 0.21630230201245113
+      }
+    },
+    "time_to_arrest": {
+      "mean_days": 1.3005043657465156,
+      "median_days": 0.0
+    }
+  },
+  "_merged_demographic_analysis": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_eda_summary": {
+    "error": "HTTP 500: Internal Server Error"
+  },
+  "_eda_feature_importance": {
+    "error": "HTTP 500: Internal Server Error"
+  },
+  "_eda_correlation_analysis": {
+    "error": "HTTP 500: Internal Server Error"
+  },
+  "_eda_distribution_analysis": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_task6_structured_content": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_task6_executive_summary": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_task6_business_recommendations": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_task6_policy_implications": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_task6_stakeholder_communication": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_task6_implementation_roadmap": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_tasks_run_task6": {
+    "error": "HTTP 500: {\"detail\":\"Error running Task 6: task1 must be completed before Task 6\"}"
+  },
+  "_models_summary": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_models_performance": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_models_comparison": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_executive_summary": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_executive_recommendations": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_executive_implementation": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  },
+  "_executive_stakeholders": {
+    "error": "HTTP 404: {\"detail\":\"Not Found\"}"
+  }
+}

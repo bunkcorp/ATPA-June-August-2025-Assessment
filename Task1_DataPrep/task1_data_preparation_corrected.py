@@ -1,8 +1,8 @@
 """
 ATPA Assessment - June to August 2025
-Task 1: Data Preparation - CORRECTED VERSION
+Task 1: Data Preparation
 
-This script performs comprehensive data preparation following the proper data dictionary structure.
+This script performs comprehensive data preparation for the NMInsights crime analysis project.
 """
 
 import pandas as pd
@@ -51,34 +51,34 @@ def load_and_examine_data():
     
     return arrestee_df, data_dict
 
-def analyze_data_dictionary(data_dict):
+def analyze_data_structure(arrestee_df):
     """
-    Analyze the data dictionary to understand the expected structure
+    Analyze the data structure to understand what we have
     """
-    print("\n=== DATA DICTIONARY ANALYSIS ===")
+    print("\n=== DATA STRUCTURE ANALYSIS ===")
     
-    # Arrestee data variables (first 22 rows)
-    arrestee_vars = data_dict.iloc[0:22]
-    print("Arrestee data variables (22 rows):")
-    print(arrestee_vars[['Variable', 'Type']].to_string())
+    # Check unique incidents
+    unique_incidents = arrestee_df['incident_id'].nunique()
+    total_records = len(arrestee_df)
+    print(f"Total arrestee records: {total_records}")
+    print(f"Unique incidents: {unique_incidents}")
+    print(f"Average arrests per incident: {total_records / unique_incidents:.2f}")
     
-    # Incidents data variables (rows 23-58)
-    incidents_vars = data_dict.iloc[22:58]
-    print("\nIncidents data variables (36 rows):")
-    print(incidents_vars[['Variable', 'Type']].to_string())
+    # Check if we have incidents without arrests (we don't, based on the data)
+    print("\nIMPORTANT INSIGHT: This dataset contains ONLY incidents that resulted in arrests.")
+    print("We do not have data on incidents that did NOT result in arrests.")
+    print("This means we need to approach the analysis differently.")
     
-    return arrestee_vars, incidents_vars
+    return unique_incidents
 
-def create_incidents_data_from_arrestee(arrestee_df):
+def create_incidents_data(arrestee_df):
     """
-    Create incidents data from arrestee data following the incidents data dictionary structure
+    Create incidents data from arrestee data by aggregating at incident level
     """
-    print("\n=== CREATING INCIDENTS DATA FROM ARRESTEE DATA ===")
+    print("\n=== CREATING INCIDENTS DATA ===")
     
     # Group by incident_id to create incidents dataset
-    # We'll map arrestee data to incidents data structure
     incidents_df = arrestee_df.groupby('incident_id').agg({
-        # Incident-level information (from arrestee data)
         'data_year': 'first',
         'offense_code': 'first',
         'offense_category_name': 'first',
@@ -87,53 +87,21 @@ def create_incidents_data_from_arrestee(arrestee_df):
         'hc_flag': 'first',
         'hc_code': 'first',
         'weapon_name': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown',
+        'arrestee_id': 'count',  # Number of arrests per incident
         'arrest_date': 'first',
         'arrest_type_name': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown',
-        
-        # Offender information (from arrestee data)
-        'age_num': 'mean',  # Average age of offenders
+        'age_num': 'mean',  # Average age of arrestees
         'sex_code': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown',
         'race_desc': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown',
-        'ethnicity_name': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown',
-        'resident_code': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown',
-        
-        # Count information
-        'arrestee_id': 'count',  # Number of arrests per incident
+        'ethnicity_name': lambda x: x.mode().iloc[0] if len(x.mode()) > 0 else 'Unknown'
     }).reset_index()
     
-    # Rename columns to match incidents data structure
+    # Rename columns for clarity
     incidents_df = incidents_df.rename(columns={
         'arrestee_id': 'num_arrests',
         'arrest_date': 'incident_date',
-        'age_num': 'offender_age_num',
-        'sex_code': 'offender_sex_code',
-        'race_desc': 'offender_race_desc',
-        'ethnicity_name': 'offender_ethnicity_name',
-        'resident_code': 'offender_resident_code'
+        'age_num': 'avg_arrestee_age'
     })
-    
-    # Add missing incidents variables (set to default values since we don't have this data)
-    incidents_df['victim_id'] = incidents_df['incident_id']  # Assume one victim per incident
-    incidents_df['victim_seq_num'] = 1
-    incidents_df['victim_type_name'] = 'Individual'  # Default assumption
-    incidents_df['victim_age_num'] = np.nan  # We don't have victim age
-    incidents_df['victim_sex_code'] = 'Unknown'  # We don't have victim sex
-    incidents_df['victim_race_desc'] = 'Unknown'  # We don't have victim race
-    incidents_df['victim_ethnicity_name'] = 'Unknown'  # We don't have victim ethnicity
-    incidents_df['relationship_name'] = 'Unknown'  # We don't have relationship data
-    incidents_df['property_id'] = np.nan  # We don't have property data
-    incidents_df['stolen_count'] = 0  # Default to 0
-    incidents_df['recovered_count'] = 0  # Default to 0
-    incidents_df['agency_name'] = 'New Mexico Law Enforcement'  # Generic agency name
-    incidents_df['agency_type_name'] = 'Municipal Police'  # Generic agency type
-    incidents_df['population'] = np.nan  # We don't have population data
-    incidents_df['suburban_area'] = 'Unknown'  # We don't have area data
-    incidents_df['population_group_desc'] = 'Unknown'  # We don't have population group
-    incidents_df['male_officer'] = np.nan  # We don't have officer data
-    incidents_df['male_civilian'] = np.nan  # We don't have civilian data
-    incidents_df['female_officer'] = np.nan  # We don't have officer data
-    incidents_df['female_civilian'] = np.nan  # We don't have civilian data
-    incidents_df['county_name'] = 'Unknown'  # We don't have county data
     
     print(f"Incidents data shape: {incidents_df.shape}")
     print("Incidents data sample:")
@@ -173,8 +141,7 @@ def handle_missing_values(arrestee_df, incidents_df):
     incidents_clean = incidents_df.copy()
     
     # For categorical variables in incidents
-    incidents_categorical = ['weapon_name', 'arrest_type_name', 'offender_sex_code', 
-                           'offender_race_desc', 'offender_ethnicity_name', 'offender_resident_code']
+    incidents_categorical = ['weapon_name', 'arrest_type_name', 'sex_code', 'race_desc', 'ethnicity_name']
     for col in incidents_categorical:
         if incidents_clean[col].isnull().sum() > 0:
             mode_val = incidents_clean[col].mode().iloc[0] if len(incidents_clean[col].mode()) > 0 else 'Unknown'
@@ -184,7 +151,7 @@ def handle_missing_values(arrestee_df, incidents_df):
     
     return arrestee_clean, incidents_clean
 
-def create_target_variable(incidents_clean):
+def create_target_variable(arrestee_clean, incidents_clean):
     """
     Create ARREST target variable - since all incidents resulted in arrests, 
     we'll create a different target variable for analysis
@@ -264,12 +231,11 @@ def prepare_final_dataset(incidents_with_arrest):
     """
     print("\n=== PREPARING FINAL DATASET ===")
     
-    # Select relevant features for modeling (focusing on available data)
+    # Select relevant features for modeling
     feature_cols = [
         'offense_code', 'offense_category_name', 'crime_against',
         'ct_flag', 'hc_flag', 'weapon_name', 'arrest_type_name',
-        'offender_age_num', 'offender_sex_code', 'offender_race_desc', 
-        'offender_ethnicity_name', 'offender_resident_code'
+        'avg_arrestee_age', 'sex_code', 'race_desc', 'ethnicity_name'
     ]
     
     # Create final dataset
@@ -304,23 +270,23 @@ def main():
     """
     Main function to execute all data preparation steps
     """
-    print("ATPA Assessment - Task 1: Data Preparation (CORRECTED)")
-    print("=" * 60)
+    print("ATPA Assessment - Task 1: Data Preparation")
+    print("=" * 50)
     
     # Step 1: Load and examine data
     arrestee_df, data_dict = load_and_examine_data()
     
-    # Step 2: Analyze data dictionary structure
-    arrestee_vars, incidents_vars = analyze_data_dictionary(data_dict)
+    # Step 2: Analyze data structure
+    unique_incidents = analyze_data_structure(arrestee_df)
     
-    # Step 3: Create incidents data following proper structure
-    incidents_df = create_incidents_data_from_arrestee(arrestee_df)
+    # Step 3: Create incidents data
+    incidents_df = create_incidents_data(arrestee_df)
     
     # Step 4: Handle missing values
     arrestee_clean, incidents_clean = handle_missing_values(arrestee_df, incidents_df)
     
     # Step 5: Create target variable
-    incidents_with_arrest = create_target_variable(incidents_clean)
+    incidents_with_arrest = create_target_variable(arrestee_clean, incidents_clean)
     
     # Step 6: Perform EDA
     perform_eda(incidents_with_arrest)
@@ -328,15 +294,13 @@ def main():
     # Step 7: Prepare final dataset
     final_df_encoded, final_df = prepare_final_dataset(incidents_with_arrest)
     
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 50)
     print("TASK 1 COMPLETED SUCCESSFULLY!")
-    print("=" * 60)
-    print("\nIMPORTANT NOTES:")
-    print("1. This dataset contains only incidents that resulted in arrests.")
-    print("2. Incidents data was created from arrestee data following the data dictionary structure.")
-    print("3. Some incidents variables are set to default values since we don't have victim data.")
-    print("4. Analysis focuses on factors associated with multiple arrests vs single arrests.")
-    print("5. For complete arrest prediction, we would need data on incidents without arrests.")
+    print("=" * 50)
+    print("\nIMPORTANT NOTE: This dataset contains only incidents that resulted in arrests.")
+    print("For a complete arrest prediction model, we would need data on incidents")
+    print("that did NOT result in arrests. This analysis focuses on factors")
+    print("associated with multiple arrests vs single arrests within arrested incidents.")
 
 if __name__ == "__main__":
     main() 

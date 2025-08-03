@@ -1,0 +1,116 @@
+{
+  "task1": {
+    "missing_analysis": {
+      "incidents": {
+        "missing_counts": {
+          "incident_hour": 1900,
+          "cleared_except_date": 96444,
+          "offense_code": 64078,
+          "num_premises_entered": 96573,
+          "method_entry_code": 96904,
+          "hc_code": 45269,
+          "offender_age_num": 42124,
+          "assignment_type_name": 96181,
+          "activity_type_id": 96181,
+          "outside_agency_id": 96881,
+          "victim_age_num": 30589,
+          "victim_resident_status_code": 42550,
+          "victim_injury_code": 73060,
+          "victim_injury_name": 84872,
+          "relationship_name": 60076,
+          "weapon_name": 73036,
+          "property_id": 29309,
+          "property_loss_id": 29309,
+          "stolen_count": 91116,
+          "recovered_count": 95346,
+          "agency_name": 90,
+          "male_officer": 1747,
+          "male_civilian": 1747,
+          "female_officer": 1747,
+          "female_civilian": 1747
+        },
+        "missing_percentages": {
+          "incident_hour": 1.9607033765376043,
+          "cleared_except_date": 99.52530339304879,
+          "offense_code": 66.12523734830347,
+          "num_premises_entered": 99.65842483282424,
+          "method_entry_code": 100.0,
+          "hc_code": 46.71530586972674,
+          "offender_age_num": 43.46982580698423,
+          "assignment_type_name": 99.25390076777016,
+          "activity_type_id": 99.25390076777016,
+          "outside_agency_id": 99.97626516965244,
+          "victim_age_num": 31.56629241310988,
+          "victim_resident_status_code": 43.90943614298688,
+          "victim_injury_code": 75.39420457359861,
+          "victim_injury_name": 87.58358788078924,
+          "relationship_name": 61.99537686782796,
+          "weapon_name": 75.36943779410551,
+          "property_id": 30.24539750681086,
+          "property_loss_id": 30.24539750681086,
+          "stolen_count": 94.02707834557913,
+          "recovered_count": 98.39222323123916,
+          "agency_name": 0.09287542309914967,
+          "male_officer": 1.8028151572690498,
+          "male_civilian": 1.8028151572690498,
+          "female_officer": 1.8028151572690498,
+          "female_civilian": 1.8028151572690498
+        }
+      },
+      "arrestee": {
+        "missing_counts": {
+          "offense_code": 23567,
+          "hc_code": 11918,
+          "sex_code": 28682,
+          "race_desc": 28682,
+          "ethnicity_name": 28682,
+          "resident_code": 3723,
+          "under_18_disposition_code": 26947
+        },
+        "missing_percentages": {
+          "offense_code": 82.16651558468726,
+          "hc_code": 41.552193013039535,
+          "sex_code": 100.0,
+          "race_desc": 100.0,
+          "ethnicity_name": 100.0,
+          "resident_code": 12.980266369151384,
+          "under_18_disposition_code": 93.95090997838366
+        }
+      }
+    },
+    "imputation_summary": {
+      "incidents_shape": "(96904, 58)",
+      "arrestee_shape": "(28682, 21)",
+      "merged_shape": "(96904, 65)"
+    },
+    "quality_report": {
+      "total_records": 96904,
+      "total_columns": 65,
+      "missing_values": {
+        "total_missing": 96904,
+        "columns_with_missing": 1,
+        "missing_percentage": 1.5384615384615385
+      },
+      "arrest_statistics": {
+        "total_arrests": 18439,
+        "arrest_rate": 0.19028110294724676,
+        "no_arrest_count": 78465
+      },
+      "data_types": {
+        "int64": 17,
+        "float64": 17,
+        "object": 10,
+        "bool": 5,
+        "datetime64[ns]": 3,
+        "int32": 3,
+        "category": 1
+      },
+      "duplicate_records": 0
+    },
+    "merged_data": [
+      {
+        "data_year": 2023,
+        "agency_id": 12745,
+        "incident_id": 173660718,
+        "cargo_theft_flag": false,
+        "submission_date": 

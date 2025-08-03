@@ -1,0 +1,32 @@
+Crime_Category,Number_of_Incidents,Number_of_Multiple_Arrests,Number_of_Arrests,Arrest_Rate,Multiple_Arrest_Rate
+Assault Offenses,13138,387,13138,1.0,0.029456538285888262
+Drug/Narcotic Offenses,4622,370,4622,1.0,0.08005192557334487
+Larceny/Theft Offenses,3568,303,3568,1.0,0.08492152466367713
+Destruction/Damage/Vandalism of Property,1557,40,1557,1.0,0.02569043031470777
+Stolen Property Offenses,855,82,855,1.0,0.09590643274853801
+Burglary/Breaking & Entering,751,78,751,1.0,0.10386151797603196
+Weapon Law Violations,628,36,628,1.0,0.05732484076433121
+Motor Vehicle Theft,315,32,315,1.0,0.10158730158730159
+All Other Offenses,312,36,312,1.0,0.11538461538461539
+Kidnapping/Abduction,217,8,217,1.0,0.03686635944700461
+Fraud Offenses,189,9,189,1.0,0.047619047619047616
+Robbery,174,20,174,1.0,0.11494252873563218
+Embezzlement,109,2,109,1.0,0.01834862385321101
+Sex Offenses,100,2,100,1.0,0.02
+Disorderly Conduct,84,22,84,1.0,0.2619047619047619
+Driving Under the Influence,63,4,63,1.0,0.06349206349206349
+Homicide Offenses,49,6,49,1.0,0.12244897959183673
+Counterfeiting/Forgery,47,3,47,1.0,0.06382978723404255
+Arson,38,1,38,1.0,0.02631578947368421
+Trespass of Real Property,32,9,32,1.0,0.28125
+Animal Cruelty,30,1,30,1.0,0.03333333333333333
+Family Offenses Nonviolent,20,7,20,1.0,0.35
+Pornography/Obscene Material,18,1,18,1.0,0.05555555555555555
+Liquor Law Violations,16,5,16,1.0,0.3125
+Bribery,7,0,7,1.0,0.0
+Other Offenses,5,1,5,1.0,0.2
+Prostitution Offenses,3,0,3,1.0,0.0
+Sex Offenses Non-forcible,3,0,3,1.0,0.0
+Extortion/Blackmail,3,0,3,1.0,0.0
+Human Trafficking,1,0,1,1.0,0.0
+Gambling Offenses,1,0,1,1.0,0.0

@@ -1,0 +1,37 @@
+
+TASK 4: RANDOM FOREST & SHAP ANALYSIS RESULTS
+
+4a) Random Forest Model Performance:
+- Best Parameters: {'class_weight': 'balanced', 'max_depth': 10, 'min_samples_leaf': 2, 'min_samples_split': 10, 'n_estimators': 200}
+- Testing Accuracy: 0.7716 (77.2%)
+- Testing AUC: 0.8591
+- Model successfully handles realistic 19% arrest rate
+
+4b) Feature Importance Analysis:
+Top 3 Most Important Features:
+1. offense_code_encoded: 0.2527
+2. ct_flag_encoded: 0.2384
+3. offense_category_name_encoded: 0.2089
+
+4b) SHAP Analysis Insights:
+Top 3 Most Important Features (SHAP):
+1. offense_code_encoded: 0.1057
+2. ct_flag_encoded: 0.0828
+3. offense_category_name_encoded: 0.0704
+
+SHAP Case Analysis:
+- Analyzed 2 arrested incidents
+- Analyzed 2 non-arrested incidents
+- SHAP values show clear discrimination between arrest/no-arrest cases
+- Feature contributions quantified for individual predictions
+
+4c) Partial Dependence Insights:
+- Feature effects show non-linear relationships
+- Complex interactions captured by Random Forest
+- Model provides interpretable predictions for policy decisions
+
+Business Implications:
+1. The model achieves strong performance with realistic arrest rates
+2. Key factors influencing arrests are clearly identified
+3. Random Forest provides robust feature importance rankings
+4. Results support evidence-based policy recommendations
