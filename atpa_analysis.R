@@ -361,6 +361,16 @@ if (require(randomForest, quietly = TRUE)) {
   # ARREST is already a factor from earlier in the script
   # test_rf_data$ARREST <- as.factor(test_rf_data$ARREST)  # No longer needed
 
+  # Ensure factor levels match between training and test data
+  for (col in names(rf_data)) {
+    if (is.factor(rf_data[[col]]) && col %in% names(test_rf_data)) {
+      # Get levels from training data
+      train_levels <- levels(rf_data[[col]])
+      # Set levels in test data to match training data
+      test_rf_data[[col]] <- factor(test_rf_data[[col]], levels = train_levels)
+    }
+  }
+
   cat("Random Forest test data dimensions after removing NAs:", dim(test_rf_data), "\n")
   
   # Make predictions
@@ -452,15 +462,15 @@ if (require(randomForest, quietly = TRUE)) {
   
   # --- 9. PARTIAL DEPENDENCE PLOTS (Task 4c) ---
   cat("Creating Partial Dependence Plots...\n")
-  
+
   if (require(pdp, quietly = TRUE)) {
     # Create PDP for key variables
     pdp_weapon <- partial(rf_model, pred.var = "weapon_name", train = rf_data)
     pdp_crime <- partial(rf_model, pred.var = "crime_against", train = rf_data)
     pdp_hour <- partial(rf_model, pred.var = "incident_hour", train = rf_data)
     
-    # Create and save partial dependence plots
-    p3 <- plotPartial(pdp_weapon) + 
+    # Create and save partial dependence plots using autoplot
+    p3 <- autoplot(pdp_weapon) + 
       labs(title = "Partial Dependence Plot: Weapon Name",
            x = "Weapon Name", 
            y = "Partial Dependence") +
@@ -469,7 +479,7 @@ if (require(randomForest, quietly = TRUE)) {
     ggsave("pdp_weapon_name.png", p3, width = 12, height = 8, dpi = 300)
     cat("Saved: pdp_weapon_name.png\n")
     
-    p4 <- plotPartial(pdp_crime) + 
+    p4 <- autoplot(pdp_crime) + 
       labs(title = "Partial Dependence Plot: Crime Against",
            x = "Crime Against", 
            y = "Partial Dependence") +
@@ -477,7 +487,7 @@ if (require(randomForest, quietly = TRUE)) {
     ggsave("pdp_crime_against.png", p4, width = 10, height = 6, dpi = 300)
     cat("Saved: pdp_crime_against.png\n")
     
-    p5 <- plotPartial(pdp_hour) + 
+    p5 <- autoplot(pdp_hour) + 
       labs(title = "Partial Dependence Plot: Incident Hour",
            x = "Incident Hour", 
            y = "Partial Dependence") +
@@ -557,7 +567,7 @@ arrest_summary <- crime_data %>%
   group_by(offense_category_name) %>%
   summarize(
     N_incidents = n(),
-    N_arrests = sum(ARREST, na.rm = TRUE)
+    N_arrests = sum(as.numeric(as.character(ARREST)), na.rm = TRUE)
   ) %>%
   filter(N_incidents > 50) %>% # Filter for stability
   arrange(desc(N_incidents))
