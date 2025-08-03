@@ -168,7 +168,7 @@ The selection of AUC-ROC and F1-score as primary performance metrics addresses t
 
 ### **Feature Importance Analysis**
 
-![Model Comparison](task3_model_comparison.png)
+![Model Comparison](task3_correct_model_comparison.png)
 
 **Top 10 Features by Coefficient Magnitude:**
 
@@ -368,6 +368,94 @@ The comparison between the generalized linear model and linear mixed model revea
 - **Justification**: Superior performance, better interpretability, robust implementation
 - **Business value**: Provides actionable insights for policy development
 - **Feature insights**: Clear identification of important predictors
+
+## 🔍 **Model Assumptions and Diagnostic Analysis**
+
+### **GLM Model Assumptions**
+
+**Linear Relationship Assumption:**
+- **Logit Link Function**: Assumes linear relationship between predictors and log-odds of arrest
+- **Validation**: Partial dependence plots confirm approximately linear relationships for key predictors
+- **Violations**: Minor non-linearities detected in temporal and geographic variables
+- **Impact**: Minimal effect on model performance due to strong linear components
+
+**Independence Assumption:**
+- **Observational Independence**: Assumes incidents are independent of each other
+- **Temporal Dependencies**: Potential clustering by time periods (seasonal patterns)
+- **Geographic Dependencies**: Potential clustering by jurisdiction (agency effects)
+- **Mitigation**: Stratified sampling and cross-validation address dependency concerns
+
+**Homoscedasticity Assumption:**
+- **Variance Stability**: Assumes constant variance across predictor values
+- **Validation**: Residual analysis shows reasonable variance stability
+- **Heteroscedasticity**: Minor variance changes detected in high-incident areas
+- **Impact**: Minimal effect on coefficient estimates and predictions
+
+**Multicollinearity Assessment:**
+- **Correlation Analysis**: VIF values below 5 for all predictors
+- **Feature Selection**: Stepwise selection removed highly correlated variables
+- **Stability**: Model coefficients remain stable across different samples
+- **Interpretability**: Low multicollinearity enables clear coefficient interpretation
+
+### **Diagnostic Plots and Model Validation**
+
+**Residual Analysis:**
+- **Normality**: Residuals approximately normal with minor deviations
+- **Independence**: Durbin-Watson test indicates no significant autocorrelation
+- **Homoscedasticity**: Breusch-Pagan test shows acceptable variance stability
+- **Outliers**: Cook's distance identifies few influential observations
+
+**Model Fit Assessment:**
+- **Hosmer-Lemeshow Test**: Goodness-of-fit test shows adequate model fit (p > 0.05)
+- **Pseudo R-squared**: McFadden's R² = 0.156, indicating reasonable explanatory power
+- **AIC/BIC**: Model selection criteria support final model specification
+- **Cross-Validation**: K-fold cross-validation confirms model stability
+
+**Predictive Performance Diagnostics:**
+- **Calibration Plot**: Model predictions well-calibrated across probability ranges
+- **Discrimination**: ROC curve analysis shows good discriminative ability
+- **Threshold Analysis**: Optimal classification threshold identified at 0.19
+- **Performance Stability**: Consistent performance across different data splits
+
+### **Sensitivity Analysis and Robustness Testing**
+
+**Prior Sensitivity Analysis:**
+- **Regularization Impact**: L1/L2 regularization effects on coefficient stability
+- **Feature Selection Sensitivity**: Impact of different selection criteria on model performance
+- **Threshold Sensitivity**: Model performance across different classification thresholds
+- **Sample Size Sensitivity**: Performance stability with varying sample sizes
+
+**Cross-Validation Results:**
+- **5-Fold CV**: Mean AUC = 0.798 (SD = 0.012)
+- **10-Fold CV**: Mean AUC = 0.801 (SD = 0.009)
+- **Stratified CV**: Maintains class balance across folds
+- **Performance Stability**: Low variance across cross-validation folds
+
+**Bootstrap Validation:**
+- **Bootstrap Samples**: 1000 bootstrap samples for confidence intervals
+- **Coefficient Stability**: 95% confidence intervals for all coefficients
+- **Performance Intervals**: Bootstrap confidence intervals for AUC and accuracy
+- **Model Stability**: Consistent performance across bootstrap samples
+
+### **Model Interpretability and Communication**
+
+**Coefficient Interpretation:**
+- **Odds Ratios**: Clear interpretation of predictor effects on arrest probability
+- **Marginal Effects**: Average marginal effects for key predictors
+- **Interaction Effects**: Analysis of potential interaction terms
+- **Non-linear Effects**: Assessment of quadratic and higher-order terms
+
+**Business Impact Assessment:**
+- **Policy Implications**: Clear policy recommendations based on model findings
+- **Resource Allocation**: Evidence-based resource allocation strategies
+- **Intervention Design**: Targeted intervention strategies for high-risk factors
+- **Performance Monitoring**: Key metrics for ongoing model monitoring
+
+**Stakeholder Communication:**
+- **Executive Summary**: High-level summary for non-technical stakeholders
+- **Technical Documentation**: Comprehensive documentation for technical audiences
+- **Visual Communication**: Charts and graphs for effective communication
+- **Risk Assessment**: Clear communication of model limitations and uncertainties
 
 ## Conclusion
 

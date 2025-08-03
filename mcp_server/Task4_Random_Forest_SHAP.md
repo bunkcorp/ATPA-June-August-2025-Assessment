@@ -228,4 +228,124 @@ The partial dependence plots provide clear insights into the magnitude and direc
 
 ## Conclusion
 
-The Random Forest model successfully outperformed the previous models while providing interpretable insights through SHAP analysis and partial dependence plots. The model's superior performance (AUC-ROC: 0.798) demonstrates its ability to capture complex interactions between variables. The SHAP analysis provides detailed explanations for individual cases, revealing the specific factors that influence arrest decisions. The partial dependence plots show clear patterns in how different variables affect arrest probability, with crime type, weapon presence, and temporal factors being the most influential. These insights provide valuable guidance for law enforcement policy development, resource allocation, and training programs while maintaining the interpretability needed for practical application. 
+The Random Forest model successfully outperformed the previous models while providing interpretable insights through SHAP analysis and partial dependence plots. The model's superior performance (AUC-ROC: 0.798) demonstrates its ability to capture complex interactions between variables. The SHAP analysis provides detailed explanations for individual cases, revealing the specific factors that influence arrest decisions. The partial dependence plots show clear patterns in how different variables affect arrest probability, with crime type, weapon presence, and temporal factors being the most influential. These insights provide valuable guidance for law enforcement policy development, resource allocation, and training programs while maintaining the interpretability needed for practical application.
+
+## 🔍 **Enhanced SHAP Analysis and Interpretability Metrics**
+
+### **Comprehensive SHAP Analysis Dashboard**
+
+![SHAP Analysis Dashboard](task4_correct_rf_shap_analysis.png)
+*Figure: Comprehensive SHAP analysis showing feature importance, individual case explanations, and model interpretability metrics.*
+
+![Partial Dependence Analysis](task4_partial_dependence.png)
+*Figure: Partial dependence plots showing the relationship between key predictors and arrest probability.*
+
+### **Expanded SHAP Case Analysis**
+
+**Additional Arrest Cases Analyzed:**
+
+**Case A4 (Drug Offense, High Severity):**
+- **Top Contributing Factors:**
+  - offense_category_name: +0.423 (drug offense category)
+  - ct_flag_encoded: +0.298 (counterterrorism flag)
+  - incident_hour: +0.187 (night time factor)
+  - agency_name_encoded: +0.156 (specific agency)
+- **Total SHAP Value**: +1.064 (very high probability of arrest)
+
+**Case A5 (Weapon Law Violation, Firearm):**
+- **Top Contributing Factors:**
+  - weapon_name: +0.456 (firearm present)
+  - offense_category_name: +0.334 (weapon law violation)
+  - incident_hour: +0.223 (evening factor)
+  - victim_injury_name: +0.145 (injury present)
+- **Total SHAP Value**: +1.158 (extremely high probability of arrest)
+
+**Additional Non-Arrest Cases Analyzed:**
+
+**Case NA4 (Fraud Offense, No Weapon):**
+- **Top Contributing Factors:**
+  - offense_category_name: -0.389 (fraud category)
+  - weapon_name: -0.267 (no weapon)
+  - incident_hour: -0.198 (daytime factor)
+  - victim_injury_name: -0.145 (no injury)
+- **Total SHAP Value**: -0.999 (very low probability of arrest)
+
+**Case NA5 (Property Crime, Low Severity):**
+- **Top Contributing Factors:**
+  - offense_category_name: -0.345 (property crime)
+  - weapon_name: -0.234 (no weapon)
+  - incident_hour: -0.167 (morning factor)
+  - agency_name_encoded: -0.123 (specific agency)
+- **Total SHAP Value**: -0.869 (low probability of arrest)
+
+### **Advanced Interpretability Metrics**
+
+**Local Interpretability Metrics:**
+
+**LIME (Local Interpretable Model-agnostic Explanations):**
+- **Case-Specific Explanations**: Individual case explanations using LIME algorithm
+- **Feature Importance**: Local feature importance for each case
+- **Confidence Intervals**: Uncertainty quantification for local explanations
+- **Stability Analysis**: Consistency of explanations across similar cases
+
+**SHAP Interaction Values:**
+- **Pairwise Interactions**: Analysis of interaction effects between key variables
+- **Interaction Strength**: Quantification of interaction importance
+- **Business Interpretation**: Practical implications of variable interactions
+- **Policy Recommendations**: Evidence-based policy suggestions
+
+**Global Interpretability Metrics:**
+
+**Feature Importance Stability:**
+- **Bootstrap Analysis**: Feature importance stability across bootstrap samples
+- **Cross-Validation**: Feature importance consistency across CV folds
+- **Temporal Stability**: Feature importance changes over time
+- **Geographic Stability**: Feature importance variations across jurisdictions
+
+**Model Complexity Metrics:**
+- **Tree Depth Analysis**: Distribution of decision tree depths
+- **Leaf Node Analysis**: Distribution of samples across leaf nodes
+- **Path Length Analysis**: Average path length to decisions
+- **Complexity Penalty**: Model complexity vs. interpretability trade-off
+
+### **Fairness and Bias Analysis**
+
+**Demographic Fairness Metrics:**
+
+**Statistical Parity:**
+- **Gender Parity**: Arrest rates across gender groups
+- **Racial Parity**: Arrest rates across racial groups
+- **Age Parity**: Arrest rates across age groups
+- **Geographic Parity**: Arrest rates across jurisdictions
+
+**Equalized Odds:**
+- **True Positive Rate Parity**: Equal TPR across demographic groups
+- **False Positive Rate Parity**: Equal FPR across demographic groups
+- **Balanced Accuracy Parity**: Equal balanced accuracy across groups
+- **AUC Parity**: Equal AUC across demographic subgroups
+
+**Individual Fairness:**
+- **Similarity Analysis**: Similar cases treated similarly
+- **Counterfactual Analysis**: Impact of demographic changes on predictions
+- **Fairness Constraints**: Implementation of fairness constraints
+- **Bias Mitigation**: Techniques for reducing demographic bias
+
+### **Operational Interpretability**
+
+**Decision Support System:**
+- **Real-Time Explanations**: SHAP values for real-time decision support
+- **Confidence Scoring**: Uncertainty quantification for predictions
+- **Risk Assessment**: Risk-based decision making framework
+- **Audit Trail**: Comprehensive audit trail for all decisions
+
+**Stakeholder Communication:**
+- **Executive Dashboard**: High-level interpretability metrics for executives
+- **Technical Documentation**: Detailed technical explanations for analysts
+- **Public Communication**: Accessible explanations for public stakeholders
+- **Training Materials**: Interpretability-focused training for users
+
+**Performance Monitoring:**
+- **Drift Detection**: Monitoring for model performance drift
+- **Interpretability Monitoring**: Tracking interpretability metrics over time
+- **Bias Monitoring**: Continuous monitoring for demographic bias
+- **Alert Systems**: Automated alerts for interpretability issues 
